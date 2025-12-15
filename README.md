@@ -1,94 +1,116 @@
-# 10x Astro Starter
+# PhotoSpot
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+> Discover & share picturesque photo locations effortlessly.
+
+---
+
+## Table of Contents
+1. [Project Description](#project-description)
+2. [Tech Stack](#tech-stack)
+3. [Getting Started Locally](#getting-started-locally)
+4. [Available Scripts](#available-scripts)
+5. [Project Scope](#project-scope)
+6. [Project Status](#project-status)
+7. [License](#license)
+
+---
+
+## Project Description
+PhotoSpot is a web application that helps photographers and photography enthusiasts quickly find scenic photo spots and share their own shots. The app combines an interactive map with a synchronized photo gallery, providing both inspiration and practical location details. Key features include:
+
+- Account system with roles (Photographer / Enthusiast)
+- Interactive Mapbox map with clustering & lazy-loading markers
+- Synchronised thumbnail strip for photos currently in view
+- Advanced filters (category, daylight, season, author role)
+- Photo upload with EXIF location detection or manual pin-drop
+- Privacy-friendly location blur (100-500 m)
+- User profiles and private favourites list
+- Unique URLs for photos (`/photo/[id]`) and users (`/user/[id]`)
+- Content moderation & reporting system
+
+---
 
 ## Tech Stack
+| Layer            | Technology |
+|------------------|------------|
+| Front-End        | **Astro 5** (Islands architecture), **React 19**, **TypeScript 5** |
+| Styling & UI     | **Tailwind CSS 4**, **shadcn/ui** (Radix + Tailwind), **Lucide-React** icons |
+| Back-End & Data  | **Supabase** (PostgreSQL, Auth, Storage, Edge Functions) with Row-Level Security |
+| Mapping          | **Mapbox GL JS / Tiles** (clustering, geocoding) |
+| DevOps / Hosting | **Vercel** (zero-config deploy, global CDN), **GitHub Actions** (CI), **Sentry** (error monitoring) |
+| Tooling          | **ESLint**, **Prettier**, **Husky** + **lint-staged** |
+| Runtime          | **Node 22.14.0** (see `.nvmrc`) |
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+---
 
-## Prerequisites
+## Getting Started Locally
+### Prerequisites
+- **Node 22.14.0** & **npm 10+** (or use `nvm install` to match `.nvmrc`)
+- **pnpm** or **yarn** can also be used if preferred (update commands accordingly)
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
-
-## Getting Started
-
-1. Clone the repository:
-
+### Installation
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+# Clone the repo
+git clone https://github.com/your-org/photospot.git
+cd photospot
 
-2. Install dependencies:
-
-```bash
+# Install dependencies
 npm install
 ```
 
-3. Run the development server:
+### Environment Variables
+Create a `.env` file (or use Vercel project vars) with the following keys:
+```env
+PUBLIC_SUPABASE_URL=your-supabase-url
+PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_MAPBOX_TOKEN=your-mapbox-token
+```
+> For a full list of variables see `src/env.d.ts`.
 
+### Running the app
 ```bash
+# Start Astro development server (http://localhost:4321)
 npm run dev
 ```
 
-4. Build for production:
-
+### Building for production
 ```bash
 npm run build
+npm run preview   # Local preview of the static build
 ```
+
+---
 
 ## Available Scripts
+Command            | Description
+-------------------|-----------------------------------------------------------
+`npm run dev`      | Launches Astro in development mode with hot reload.
+`npm run build`    | Generates a static production build.
+`npm run preview`  | Serves the built site for local preview.
+`npm run astro`    | Exposes the Astro CLI.
+`npm run lint`     | Runs ESLint.
+`npm run lint:fix` | Runs ESLint with automatic fixes.
+`npm run format`   | Formats files with Prettier.
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+---
 
-## Project Structure
+## Project Scope
+The MVP purposefully excludes payments, subscriptions, chat, follows, collections, bulk-upload and offline mode. Manual moderation, minimal legal compliance (cookies consent & GDPR checkbox) and limited automated testing are in place for the initial release. See [`docs/prd.md`](./.ai/prd.md) for full functional requirements.
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+---
 
-## AI Development Support
+## Project Status
+🚧 **In active development – MVP milestone**
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+Key success metrics once live:
+- 100 registered users in the first month
+- ≥ 300 photos uploaded within 60 days
+- Map load time < 2 s (p90)
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+Track progress in the [issue tracker](https://github.com/your-org/photospot/issues).
 
-### Cursor IDE
-
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
-
-### GitHub Copilot
-
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+---
 
 ## License
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
 
-MIT
