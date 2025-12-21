@@ -145,7 +145,73 @@ This REST API plan defines all endpoints for the PhotoSpot application, a platfo
 
 ## 4. Profile Endpoints
 
-### 4.1. Get User Profile
+### 4.1. Create User Profile
+
+**Method**: `POST`  
+**Path**: `/api/users/:userId/profile`  
+**Auth**: Required (own profile only)
+
+**Request Payload**:
+```json
+{
+  "display_name": "John Doe",
+  "avatar_url": "https://storage.supabase.co/...", // optional
+  "bio": "Landscape photographer based in Colorado", // optional
+  "company_name": "John Doe Photography", // optional, photographer only
+  "website_url": "https://johndoe.com", // optional, photographer only
+  "social_links": { // optional, photographer only
+    "instagram": "https://instagram.com/johndoe",
+    "facebook": "https://facebook.com/johndoe"
+  }
+}
+```
+
+**Success Response** (201 Created):
+```json
+{
+  "message": "Profile created successfully",
+  "profile": {
+    "user_id": "uuid",
+    "display_name": "John Doe",
+    "avatar_url": "https://storage.supabase.co/...",
+    "bio": "Landscape photographer based in Colorado",
+    "role": "photographer",
+    "company_name": "John Doe Photography",
+    "website_url": "https://johndoe.com",
+    "social_links": {
+      "instagram": "https://instagram.com/johndoe",
+      "facebook": "https://facebook.com/johndoe"
+    },
+    "photo_count": 0,
+    "created_at": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: Invalid data (e.g., missing required display_name, invalid URLs)
+- `401 Unauthorized`: Not authenticated
+- `403 Forbidden`: Attempting to create profile for another user, or enthusiast attempting to set photographer-only fields
+- `409 Conflict`: Profile already exists for this user
+
+**Validation**:
+- `display_name`: required, 1-100 characters
+- `avatar_url`: optional, valid URL format
+- `bio`: optional, max 500 characters
+- `company_name`: optional, photographer only, max 100 characters
+- `website_url`: optional, photographer only, valid URL format
+- `social_links.*`: optional, photographer only, valid URL formats
+
+**Business Logic**:
+- User can only create their own profile (userId must match authenticated user)
+- Profile creation is idempotent check - if profile exists, return 409 Conflict
+- Photographer-only fields (company_name, website_url, social_links) are validated against user role from auth.users
+- Role is retrieved from auth.users.raw_user_meta_data and cannot be set via this endpoint
+- created_at and updated_at timestamps are set automatically
+
+---
+
+### 4.2. Get User Profile
 
 **Method**: `GET`  
 **Path**: `/api/users/:userId/profile`  
@@ -182,7 +248,7 @@ This REST API plan defines all endpoints for the PhotoSpot application, a platfo
 
 ---
 
-### 4.2. Update User Profile
+### 4.3. Update User Profile
 
 **Method**: `PATCH`  
 **Path**: `/api/users/:userId/profile`  
