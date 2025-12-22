@@ -34,8 +34,8 @@ on conflict (id) do nothing;
 -- 2. STORAGE RLS POLICIES
 -- ============================================================================
 
--- Enable RLS on storage.objects
-alter table storage.objects enable row level security;
+-- Note: RLS is already enabled on storage.objects by default in Supabase
+-- We just need to create our policies
 
 -- Policy: Users can upload photos to their own folder
 -- Path format: {userId}/{photoId}.{ext}
@@ -103,20 +103,8 @@ create policy "users_can_update_own_photos"
 -- 3. COMMENTS
 -- ============================================================================
 
-comment on policy "users_can_upload_own_photos" on storage.objects is 
-  'Users can upload photos to their own folder (/{userId}/*)';
-
-comment on policy "users_can_view_own_photos" on storage.objects is 
-  'Users can view photos in their own folder';
-
-comment on policy "public_can_view_approved_photos" on storage.objects is 
-  'Public can view photos that have been approved by moderators';
-
-comment on policy "users_can_delete_own_photos" on storage.objects is 
-  'Users can delete photos from their own folder';
-
-comment on policy "users_can_update_own_photos" on storage.objects is 
-  'Users can update metadata of photos in their own folder';
+-- Note: Cannot add comments to policies on storage.objects (not owner)
+-- Policy descriptions are included in the policy creation comments above
 
 -- ============================================================================
 -- MIGRATION COMPLETE
