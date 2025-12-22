@@ -6,7 +6,12 @@
  */
 
 import { z } from 'zod';
-import { PAGINATION_DEFAULTS } from '../../types';
+import {
+  PAGINATION_DEFAULTS,
+  FILE_UPLOAD_CONSTRAINTS,
+  FIELD_CONSTRAINTS,
+  LOCATION_BLUR,
+} from '../../types';
 
 /**
  * Photo category enum schema
@@ -161,9 +166,120 @@ export const photoIdParamSchema = z.object({
 });
 
 /**
+ * GearInfo schema for camera gear information
+ */
+const gearInfoSchema = z.object({
+  camera: z.string().optional(),
+  lens: z.string().optional(),
+}).passthrough(); // Allow additional fields
+
+/**
+ * Create photo command validation schema
+ * Used for POST /api/photos (multipart/form-data)
+ * 
+ * Validates all fields for photo upload including:
+ * - File validation (size, type)
+ * - Required metadata (title, category, location)
+ * - Optional metadata (description, season, time_of_day, tags, gear)
+ * - Location blurring parameters (blur_location, blur_radius)
+ */
+export const createPhotoCommandSchema = z.object({
+  // File is validated separately in multipart parser (binary data)
+  // This schema validates the form fields
+  
+  title: z.string()
+    .min(1, 'Title is required')
+    .max(FIELD_CONSTRAINTS.PHOTO_TITLE_MAX, `Title must not exceed ${FIELD_CONSTRAINTS.PHOTO_TITLE_MAX} characters`)
+    .trim(),
+  
+  description: z.string()
+    .max(FIELD_CONSTRAINTS.PHOTO_DESCRIPTION_MAX, `Description must not exceed ${FIELD_CONSTRAINTS.PHOTO_DESCRIPTION_MAX} characters`)
+    .trim()
+    .optional(),
+  
+  category: photoCategorySchema,
+  
+  season: seasonSchema.optional(),
+  
+  time_of_day: timeOfDaySchema.optional(),
+  
+  latitude: z.number()
+    .min(-90, 'Latitude must be between -90 and 90')
+    .max(90, 'Latitude must be between -90 and 90'),
+  
+  longitude: z.number()
+    .min(-180, 'Longitude must be between -180 and 180')
+    .max(180, 'Longitude must be between -180 and 180'),
+  
+  blur_location: z.boolean()
+    .default(false),
+  
+  blur_radius: z.number()
+    .int('Blur radius must be an integer')
+    .min(LOCATION_BLUR.MIN_RADIUS_METERS, `Blur radius must be at least ${LOCATION_BLUR.MIN_RADIUS_METERS} meters`)
+    .max(LOCATION_BLUR.MAX_RADIUS_METERS, `Blur radius must not exceed ${LOCATION_BLUR.MAX_RADIUS_METERS} meters`)
+    .optional(),
+  
+  tags: z.array(z.string()
+    .trim()
+    .toLowerCase()
+    .min(1, 'Tag cannot be empty')
+    .max(FIELD_CONSTRAINTS.TAG_NAME_MAX, `Tag must not exceed ${FIELD_CONSTRAINTS.TAG_NAME_MAX} characters`)
+  )
+    .max(FIELD_CONSTRAINTS.MAX_TAGS_PER_PHOTO, `Maximum ${FIELD_CONSTRAINTS.MAX_TAGS_PER_PHOTO} tags allowed`)
+    .default([]),
+  
+  gear: gearInfoSchema.optional(),
+})
+  .refine(
+    (data) => {
+      // If blur_location is true, blur_radius must be provided
+      if (data.blur_location && !data.blur_radius) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'blur_radius is required when blur_location is true',
+      path: ['blur_radius'],
+    }
+  );
+
+/**
+ * File validation schema
+ * Validates uploaded file properties
+ */
+export const fileValidationSchema = z.object({
+  size: z.number()
+    .max(FILE_UPLOAD_CONSTRAINTS.MAX_SIZE_BYTES, `File size must not exceed ${FILE_UPLOAD_CONSTRAINTS.MAX_SIZE_BYTES / 1024 / 1024} MB`),
+  
+  type: z.string()
+    .refine(
+      (type) => FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.includes(type as any),
+      {
+        message: `File type must be one of: ${FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.join(', ')}`,
+      }
+    ),
+  
+  name: z.string()
+    .refine(
+      (name) => {
+        const ext = name.toLowerCase().substring(name.lastIndexOf('.'));
+        return FILE_UPLOAD_CONSTRAINTS.ALLOWED_EXTENSIONS.includes(ext as any);
+      },
+      {
+        message: `File extension must be one of: ${FILE_UPLOAD_CONSTRAINTS.ALLOWED_EXTENSIONS.join(', ')}`,
+      }
+    ),
+});
+
+/**
  * Type inference helpers
  */
 export type PhotoQueryParamsInput = z.input<typeof photoQueryParamsSchema>;
 export type PhotoQueryParamsOutput = z.output<typeof photoQueryParamsSchema>;
 export type PhotoIdParam = z.infer<typeof photoIdParamSchema>;
+export type CreatePhotoCommandInput = z.input<typeof createPhotoCommandSchema>;
+export type CreatePhotoCommandOutput = z.output<typeof createPhotoCommandSchema>;
+export type FileValidation = z.infer<typeof fileValidationSchema>;
 

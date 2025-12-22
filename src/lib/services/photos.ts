@@ -5,6 +5,7 @@
  * Provides operations for retrieving public photos for map view and galleries.
  */
 
+import * as exifr from 'exifr';
 import type { SupabaseClient } from '../../db/supabase.client';
 import type {
   PhotoListItemDto,
@@ -20,8 +21,14 @@ import type {
   UserRole,
   ExifData,
   GearInfo,
+  CreatePhotoResponse,
+  PHOTO_UPLOAD_LIMIT,
+  FILE_UPLOAD_CONSTRAINTS,
 } from '../../types';
-import type { PhotoQueryParamsOutput } from '../validators/photos';
+import { PHOTO_UPLOAD_LIMIT as UPLOAD_LIMIT } from '../../types';
+import type { PhotoQueryParamsOutput, CreatePhotoCommandOutput } from '../validators/photos';
+import { randomOffsetPoint, createGeoPoint } from '../utils/geo';
+import type { ParsedFile } from '../utils/multipart';
 
 /**
  * Custom error class for photo service operations
@@ -400,6 +407,260 @@ export async function getPhotoById(
     // Wrap unexpected errors
     throw new PhotoServiceError(
       'Unexpected error while retrieving photo',
+      'INTERNAL_ERROR',
+      500,
+      { originalError: error instanceof Error ? error.message : String(error) }
+    );
+  }
+}
+
+/**
+ * Input data for creating a photo
+ */
+export interface CreatePhotoInput extends CreatePhotoCommandOutput {
+  file: ParsedFile;
+}
+
+/**
+ * Creates a new photo with upload and metadata processing
+ * 
+ * Implementation steps:
+ * 1. Check rate limit (5 photos per 24 hours)
+ * 2. Upload file to Supabase Storage
+ * 3. Extract EXIF metadata
+ * 4. Process location (blur if requested)
+ * 5. Insert photo record
+ * 6. Handle tags (upsert and link)
+ * 7. Return lightweight response
+ * 
+ * @param userId - ID of authenticated user uploading the photo
+ * @param input - Photo data and file
+ * @param supabase - Supabase client instance
+ * @returns Promise resolving to CreatePhotoResponse
+ * @throws PhotoServiceError for various failure scenarios
+ */
+export async function createPhoto(
+  userId: string,
+  input: CreatePhotoInput,
+  supabase: SupabaseClient
+): Promise<CreatePhotoResponse> {
+  try {
+    // Step 1: Check rate limit (defensive check, DB trigger is primary)
+    const twentyFourHoursAgo = new Date(Date.now() - UPLOAD_LIMIT.WINDOW_HOURS * 60 * 60 * 1000).toISOString();
+    
+    const { count: recentPhotoCount, error: countError } = await supabase
+      .from('photos')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', twentyFourHoursAgo);
+
+    if (countError) {
+      throw new PhotoServiceError(
+        'Failed to check upload rate limit',
+        'DATABASE_ERROR',
+        500,
+        { supabaseError: countError.message }
+      );
+    }
+
+    if (recentPhotoCount && recentPhotoCount >= UPLOAD_LIMIT.MAX_PHOTOS) {
+      throw new PhotoServiceError(
+        `Upload limit exceeded. Maximum ${UPLOAD_LIMIT.MAX_PHOTOS} photos per ${UPLOAD_LIMIT.WINDOW_HOURS} hours.`,
+        'RATE_LIMIT_EXCEEDED',
+        429
+      );
+    }
+
+    // Step 2: Upload file to Supabase Storage
+    // Generate unique filename: {userId}/{uuid}.{ext}
+    const photoId = crypto.randomUUID();
+    const fileExt = input.file.name.split('.').pop() || 'jpg';
+    const storagePath = `${userId}/${photoId}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('photos')
+      .upload(storagePath, input.file.buffer, {
+        contentType: input.file.type,
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      throw new PhotoServiceError(
+        'Failed to upload file to storage',
+        'STORAGE_ERROR',
+        500,
+        { supabaseError: uploadError.message }
+      );
+    }
+
+    // Get public URL for the uploaded file
+    const { data: { publicUrl } } = supabase.storage
+      .from('photos')
+      .getPublicUrl(storagePath);
+
+    // Step 3: Extract EXIF metadata
+    let exifData: ExifData | null = null;
+    try {
+      const rawExif = await exifr.parse(input.file.buffer, {
+        pick: [
+          'FNumber', 'ExposureTime', 'ISO', 'FocalLength',
+          'LensModel', 'Model', 'DateTimeOriginal',
+        ],
+      });
+
+      if (rawExif) {
+        exifData = {
+          aperture: rawExif.FNumber ? `f/${rawExif.FNumber}` : undefined,
+          shutter_speed: rawExif.ExposureTime ? `1/${Math.round(1 / rawExif.ExposureTime)}` : undefined,
+          iso: rawExif.ISO,
+          focal_length: rawExif.FocalLength ? `${rawExif.FocalLength}mm` : undefined,
+          lens: rawExif.LensModel,
+          camera: rawExif.Model,
+          date_taken: rawExif.DateTimeOriginal?.toISOString(),
+        };
+      }
+    } catch (exifError) {
+      // EXIF extraction is non-critical, log but continue
+      console.warn('[createPhoto] EXIF extraction failed:', exifError);
+    }
+
+    // Step 4: Process location (blur if requested)
+    const location_exact = createGeoPoint(input.latitude, input.longitude);
+    let location_public: GeoPoint;
+
+    if (input.blur_location && input.blur_radius) {
+      // Apply random offset within blur radius
+      const blurred = randomOffsetPoint(input.latitude, input.longitude, input.blur_radius);
+      location_public = createGeoPoint(blurred.lat, blurred.lon);
+    } else {
+      // Use exact location as public location
+      location_public = location_exact;
+    }
+
+    // Step 5: Insert photo record
+    const { data: photo, error: insertError } = await supabase
+      .from('photos')
+      .insert({
+        id: photoId,
+        user_id: userId,
+        title: input.title,
+        description: input.description || null,
+        category: input.category as PhotoCategory,
+        season: input.season as Season | undefined || null,
+        time_of_day: input.time_of_day as TimeOfDay | undefined || null,
+        file_url: publicUrl,
+        file_size: input.file.size,
+        location_exact: JSON.stringify(location_exact) as any,
+        location_public: JSON.stringify(location_public) as any,
+        gear: (input.gear || null) as any,
+        exif: exifData as any,
+        status: 'pending',
+      })
+      .select('id, title, status, file_url, created_at')
+      .single();
+
+    if (insertError) {
+      // Attempt cleanup: delete uploaded file
+      await supabase.storage.from('photos').remove([storagePath]);
+
+      // Check for specific database errors
+      if (insertError.message.includes('photos_limit')) {
+        throw new PhotoServiceError(
+          `Upload limit exceeded. Maximum ${UPLOAD_LIMIT.MAX_PHOTOS} photos per ${UPLOAD_LIMIT.WINDOW_HOURS} hours.`,
+          'RATE_LIMIT_EXCEEDED',
+          429
+        );
+      }
+
+      throw new PhotoServiceError(
+        'Failed to create photo record',
+        'DATABASE_ERROR',
+        500,
+        { supabaseError: insertError.message }
+      );
+    }
+
+    if (!photo) {
+      // Cleanup uploaded file
+      await supabase.storage.from('photos').remove([storagePath]);
+      
+      throw new PhotoServiceError(
+        'Photo record was not created',
+        'DATABASE_ERROR',
+        500
+      );
+    }
+
+    // Step 6: Handle tags (upsert and link)
+    if (input.tags && input.tags.length > 0) {
+      try {
+        // Upsert tags (insert if not exists)
+        const { error: tagsError } = await supabase
+          .from('tags')
+          .upsert(
+            input.tags.map(name => ({ name })),
+            { onConflict: 'name', ignoreDuplicates: true }
+          );
+
+        if (tagsError) {
+          console.error('[createPhoto] Failed to upsert tags:', tagsError);
+          // Non-critical, continue
+        }
+
+        // Fetch tag IDs
+        const { data: tagRecords, error: fetchTagsError } = await supabase
+          .from('tags')
+          .select('id, name')
+          .in('name', input.tags);
+
+        if (fetchTagsError) {
+          console.error('[createPhoto] Failed to fetch tag IDs:', fetchTagsError);
+          // Non-critical, continue
+        }
+
+        // Link tags to photo
+        if (tagRecords && tagRecords.length > 0) {
+          const { error: linkError } = await supabase
+            .from('photo_tags')
+            .insert(
+              tagRecords.map(tag => ({
+                photo_id: photoId,
+                tag_id: tag.id,
+              }))
+            );
+
+          if (linkError) {
+            console.error('[createPhoto] Failed to link tags:', linkError);
+            // Non-critical, continue
+          }
+        }
+      } catch (tagError) {
+        // Tags are non-critical, log and continue
+        console.error('[createPhoto] Tag processing error:', tagError);
+      }
+    }
+
+    // Step 7: Return lightweight response
+    return {
+      message: 'Photo uploaded successfully',
+      photo: {
+        id: photo.id,
+        title: photo.title,
+        status: photo.status as PhotoStatus,
+        file_url: photo.file_url,
+        created_at: photo.created_at,
+      },
+    };
+  } catch (error) {
+    // Re-throw PhotoServiceError as-is
+    if (error instanceof PhotoServiceError) {
+      throw error;
+    }
+
+    // Wrap unexpected errors
+    throw new PhotoServiceError(
+      'Unexpected error while creating photo',
       'INTERNAL_ERROR',
       500,
       { originalError: error instanceof Error ? error.message : String(error) }
