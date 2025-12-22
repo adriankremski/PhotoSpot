@@ -216,6 +216,28 @@ export interface UserProfileDto {
 }
 
 /**
+ * Create user profile request payload (POST /api/users/:userId/profile)
+ * Used for initial profile setup after registration
+ */
+export interface CreateProfileCommand {
+  display_name: string; // required
+  avatar_url?: string;
+  bio?: string;
+  // Photographer-only fields
+  company_name?: string;
+  website_url?: string;
+  social_links?: SocialLinks;
+}
+
+/**
+ * Profile creation response
+ */
+export interface CreateProfileResponse {
+  message: string;
+  profile: UserProfileDto;
+}
+
+/**
  * Update user profile request payload (PATCH /api/users/:userId/profile)
  * All fields optional for partial updates
  */

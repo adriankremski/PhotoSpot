@@ -2,11 +2,11 @@
  * Profile service layer
  * 
  * Encapsulates profile-related business logic and database interactions.
- * Provides operations for updating user profiles with proper validation and error handling.
+ * Provides operations for creating and updating user profiles with proper validation and error handling.
  */
 
 import type { SupabaseClient } from '../../db/supabase.client';
-import type { UpdateProfileCommand, UserProfileDto, UserRole, SocialLinks } from '../../types';
+import type { CreateProfileCommand, UpdateProfileCommand, UserProfileDto, UserRole, SocialLinks, UserProfileInsert } from '../../types';
 import { getUserProfile } from './user.service';
 
 /**
@@ -21,6 +21,195 @@ export class ProfileServiceError extends Error {
   ) {
     super(message);
     this.name = 'ProfileServiceError';
+  }
+}
+
+/**
+ * Creates a new user profile
+ * 
+ * Business rules:
+ * - Profile must not already exist for this user (409 Conflict if it does)
+ * - display_name is required
+ * - User role is fetched from auth.users metadata and cannot be set by user
+ * - Photographer-only fields (company_name, website_url, social_links) can only be set by photographers
+ * - Empty strings are converted to nulls for optional fields
+ * - Returns the complete created profile with role and photo_count (0 for new profiles)
+ * 
+ * @param userId - UUID of the user whose profile is being created
+ * @param payload - Profile creation data
+ * @param supabase - Supabase client instance
+ * @returns Promise resolving to the created UserProfileDto
+ * @throws ProfileServiceError for validation failures, conflicts, or database errors
+ */
+export async function createUserProfile(
+  userId: string,
+  payload: CreateProfileCommand,
+  supabase: SupabaseClient,
+  supabaseAdmin: SupabaseClient
+): Promise<UserProfileDto> {
+  try {
+    // Step 1: Check if profile already exists
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('user_profiles')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (checkError) {
+      throw new ProfileServiceError(
+        'Failed to check for existing profile',
+        'DATABASE_ERROR',
+        500,
+        { originalError: checkError.message }
+      );
+    }
+    
+    if (existingProfile) {
+      throw new ProfileServiceError(
+        'Profile already exists for this user',
+        'CONFLICT',
+        409
+      );
+    }
+    
+    // Step 2: Retrieve user role from auth.users metadata
+    // We need to use the admin API to get user metadata
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
+    console.log('userId', userId);
+    console.log('userData', userData);
+    console.log('userError', userError);
+    
+    if (userError || !userData?.user) {
+      throw new ProfileServiceError(
+        'Failed to retrieve user information',
+        'USER_NOT_FOUND',
+        400,
+        { originalError: userError?.message }
+      );
+    }
+    
+    const userRole = (userData.user.user_metadata?.role as UserRole) || 'enthusiast';
+    
+    if (!userRole) {
+      throw new ProfileServiceError(
+        'User role not found in metadata',
+        'INVALID_USER_DATA',
+        400
+      );
+    }
+    
+    // Step 3: Validate photographer-only fields against role
+    if (userRole !== 'photographer') {
+      const hasPhotographerFields = 
+        payload.company_name !== undefined ||
+        payload.website_url !== undefined ||
+        payload.social_links !== undefined;
+      
+      if (hasPhotographerFields) {
+        throw new ProfileServiceError(
+          'Only photographers can set company_name, website_url, and social_links',
+          'FORBIDDEN',
+          403
+        );
+      }
+    }
+    
+    // Step 4: Build insert object with proper field handling
+    const insertData: UserProfileInsert = {
+      user_id: userId,
+      display_name: payload.display_name,
+      avatar_url: payload.avatar_url && payload.avatar_url !== '' ? payload.avatar_url : null,
+      bio: payload.bio && payload.bio !== '' ? payload.bio : null,
+    };
+    
+    // Add photographer-only fields if user is a photographer
+    if (userRole === 'photographer') {
+      insertData.company_name = payload.company_name && payload.company_name !== '' ? payload.company_name : null;
+      insertData.website_url = payload.website_url && payload.website_url !== '' ? payload.website_url : null;
+      
+      // Clean up social links - remove undefined and empty values
+      if (payload.social_links) {
+        const cleanedLinks: SocialLinks = {};
+        for (const [key, value] of Object.entries(payload.social_links)) {
+          if (value !== undefined && value !== '') {
+            cleanedLinks[key] = value;
+          }
+        }
+        insertData.social_links = Object.keys(cleanedLinks).length > 0 ? cleanedLinks : null;
+      } else {
+        insertData.social_links = null;
+      }
+    }
+    
+    // Step 5: Insert the new profile
+    const { data: createdProfile, error: insertError } = await supabase
+      .from('user_profiles')
+      .insert(insertData)
+      .select()
+      .single();
+    
+    if (insertError) {
+      // Handle duplicate key constraint (should not happen due to existence check, but defense in depth)
+      if (insertError.code === '23505') {
+        throw new ProfileServiceError(
+          'Profile already exists for this user',
+          'CONFLICT',
+          409
+        );
+      }
+      
+      // Handle foreign key violation (user doesn't exist in auth.users)
+      if (insertError.code === '23503') {
+        throw new ProfileServiceError(
+          'User does not exist',
+          'USER_NOT_FOUND',
+          400,
+          { originalError: insertError.message }
+        );
+      }
+      
+      // Generic database error
+      throw new ProfileServiceError(
+        'Failed to create user profile',
+        'DATABASE_ERROR',
+        500,
+        { originalError: insertError.message }
+      );
+    }
+    
+    if (!createdProfile) {
+      throw new ProfileServiceError(
+        'Profile creation succeeded but no data was returned',
+        'DATABASE_ERROR',
+        500
+      );
+    }
+    
+    // Step 6: Fetch the complete profile with role and photo_count using existing service
+    const completeProfile = await getUserProfile(supabase, userId, userId);
+    
+    if (!completeProfile) {
+      throw new ProfileServiceError(
+        'Profile was created but could not be retrieved',
+        'DATABASE_ERROR',
+        500
+      );
+    }
+    
+    return completeProfile;
+  } catch (error) {
+    // Re-throw ProfileServiceError as-is
+    if (error instanceof ProfileServiceError) {
+      throw error;
+    }
+    
+    // Wrap unexpected errors
+    throw new ProfileServiceError(
+      'An unexpected error occurred while creating user profile',
+      'INTERNAL_ERROR',
+      500,
+      { originalError: error instanceof Error ? error.message : String(error) }
+    );
   }
 }
 
