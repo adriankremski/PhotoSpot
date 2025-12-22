@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { getPublicPhotos, PhotoServiceError } from './photos';
+import { getPublicPhotos, getPhotoById, PhotoServiceError, type Requester } from './photos';
 import type { SupabaseClient } from '../../db/supabase.client';
-import type { PhotoCategory, Season, TimeOfDay } from '../../types';
+import type { PhotoCategory, Season, TimeOfDay, PhotoStatus, UserRole } from '../../types';
 
 /**
  * Creates a mock Supabase client for photo retrieval operations
@@ -439,6 +439,580 @@ describe('getPublicPhotos', () => {
       await expect(
         getPublicPhotos({ limit: 200, offset: 0 }, mockClient)
       ).rejects.toThrow(PhotoServiceError);
+    });
+  });
+});
+
+describe('getPhotoById', () => {
+  /**
+   * Creates a mock photo detail row from the photos table
+   */
+  function createMockPhotoDetailRow(overrides?: Partial<any>) {
+    return {
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      title: 'Beautiful Landscape',
+      description: 'A stunning view of the mountains',
+      category: 'landscape' as PhotoCategory,
+      season: 'summer' as Season,
+      time_of_day: 'golden_hour_morning' as TimeOfDay,
+      file_url: 'https://example.com/photo.jpg',
+      location_public: JSON.stringify({
+        type: 'Point',
+        coordinates: [-122.4, 37.8],
+      }),
+      location_exact: JSON.stringify({
+        type: 'Point',
+        coordinates: [-122.401, 37.801],
+      }),
+      gear: { camera: 'Canon EOS R5', lens: 'RF 24-70mm f/2.8' },
+      exif: { aperture: 'f/8', shutter_speed: '1/250', iso: 100 },
+      status: 'approved' as PhotoStatus,
+      user_id: '456e4567-e89b-12d3-a456-426614174001',
+      user_profiles: {
+        user_id: '456e4567-e89b-12d3-a456-426614174001',
+        display_name: 'John Doe',
+        avatar_url: 'https://example.com/avatar.jpg',
+        role: 'photographer' as UserRole,
+      },
+      photo_tags: [
+        { tags: { name: 'nature' } },
+        { tags: { name: 'mountains' } },
+      ],
+      created_at: '2024-01-01T00:00:00Z',
+      deleted_at: null,
+      ...overrides,
+    };
+  }
+
+  /**
+   * Creates a mock Supabase client for single photo retrieval
+   */
+  function createMockSupabaseClientForDetail(overrides?: {
+    photoData?: any;
+    photoError?: any;
+    favoriteCount?: number;
+    isFavorited?: boolean;
+  }): SupabaseClient {
+    const mockPhotoQuery = {
+      data: overrides?.photoData || null,
+      error: overrides?.photoError || null,
+    };
+
+    const mockFavoriteCountQuery = {
+      count: overrides?.favoriteCount ?? 0,
+      error: null,
+    };
+
+    const mockFavoriteQuery = {
+      data: overrides?.isFavorited ? { photo_id: 'test' } : null,
+      error: null,
+    };
+
+    const createPhotoQueryChain = (): any => {
+      const chain: any = {
+        single: vi.fn().mockResolvedValue(mockPhotoQuery),
+      };
+      chain.eq = vi.fn().mockReturnValue(chain);
+      chain.is = vi.fn().mockReturnValue(chain);
+      return chain;
+    };
+
+    const createCountQueryChain = (): any => {
+      const chain: any = {
+        eq: vi.fn().mockReturnThis(),
+      };
+      // For favorite count query (head: true)
+      chain.eq.mockImplementation((field: string) => {
+        if (field === 'photo_id') {
+          return Promise.resolve(mockFavoriteCountQuery);
+        }
+        return chain;
+      });
+      return chain;
+    };
+
+    const createFavoriteQueryChain = (): any => {
+      const chain: any = {
+        single: vi.fn().mockResolvedValue(mockFavoriteQuery),
+      };
+      chain.eq = vi.fn().mockReturnValue(chain);
+      return chain;
+    };
+
+    let selectCallCount = 0;
+
+    return {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'photos') {
+          return {
+            select: vi.fn().mockReturnValue(createPhotoQueryChain()),
+          };
+        }
+        if (table === 'favorites') {
+          selectCallCount++;
+          return {
+            select: vi.fn().mockReturnValue(
+              selectCallCount === 1 
+                ? createCountQueryChain() 
+                : createFavoriteQueryChain()
+            ),
+          };
+        }
+        return { select: vi.fn() };
+      }),
+      auth: {} as any,
+      rpc: vi.fn(),
+      storage: { from: vi.fn() },
+    } as unknown as SupabaseClient;
+  }
+
+  describe('successful queries', () => {
+    it('should retrieve approved photo for anonymous user without sensitive fields', async () => {
+      const mockPhoto = createMockPhotoDetailRow({
+        status: 'approved',
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+        favoriteCount: 42,
+      });
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        null, // Anonymous user
+        mockClient
+      );
+
+      // Basic fields should be present
+      expect(result.id).toBe(mockPhoto.id);
+      expect(result.title).toBe(mockPhoto.title);
+      expect(result.description).toBe(mockPhoto.description);
+      expect(result.favorite_count).toBe(42);
+      
+      // Sensitive fields should NOT be present
+      expect(result.exif).toBeUndefined();
+      expect(result.location_exact).toBeUndefined();
+      expect(result.status).toBeUndefined();
+    });
+
+    it('should retrieve own photo with all sensitive fields', async () => {
+      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+      const mockPhoto = createMockPhotoDetailRow({
+        user_id: ownerId,
+        status: 'pending',
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+        favoriteCount: 5,
+      });
+
+      const requester: Requester = {
+        id: ownerId,
+        role: 'photographer',
+      };
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        requester,
+        mockClient
+      );
+
+      // All fields including sensitive ones should be present
+      expect(result.id).toBe(mockPhoto.id);
+      expect(result.title).toBe(mockPhoto.title);
+      expect(result.exif).toEqual(mockPhoto.exif);
+      expect(result.location_exact).toBeDefined();
+      expect(result.status).toBe('pending');
+    });
+
+    it('should include is_favorited flag for authenticated user', async () => {
+      const userId = '789e4567-e89b-12d3-a456-426614174002';
+      const mockPhoto = createMockPhotoDetailRow();
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+        favoriteCount: 10,
+        isFavorited: true,
+      });
+
+      const requester: Requester = {
+        id: userId,
+        role: 'enthusiast',
+      };
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        requester,
+        mockClient
+      );
+
+      expect(result.is_favorited).toBe(true);
+    });
+
+    it('should set is_favorited to false when user has not favorited', async () => {
+      const userId = '789e4567-e89b-12d3-a456-426614174002';
+      const mockPhoto = createMockPhotoDetailRow();
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+        favoriteCount: 10,
+        isFavorited: false,
+      });
+
+      const requester: Requester = {
+        id: userId,
+        role: 'enthusiast',
+      };
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        requester,
+        mockClient
+      );
+
+      expect(result.is_favorited).toBe(false);
+    });
+
+    it('should map user profile data correctly', async () => {
+      const mockPhoto = createMockPhotoDetailRow();
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        null,
+        mockClient
+      );
+
+      expect(result.user.id).toBe(mockPhoto.user_profiles.user_id);
+      expect(result.user.display_name).toBe(mockPhoto.user_profiles.display_name);
+      expect(result.user.avatar_url).toBe(mockPhoto.user_profiles.avatar_url);
+      expect(result.user.role).toBe(mockPhoto.user_profiles.role);
+    });
+
+    it('should extract tags from nested structure', async () => {
+      const mockPhoto = createMockPhotoDetailRow({
+        photo_tags: [
+          { tags: { name: 'landscape' } },
+          { tags: { name: 'sunset' } },
+          { tags: { name: 'nature' } },
+        ],
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        null,
+        mockClient
+      );
+
+      expect(result.tags).toEqual(['landscape', 'sunset', 'nature']);
+    });
+
+    it('should calculate is_location_blurred correctly when locations differ', async () => {
+      const mockPhoto = createMockPhotoDetailRow({
+        location_public: JSON.stringify({
+          type: 'Point',
+          coordinates: [-122.4, 37.8],
+        }),
+        location_exact: JSON.stringify({
+          type: 'Point',
+          coordinates: [-122.401, 37.801],
+        }),
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        null,
+        mockClient
+      );
+
+      expect(result.is_location_blurred).toBe(true);
+    });
+
+    it('should set is_location_blurred to false when no exact location', async () => {
+      const mockPhoto = createMockPhotoDetailRow({
+        location_exact: null,
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        null,
+        mockClient
+      );
+
+      expect(result.is_location_blurred).toBe(false);
+    });
+  });
+
+  describe('authorization checks', () => {
+    it('should throw 403 when anonymous user tries to view non-approved photo', async () => {
+      const mockPhoto = createMockPhotoDetailRow({
+        status: 'pending',
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      await expect(
+        getPhotoById(mockPhoto.id, null, mockClient)
+      ).rejects.toThrow(PhotoServiceError);
+
+      try {
+        await getPhotoById(mockPhoto.id, null, mockClient);
+      } catch (error) {
+        expect(error).toBeInstanceOf(PhotoServiceError);
+        if (error instanceof PhotoServiceError) {
+          expect(error.code).toBe('FORBIDDEN');
+          expect(error.statusCode).toBe(403);
+        }
+      }
+    });
+
+    it('should throw 403 when non-owner tries to view pending photo', async () => {
+      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+      const otherUserId = '789e4567-e89b-12d3-a456-426614174002';
+      
+      const mockPhoto = createMockPhotoDetailRow({
+        user_id: ownerId,
+        status: 'pending',
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const requester: Requester = {
+        id: otherUserId,
+        role: 'photographer',
+      };
+
+      await expect(
+        getPhotoById(mockPhoto.id, requester, mockClient)
+      ).rejects.toThrow(PhotoServiceError);
+
+      try {
+        await getPhotoById(mockPhoto.id, requester, mockClient);
+      } catch (error) {
+        expect(error).toBeInstanceOf(PhotoServiceError);
+        if (error instanceof PhotoServiceError) {
+          expect(error.code).toBe('FORBIDDEN');
+          expect(error.statusCode).toBe(403);
+        }
+      }
+    });
+
+    it('should allow owner to view their own pending photo', async () => {
+      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+      
+      const mockPhoto = createMockPhotoDetailRow({
+        user_id: ownerId,
+        status: 'pending',
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const requester: Requester = {
+        id: ownerId,
+        role: 'photographer',
+      };
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        requester,
+        mockClient
+      );
+
+      expect(result.id).toBe(mockPhoto.id);
+      expect(result.status).toBe('pending');
+    });
+
+    it('should allow owner to view their own rejected photo', async () => {
+      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+      
+      const mockPhoto = createMockPhotoDetailRow({
+        user_id: ownerId,
+        status: 'rejected',
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const requester: Requester = {
+        id: ownerId,
+        role: 'photographer',
+      };
+
+      const result = await getPhotoById(
+        mockPhoto.id,
+        requester,
+        mockClient
+      );
+
+      expect(result.id).toBe(mockPhoto.id);
+      expect(result.status).toBe('rejected');
+    });
+  });
+
+  describe('error handling', () => {
+    it('should throw 404 when photo not found', async () => {
+      const mockClient = createMockSupabaseClientForDetail({
+        photoError: { code: 'PGRST116', message: 'No rows returned' },
+      });
+
+      await expect(
+        getPhotoById('nonexistent-uuid', null, mockClient)
+      ).rejects.toThrow(PhotoServiceError);
+
+      try {
+        await getPhotoById('nonexistent-uuid', null, mockClient);
+      } catch (error) {
+        expect(error).toBeInstanceOf(PhotoServiceError);
+        if (error instanceof PhotoServiceError) {
+          expect(error.code).toBe('PHOTO_NOT_FOUND');
+          expect(error.statusCode).toBe(404);
+        }
+      }
+    });
+
+    it('should throw 500 on database error', async () => {
+      const mockClient = createMockSupabaseClientForDetail({
+        photoError: { code: 'DATABASE_ERROR', message: 'Connection failed' },
+      });
+
+      await expect(
+        getPhotoById('test-uuid', null, mockClient)
+      ).rejects.toThrow(PhotoServiceError);
+
+      try {
+        await getPhotoById('test-uuid', null, mockClient);
+      } catch (error) {
+        expect(error).toBeInstanceOf(PhotoServiceError);
+        if (error instanceof PhotoServiceError) {
+          expect(error.code).toBe('DATABASE_ERROR');
+          expect(error.statusCode).toBe(500);
+        }
+      }
+    });
+
+    it('should handle unexpected errors', async () => {
+      const mockClient = {
+        from: vi.fn().mockImplementation(() => {
+          throw new Error('Unexpected error');
+        }),
+      } as unknown as SupabaseClient;
+
+      await expect(
+        getPhotoById('test-uuid', null, mockClient)
+      ).rejects.toThrow(PhotoServiceError);
+    });
+  });
+
+  describe('data mapping edge cases', () => {
+    it('should handle null description', async () => {
+      const mockPhoto = createMockPhotoDetailRow({ description: null });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
+      expect(result.description).toBeNull();
+    });
+
+    it('should handle null season', async () => {
+      const mockPhoto = createMockPhotoDetailRow({ season: null });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
+      expect(result.season).toBeNull();
+    });
+
+    it('should handle null time_of_day', async () => {
+      const mockPhoto = createMockPhotoDetailRow({ time_of_day: null });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
+      expect(result.time_of_day).toBeNull();
+    });
+
+    it('should handle null gear', async () => {
+      const mockPhoto = createMockPhotoDetailRow({ gear: null });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
+      expect(result.gear).toBeNull();
+    });
+
+    it('should handle null exif', async () => {
+      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+      const mockPhoto = createMockPhotoDetailRow({
+        user_id: ownerId,
+        exif: null,
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const requester: Requester = { id: ownerId, role: 'photographer' };
+      const result = await getPhotoById(mockPhoto.id, requester, mockClient);
+      expect(result.exif).toBeNull();
+    });
+
+    it('should handle empty tags array', async () => {
+      const mockPhoto = createMockPhotoDetailRow({ photo_tags: [] });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
+      expect(result.tags).toEqual([]);
+    });
+
+    it('should handle user_profiles as array', async () => {
+      const mockPhoto = createMockPhotoDetailRow({
+        user_profiles: [{
+          user_id: '456e4567-e89b-12d3-a456-426614174001',
+          display_name: 'Jane Smith',
+          avatar_url: null,
+          role: 'enthusiast' as UserRole,
+        }],
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
+      expect(result.user.display_name).toBe('Jane Smith');
+      expect(result.user.avatar_url).toBeNull();
+    });
+
+    it('should fallback to Unknown for missing display_name', async () => {
+      const mockPhoto = createMockPhotoDetailRow({
+        user_profiles: {
+          user_id: '456e4567-e89b-12d3-a456-426614174001',
+          display_name: null,
+          avatar_url: null,
+          role: 'photographer' as UserRole,
+        },
+      });
+      const mockClient = createMockSupabaseClientForDetail({
+        photoData: mockPhoto,
+      });
+
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
+      expect(result.user.display_name).toBe('Unknown');
     });
   });
 });

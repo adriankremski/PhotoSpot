@@ -153,8 +153,17 @@ export const photoQueryParamsSchema = z.object({
 });
 
 /**
+ * Photo ID path parameter validation schema
+ * Used for GET /api/photos/:photoId
+ */
+export const photoIdParamSchema = z.object({
+  photoId: z.string().uuid('Invalid photo ID format'),
+});
+
+/**
  * Type inference helpers
  */
 export type PhotoQueryParamsInput = z.input<typeof photoQueryParamsSchema>;
 export type PhotoQueryParamsOutput = z.output<typeof photoQueryParamsSchema>;
+export type PhotoIdParam = z.infer<typeof photoIdParamSchema>;
 
