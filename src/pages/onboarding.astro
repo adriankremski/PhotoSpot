@@ -1,0 +1,30 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { Onboarding } from '@/components/onboarding/OnboardingPage';
+
+// Export to disable prerendering for this dynamic page
+export const prerender = false;
+
+// Get session from middleware
+const session = Astro.locals.session;
+const user = Astro.locals.user;
+
+// Auth guard: Redirect to login if not authenticated
+if (!session || !user) {
+  return Astro.redirect('/');
+}
+
+// Check if onboarding already completed
+const onboardingCompleted = user.user_metadata?.onboardingCompleted;
+if (onboardingCompleted === true) {
+  return Astro.redirect('/');
+}
+
+// Get user role for conditional profile setup
+const role = user.user_metadata?.role || 'enthusiast';
+---
+
+<Layout title="Welcome to PhotoSpot">
+  <Onboarding client:only="react" userId={user.id} userRole={role} />
+</Layout>
+

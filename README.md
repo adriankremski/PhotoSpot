@@ -61,8 +61,14 @@ npm install
 ### Environment Variables
 Create a `.env` file (or use Vercel project vars) with the following keys:
 ```env
+# Public variables (exposed to client)
 PUBLIC_SUPABASE_URL=your-supabase-url
-PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+PUBLIC_SUPABASE_KEY=your-anon-key
+
+# Server-only variables (never exposed to client)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Optional
 NEXT_PUBLIC_MAPBOX_TOKEN=your-mapbox-token
 ```
 > For a full list of variables see `src/env.d.ts`.

@@ -71,7 +71,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       } else {
         // Default redirect behavior
         const isOnboarded = authResponse.user.user_metadata?.onboarded === true;
-        window.location.href = isOnboarded ? '/map' : '/onboarding/step-1';
+        window.location.href = isOnboarded ? '/map' : '/onboarding';
       }
     } catch (error) {
       console.error('Login error:', error);
