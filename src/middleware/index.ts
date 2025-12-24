@@ -8,6 +8,8 @@ import { supabaseAdmin } from '../db/supabase.client.ts';
  */
 const PUBLIC_ROUTES = [
   '/',
+  '/login',
+  '/register',
   '/api/auth/login',
   '/api/auth/register',
   '/api/auth/logout',
@@ -69,6 +71,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
     // User not authenticated - continue to landing page
     return next();
+  }
+
+  // Redirect authenticated users away from login/register pages
+  if (user && (pathname === '/login' || pathname === '/register')) {
+    const isOnboarded = user.user_metadata?.onboardingCompleted === true;
+    return context.redirect(isOnboarded ? '/map' : '/onboarding', 302);
   }
 
   // Handle authenticated routes
