@@ -1,8 +1,23 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import { NavbarPublic } from "../components/NavbarPublic";
+import MainHero from "../components/MainHero.astro";
+import { LoginForm } from "../components/LoginForm";
+import Footer from "../components/Footer.astro";
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="PhotoSpot - Discover Perfect Photo Spots">
+  <div class="flex min-h-screen flex-col">
+    <NavbarPublic client:load />
+    
+    <main class="flex-1">
+      <MainHero />
+      
+      <section class="container mx-auto px-4 pb-16">
+        <LoginForm client:load />
+      </section>
+    </main>
+    
+    <Footer />
+  </div>
 </Layout>
