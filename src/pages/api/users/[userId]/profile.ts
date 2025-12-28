@@ -83,6 +83,7 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
     try {
       requestBody = await request.json();
     } catch (parseError) {
+      console.error('Invalid JSON in request body', parseError);
       const errorResponse: ApiError = {
         error: {
           code: 'invalid_json',
@@ -90,6 +91,7 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
         },
       };
 
+      console.error('Error response', errorResponse);
       return new Response(
         JSON.stringify(errorResponse),
         {
@@ -143,6 +145,7 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
         },
       };
 
+      console.error('Validation errors', errorResponse);
       return new Response(
         JSON.stringify(errorResponse),
         {
@@ -273,6 +276,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
         },
       };
 
+      console.error('Invalid parameter error response', errorResponse);
       return new Response(
         JSON.stringify(errorResponse),
         {
@@ -405,6 +409,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
         },
       };
 
+      console.error('Invalid JSON error response', errorResponse);
       return new Response(
         JSON.stringify(errorResponse),
         {
@@ -458,6 +463,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
         },
       };
 
+      console.error('Validation errors #2', errorResponse);
       return new Response(
         JSON.stringify(errorResponse),
         {

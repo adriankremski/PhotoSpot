@@ -1,9 +1,13 @@
 /**
  * Custom hook for creating user profile via API
+ * 
+ * Calls the POST /api/users/:userId/profile endpoint which uses the
+ * createUserProfile service method from profile.ts
  */
 
 import { useState } from 'react';
 import type { ApiCreateProfileRequest, ApiCreateProfileResponse } from './types';
+import type { ApiError } from '@/types';
 
 interface UseCreateProfileOptions {
   userId: string;
@@ -20,6 +24,13 @@ interface UseCreateProfileReturn {
 
 /**
  * Hook to create user profile
+ * 
+ * Error handling aligned with ProfileServiceError responses:
+ * - 400: Validation errors (from Zod or service layer)
+ * - 401: Authentication required
+ * - 403: Authorization failed (e.g., non-photographer trying to set photographer fields)
+ * - 409: Profile already exists (treated as success)
+ * - 500: Server errors
  */
 export function useCreateProfile({
   userId,
@@ -44,52 +55,83 @@ export function useCreateProfile({
         body: JSON.stringify(data),
       });
 
-      const responseData = await response.json();
+      const responseData = (await response.json()) as ApiCreateProfileResponse | ApiError;
 
-      if (!response.ok) {
-        // Handle different error types
-        if (response.status === 400) {
-          // Validation errors
-          if (responseData.error?.details?.issues) {
-            const errors: Record<string, string> = {};
-            responseData.error.details.issues.forEach((issue: { path: string[]; message: string }) => {
-              const field = issue.path.join('.');
-              errors[field] = issue.message;
-            });
-            setFieldErrors(errors);
-            setError('Please fix the validation errors');
-          } else {
-            setError(responseData.error?.message || 'Validation failed');
-          }
-        } else if (response.status === 409) {
-          // Profile already exists - treat as success
-          if (onSuccess) {
-            onSuccess(responseData as ApiCreateProfileResponse);
-          }
-          return;
-        } else if (response.status === 401 || response.status === 403) {
-          // Auth error - force logout
-          setError('Authentication failed. Please log in again.');
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 2000);
-        } else {
-          // Generic error
-          setError(responseData.error?.message || 'Failed to create profile');
-        }
-
-        const err = new Error(responseData.error?.message || 'Failed to create profile');
-        if (onError) {
-          onError(err);
+      // Handle success response (201 Created)
+      if (response.ok) {
+        if (onSuccess) {
+          onSuccess(responseData as ApiCreateProfileResponse);
         }
         return;
       }
 
-      // Success
-      if (onSuccess) {
-        onSuccess(responseData as ApiCreateProfileResponse);
+      // Handle error responses
+      const errorResponse = responseData as ApiError;
+      const errorMessage = errorResponse.error?.message || 'Failed to create profile';
+      const errorCode = errorResponse.error?.code;
+
+      switch (response.status) {
+        case 400:
+          // Validation errors - check for Zod validation issues
+          console.log('Validation errors', errorResponse.error?.details?.issues);
+          if (errorResponse.error?.details?.issues) {
+            const issues = errorResponse.error.details.issues as Array<{
+              path: string;
+              message: string;
+            }>;
+            const errors: Record<string, string> = {};
+            issues.forEach((issue) => {
+              errors[issue.path] = issue.message;
+            });
+            setFieldErrors(errors);
+            setError('Please fix the validation errors');
+          } else {
+            // Service-level validation error (e.g., USER_NOT_FOUND, INVALID_USER_DATA)
+            setError(errorMessage);
+          }
+          break;
+
+        case 401:
+          // Authentication required - redirect to login
+          setError('Authentication required. Please log in.');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
+          break;
+
+        case 403:
+          // Authorization failed (e.g., FORBIDDEN error from photographer-only fields check)
+          setError(errorMessage);
+          break;
+
+        case 409:
+          // Profile already exists (CONFLICT)
+          // The service returns the existing profile, treat as success
+          if (onSuccess && 'profile' in responseData) {
+            onSuccess(responseData as ApiCreateProfileResponse);
+          }
+          return;
+
+        case 500:
+          // Server errors (DATABASE_ERROR, INTERNAL_ERROR)
+          setError('A server error occurred. Please try again later.');
+          break;
+
+        default:
+          // Unexpected status code
+          setError(errorMessage);
+          break;
+      }
+
+      // Call error callback with structured error
+      if (onError) {
+        const err = new Error(errorMessage);
+        (err as Error & { code?: string; statusCode?: number }).code = errorCode;
+        (err as Error & { code?: string; statusCode?: number }).statusCode = response.status;
+        onError(err);
       }
     } catch (err) {
+      // Network or parsing errors
       const errorMessage = err instanceof Error ? err.message : 'Network error occurred';
       setError(errorMessage);
       if (onError) {

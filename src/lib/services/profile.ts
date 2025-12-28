@@ -47,6 +47,7 @@ export async function createUserProfile(
   supabase: SupabaseClient,
   supabaseAdmin: SupabaseClient
 ): Promise<UserProfileDto> {
+  console.log('createUserProfile', userId, payload);
   try {
     // Step 1: Check if profile already exists
     const { data: existingProfile, error: checkError } = await supabase
@@ -121,7 +122,7 @@ export async function createUserProfile(
       avatar_url: payload.avatar_url && payload.avatar_url !== '' ? payload.avatar_url : null,
       bio: payload.bio && payload.bio !== '' ? payload.bio : null,
     };
-    
+    console.log('insertData', insertData);
     // Add photographer-only fields if user is a photographer
     if (userRole === 'photographer') {
       insertData.company_name = payload.company_name && payload.company_name !== '' ? payload.company_name : null;
