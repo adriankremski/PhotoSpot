@@ -13,7 +13,7 @@ import { AvatarPicker } from './AvatarPicker';
 import { PhotographerFields } from './PhotographerFields';
 import { useCreateProfile } from './useCreateProfile';
 import { getProfileSchema } from './validation';
-import type { ProfileSetupFormProps, ProfileFormValues, SocialLinkEntry } from './types';
+import type { ProfileSetupFormProps, ProfileFormValues, SocialLinkEntry, ApiCreateProfileRequest } from './types';
 
 export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormProps) {
   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>([]);
@@ -51,7 +51,7 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
 
   const onSubmit = async (data: ProfileFormValues) => {
     // Convert social links array to object
-    let socialLinksObject: Record<string, string> | null = null;
+    let socialLinksObject: Record<string, string> | undefined = undefined;
     if (role === 'photographer' && socialLinks.length > 0) {
       socialLinksObject = {};
       socialLinks.forEach((link) => {
@@ -61,18 +61,35 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
       });
     }
 
-    // Prepare payload
-    const payload: ProfileFormValues = {
+    // Prepare payload - only include fields with actual values
+    // Zod schema expects undefined (omitted) or empty string for optional fields, not null
+    const payload: ApiCreateProfileRequest = {
       display_name: data.display_name,
-      avatar_url: data.avatar_url || null,
-      bio: data.bio || null,
     };
+
+    // Add optional fields only if they have values (convert null/empty to empty string or omit)
+    if (data.avatar_url) {
+      payload.avatar_url = data.avatar_url;
+    }
+    
+    if (data.bio) {
+      payload.bio = data.bio;
+    }
 
     // Add photographer fields if applicable
     if (role === 'photographer') {
-      payload.company_name = data.company_name || null;
-      payload.website_url = data.website_url || null;
-      payload.social_links = socialLinksObject;
+      if (data.company_name) {
+        payload.company_name = data.company_name;
+      }
+      
+      if (data.website_url) {
+        payload.website_url = data.website_url;
+      }
+      
+      // Only add social_links if we have at least one link
+      if (socialLinksObject && Object.keys(socialLinksObject).length > 0) {
+        payload.social_links = socialLinksObject;
+      }
     }
 
     await createProfile(payload);
@@ -157,9 +174,9 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
           onWebsiteUrlChange={(value) => setValue('website_url', value)}
           onSocialLinksChange={setSocialLinks}
           errors={{
-            company_name: errors.company_name?.message || fieldErrors?.company_name,
-            website_url: errors.website_url?.message || fieldErrors?.website_url,
-            social_links: errors.social_links?.message || fieldErrors?.social_links,
+            company_name: (typeof errors.company_name?.message === 'string' ? errors.company_name.message : undefined) || fieldErrors?.company_name,
+            website_url: (typeof errors.website_url?.message === 'string' ? errors.website_url.message : undefined) || fieldErrors?.website_url,
+            social_links: (typeof errors.social_links?.message === 'string' ? errors.social_links.message : undefined) || fieldErrors?.social_links,
           }}
         />
       )}
