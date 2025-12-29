@@ -5,7 +5,7 @@
  * used for file uploads with metadata.
  */
 
-import { parse as parseMultipart } from '@hattip/multipart';
+import { parseMultipartFormData } from '@hattip/multipart';
 import { fileTypeFromBuffer } from 'file-type';
 import type { GearInfo } from '../../types';
 
@@ -63,7 +63,7 @@ export class MultipartParseError extends Error {
  * @returns Promise resolving to ParsedFormData
  * @throws MultipartParseError for parsing and validation errors
  */
-export async function parseMultipartFormData(request: Request): Promise<ParsedFormData> {
+export async function parseMultipartRequest(request: Request): Promise<ParsedFormData> {
   try {
     // Check content type
     const contentType = request.headers.get('content-type');
@@ -75,8 +75,36 @@ export async function parseMultipartFormData(request: Request): Promise<ParsedFo
       );
     }
 
-    // Parse multipart form data
-    const formData = await parseMultipart(request);
+    // Parse multipart form data using @hattip/multipart
+    const formData = await parseMultipartFormData(request, {
+      handleFile: async (fileInfo) => {
+        // Collect file stream into buffer
+        const chunks: Uint8Array[] = [];
+        const reader = fileInfo.body.getReader();
+        
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+          }
+        } finally {
+          reader.releaseLock();
+        }
+        
+        // Combine chunks into single buffer
+        const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+        const buffer = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+          buffer.set(chunk, offset);
+          offset += chunk.length;
+        }
+        
+        // Return a File-like object
+        return new File([buffer], fileInfo.filename, { type: fileInfo.contentType });
+      },
+    });
     
     // Extract file
     const fileField = formData.get('file');

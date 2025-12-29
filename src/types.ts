@@ -739,3 +739,61 @@ export function isValidGeoPoint(value: unknown): value is GeoPoint {
   );
 }
 
+// ============================================================================
+// MAP VIEW MODEL TYPES
+// ============================================================================
+
+/**
+ * Represents the current map viewport state
+ */
+export interface MapViewport {
+  latitude: number; // Center latitude
+  longitude: number; // Center longitude
+  zoom: number; // Zoom level (0-22)
+  pitch?: number; // Optional 3D tilt
+  bearing?: number; // Optional rotation
+}
+
+/**
+ * Map bounds derived from viewport
+ */
+export interface MapBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+/**
+ * Current filter state for photo queries
+ */
+export interface PhotoFilters {
+  category: PhotoCategory | null;
+  season: Season | null;
+  time_of_day: TimeOfDay | null;
+  photographer_only: boolean;
+}
+
+/**
+ * Complete state for MapSection component
+ */
+export interface MapViewState {
+  photos: PhotoListItemDto[];
+  selectedPhotoId: string | null;
+  viewport: MapViewport;
+  filters: PhotoFilters;
+  pagination: PaginationMeta;
+  isLoading: boolean;
+  error: string | null;
+}
+
+/**
+ * Simplified pin data for map rendering
+ */
+export interface PhotoPin {
+  id: string;
+  coordinates: [number, number]; // [lng, lat]
+  isPhotographer: boolean; // For gold vs blue pin color
+  clusterId?: number | null;
+}
+

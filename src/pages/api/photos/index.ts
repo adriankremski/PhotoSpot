@@ -28,7 +28,7 @@ import {
   type CreatePhotoInput,
 } from '../../../lib/services/photos';
 import {
-  parseMultipartFormData,
+  parseMultipartRequest,
   MultipartParseError,
 } from '../../../lib/utils/multipart';
 import type {
@@ -206,7 +206,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Step 2: Parse multipart form data
     let parsedFormData;
     try {
-      parsedFormData = await parseMultipartFormData(request);
+      parsedFormData = await parseMultipartRequest(request);
     } catch (error) {
       if (error instanceof MultipartParseError) {
         // Handle file size limit specially

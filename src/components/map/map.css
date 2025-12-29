@@ -1,0 +1,178 @@
+/**
+ * Map Component Styles
+ * 
+ * Additional styles for map components that complement Tailwind classes.
+ * Includes custom scrollbar styling and animations.
+ */
+
+/* Custom scrollbar for thumbnail strip */
+.thumbnail-strip-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+}
+
+.thumbnail-strip-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.thumbnail-strip-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thumbnail-strip-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 3px;
+}
+
+.thumbnail-strip-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+}
+
+/* Hide scrollbar for mobile carousel */
+.carousel-scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.carousel-scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scroll behavior */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Photo popup custom styling */
+.photo-popup .mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.photo-popup .mapboxgl-popup-tip {
+  display: none;
+}
+
+/* Pin animations */
+@keyframes pin-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.pin-selected {
+  animation: pin-bounce 0.5s ease-in-out;
+}
+
+/* Loading spinner animation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
+
+/* Slide-up animation for mobile bottom sheet */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.bottom-sheet-enter {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Focus visible styles for keyboard navigation */
+.focus-ring:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Ensure map controls are above other elements */
+.map-controls-layer {
+  z-index: 10;
+}
+
+/* Filter panel shadow on dark mode */
+.dark .filter-panel-shadow {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+/* Thumbnail card hover effect */
+.thumbnail-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.thumbnail-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Mobile touch feedback */
+@media (hover: none) {
+  .thumbnail-card:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Ensure full height on mobile */
+@supports (-webkit-touch-callout: none) {
+  .map-fullscreen {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Print styles - hide interactive elements */
+@media print {
+  .filter-panel,
+  .map-controls,
+  .thumbnail-strip,
+  .bottom-sheet,
+  .upload-fab {
+    display: none !important;
+  }
+}
+

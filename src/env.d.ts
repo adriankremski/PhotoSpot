@@ -18,6 +18,7 @@ interface ImportMetaEnv {
   // Public env vars (available on client and server)
   readonly PUBLIC_SUPABASE_URL: string;
   readonly PUBLIC_SUPABASE_KEY: string;
+  readonly PUBLIC_MAPBOX_TOKEN: string;
   
   // Server-only env vars
   readonly SUPABASE_SERVICE_ROLE_KEY: string;

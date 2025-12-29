@@ -13,6 +13,9 @@ export default defineConfig({
   server: { port: 3000 },
   vite: {
     plugins: [tailwindcss()],
+    ssr: {
+      noExternal: ['react-map-gl', 'mapbox-gl'],
+    },
   },
   adapter: node({
     mode: "standalone",

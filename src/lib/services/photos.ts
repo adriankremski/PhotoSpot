@@ -125,13 +125,49 @@ export async function getPublicPhotos(
       .from('public_photos_v')
       .select('*', { count: countOption });
     
-    // Apply geographic bounding box filter if provided
+    // If bbox is provided, use the database function for spatial queries
     if (params.bbox) {
       const [minLng, minLat, maxLng, maxLat] = params.bbox;
-      // Use PostGIS ST_MakeEnvelope to create bounding box and check if location is within
-      // The && operator checks for bounding box overlap (indexed operation)
-      const bboxString = `SRID=4326;POLYGON((${minLng} ${minLat},${maxLng} ${minLat},${maxLng} ${maxLat},${minLng} ${maxLat},${minLng} ${minLat}))`;
-      query = query.filter('location_public', 'st_within', bboxString);
+      
+      // Use RPC to call PostGIS function for efficient spatial queries
+      // @ts-ignore - Custom database function not in generated types
+      const result = await supabase.rpc('get_photos_within_bbox', {
+        p_min_lng: minLng,
+        p_min_lat: minLat,
+        p_max_lng: maxLng,
+        p_max_lat: maxLat,
+        p_category: params.category || null,
+        p_season: params.season || null,
+        p_time_of_day: params.time_of_day || null,
+        p_limit: params.limit,
+        p_offset: params.offset,
+      });
+      
+      if (result.error) {
+        throw new PhotoServiceError(
+          'Failed to retrieve photos from database',
+          'DATABASE_ERROR',
+          500,
+          { supabaseError: result.error.message }
+        );
+      }
+      
+      // Map rows to DTOs
+      const photos = (Array.isArray(result.data) ? result.data : []).map(mapToPhotoListItemDto);
+      
+      // Note: RPC functions don't return count, so we estimate
+      const total = photos.length;
+      const has_more = photos.length === params.limit;
+      
+      return {
+        data: photos,
+        meta: {
+          total,
+          limit: params.limit,
+          offset: params.offset,
+          has_more,
+        },
+      };
     }
     
     // Apply category filter
