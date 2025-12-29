@@ -142,7 +142,8 @@ export async function getPublicPhotos(
         p_limit: params.limit,
         p_offset: params.offset,
       });
-      
+     
+      console.log('getPublicPhotos result', result);
       if (result.error) {
         throw new PhotoServiceError(
           'Failed to retrieve photos from database',

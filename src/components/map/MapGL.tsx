@@ -6,13 +6,14 @@
  */
 
 import { useCallback, useState } from 'react';
-import Map, { NavigationControl, GeolocateControl, type MapRef, type ViewStateChangeEvent } from 'react-map-gl/mapbox';
+import Map, { NavigationControl, GeolocateControl, type MapRef, type ViewStateChangeEvent, type MapMouseEvent } from 'react-map-gl/mapbox';
 import type { MapViewport, BoundingBox } from '@/types';
 
 interface MapGLProps {
   viewport: MapViewport;
   onViewportChange: (viewport: MapViewport) => void;
   onBoundsChange: (bounds: BoundingBox) => void;
+  onClick?: (event: MapMouseEvent) => void;
   children?: React.ReactNode;
 }
 
@@ -21,7 +22,7 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 /**
  * MapGL - Interactive map component using Mapbox GL
  */
-export function MapGL({ viewport, onViewportChange, onBoundsChange, children }: MapGLProps) {
+export function MapGL({ viewport, onViewportChange, onBoundsChange, onClick, children }: MapGLProps) {
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
 
@@ -115,6 +116,7 @@ export function MapGL({ viewport, onViewportChange, onBoundsChange, children }: 
       onMove={handleMove}
       onLoad={handleLoad}
       onError={handleError}
+      onClick={onClick}
       mapboxAccessToken={MAPBOX_TOKEN}
       mapStyle="mapbox://styles/mapbox/streets-v12"
       style={{ width: '100%', height: '100%' }}
