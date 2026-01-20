@@ -1,13 +1,13 @@
 /**
  * Multipart form data parser utilities
- * 
+ *
  * Provides functions for parsing multipart/form-data requests
  * used for file uploads with metadata.
  */
 
-import { parseMultipartFormData } from '@hattip/multipart';
-import { fileTypeFromBuffer } from 'file-type';
-import type { GearInfo } from '../../types';
+import { parseMultipartFormData } from "@hattip/multipart";
+import { fileTypeFromBuffer } from "file-type";
+import type { GearInfo } from "../../types";
 
 /**
  * Parsed file data from multipart form
@@ -47,18 +47,18 @@ export class MultipartParseError extends Error {
     public statusCode: number
   ) {
     super(message);
-    this.name = 'MultipartParseError';
+    this.name = "MultipartParseError";
   }
 }
 
 /**
  * Parses multipart/form-data request with file upload
- * 
+ *
  * Extracts and validates:
  * - File binary data with size and type checks
  * - Form fields with appropriate type conversions
  * - Magic bytes validation for security
- * 
+ *
  * @param request - The incoming HTTP request
  * @returns Promise resolving to ParsedFormData
  * @throws MultipartParseError for parsing and validation errors
@@ -66,13 +66,9 @@ export class MultipartParseError extends Error {
 export async function parseMultipartRequest(request: Request): Promise<ParsedFormData> {
   try {
     // Check content type
-    const contentType = request.headers.get('content-type');
-    if (!contentType || !contentType.includes('multipart/form-data')) {
-      throw new MultipartParseError(
-        'Content-Type must be multipart/form-data',
-        'INVALID_CONTENT_TYPE',
-        400
-      );
+    const contentType = request.headers.get("content-type");
+    if (!contentType || !contentType.includes("multipart/form-data")) {
+      throw new MultipartParseError("Content-Type must be multipart/form-data", "INVALID_CONTENT_TYPE", 400);
     }
 
     // Parse multipart form data using @hattip/multipart
@@ -81,7 +77,7 @@ export async function parseMultipartRequest(request: Request): Promise<ParsedFor
         // Collect file stream into buffer
         const chunks: Uint8Array[] = [];
         const reader = fileInfo.body.getReader();
-        
+
         try {
           while (true) {
             const { done, value } = await reader.read();
@@ -91,7 +87,7 @@ export async function parseMultipartRequest(request: Request): Promise<ParsedFor
         } finally {
           reader.releaseLock();
         }
-        
+
         // Combine chunks into single buffer
         const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
         const buffer = new Uint8Array(totalLength);
@@ -100,62 +96,46 @@ export async function parseMultipartRequest(request: Request): Promise<ParsedFor
           buffer.set(chunk, offset);
           offset += chunk.length;
         }
-        
+
         // Return a File-like object
         return new File([buffer], fileInfo.filename, { type: fileInfo.contentType });
       },
     });
-    
+
     // Extract file
-    const fileField = formData.get('file');
+    const fileField = formData.get("file");
     if (!fileField) {
-      throw new MultipartParseError(
-        'File is required',
-        'FILE_REQUIRED',
-        400
-      );
+      throw new MultipartParseError("File is required", "FILE_REQUIRED", 400);
     }
 
     // Check if field is a file
     if (!(fileField instanceof File)) {
-      throw new MultipartParseError(
-        'Invalid file field',
-        'INVALID_FILE_FIELD',
-        400
-      );
+      throw new MultipartParseError("Invalid file field", "INVALID_FILE_FIELD", 400);
     }
 
     const file = fileField as File;
-    
+
     // Convert file to buffer for validation and storage
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     // Validate file size
     if (buffer.length === 0) {
-      throw new MultipartParseError(
-        'File is empty',
-        'EMPTY_FILE',
-        400
-      );
+      throw new MultipartParseError("File is empty", "EMPTY_FILE", 400);
     }
 
     // Magic bytes validation for security
     const detectedType = await fileTypeFromBuffer(buffer);
     if (!detectedType) {
-      throw new MultipartParseError(
-        'Could not detect file type',
-        'INVALID_FILE_TYPE',
-        400
-      );
+      throw new MultipartParseError("Could not detect file type", "INVALID_FILE_TYPE", 400);
     }
 
     // Validate detected MIME type against allowed types
-    const allowedTypes = ['image/jpeg', 'image/png'];
+    const allowedTypes = ["image/jpeg", "image/png"];
     if (!allowedTypes.includes(detectedType.mime)) {
       throw new MultipartParseError(
-        `File type ${detectedType.mime} is not allowed. Allowed types: ${allowedTypes.join(', ')}`,
-        'INVALID_FILE_TYPE',
+        `File type ${detectedType.mime} is not allowed. Allowed types: ${allowedTypes.join(", ")}`,
+        "INVALID_FILE_TYPE",
         400
       );
     }
@@ -169,56 +149,32 @@ export async function parseMultipartRequest(request: Request): Promise<ParsedFor
     };
 
     // Extract and parse form fields
-    const title = formData.get('title');
-    if (!title || typeof title !== 'string') {
-      throw new MultipartParseError(
-        'Title is required',
-        'TITLE_REQUIRED',
-        400
-      );
+    const title = formData.get("title");
+    if (!title || typeof title !== "string") {
+      throw new MultipartParseError("Title is required", "TITLE_REQUIRED", 400);
     }
 
-    const category = formData.get('category');
-    if (!category || typeof category !== 'string') {
-      throw new MultipartParseError(
-        'Category is required',
-        'CATEGORY_REQUIRED',
-        400
-      );
+    const category = formData.get("category");
+    if (!category || typeof category !== "string") {
+      throw new MultipartParseError("Category is required", "CATEGORY_REQUIRED", 400);
     }
 
-    const latitudeStr = formData.get('latitude');
-    if (!latitudeStr || typeof latitudeStr !== 'string') {
-      throw new MultipartParseError(
-        'Latitude is required',
-        'LATITUDE_REQUIRED',
-        400
-      );
+    const latitudeStr = formData.get("latitude");
+    if (!latitudeStr || typeof latitudeStr !== "string") {
+      throw new MultipartParseError("Latitude is required", "LATITUDE_REQUIRED", 400);
     }
     const latitude = parseFloat(latitudeStr);
     if (isNaN(latitude)) {
-      throw new MultipartParseError(
-        'Latitude must be a valid number',
-        'INVALID_LATITUDE',
-        400
-      );
+      throw new MultipartParseError("Latitude must be a valid number", "INVALID_LATITUDE", 400);
     }
 
-    const longitudeStr = formData.get('longitude');
-    if (!longitudeStr || typeof longitudeStr !== 'string') {
-      throw new MultipartParseError(
-        'Longitude is required',
-        'LONGITUDE_REQUIRED',
-        400
-      );
+    const longitudeStr = formData.get("longitude");
+    if (!longitudeStr || typeof longitudeStr !== "string") {
+      throw new MultipartParseError("Longitude is required", "LONGITUDE_REQUIRED", 400);
     }
     const longitude = parseFloat(longitudeStr);
     if (isNaN(longitude)) {
-      throw new MultipartParseError(
-        'Longitude must be a valid number',
-        'INVALID_LONGITUDE',
-        400
-      );
+      throw new MultipartParseError("Longitude must be a valid number", "INVALID_LONGITUDE", 400);
     }
 
     // Build parsed data object with required fields
@@ -231,28 +187,28 @@ export async function parseMultipartRequest(request: Request): Promise<ParsedFor
     };
 
     // Extract optional fields
-    const description = formData.get('description');
-    if (description && typeof description === 'string') {
+    const description = formData.get("description");
+    if (description && typeof description === "string") {
       parsed.description = description;
     }
 
-    const season = formData.get('season');
-    if (season && typeof season === 'string') {
+    const season = formData.get("season");
+    if (season && typeof season === "string") {
       parsed.season = season;
     }
 
-    const timeOfDay = formData.get('time_of_day');
-    if (timeOfDay && typeof timeOfDay === 'string') {
+    const timeOfDay = formData.get("time_of_day");
+    if (timeOfDay && typeof timeOfDay === "string") {
       parsed.time_of_day = timeOfDay;
     }
 
-    const blurLocationStr = formData.get('blur_location');
-    if (blurLocationStr && typeof blurLocationStr === 'string') {
-      parsed.blur_location = blurLocationStr === 'true';
+    const blurLocationStr = formData.get("blur_location");
+    if (blurLocationStr && typeof blurLocationStr === "string") {
+      parsed.blur_location = blurLocationStr === "true";
     }
 
-    const blurRadiusStr = formData.get('blur_radius');
-    if (blurRadiusStr && typeof blurRadiusStr === 'string') {
+    const blurRadiusStr = formData.get("blur_radius");
+    if (blurRadiusStr && typeof blurRadiusStr === "string") {
       const blurRadius = parseFloat(blurRadiusStr);
       if (!isNaN(blurRadius)) {
         parsed.blur_radius = blurRadius;
@@ -260,25 +216,28 @@ export async function parseMultipartRequest(request: Request): Promise<ParsedFor
     }
 
     // Parse tags (can be sent as JSON array string or multiple fields)
-    const tagsStr = formData.get('tags');
-    if (tagsStr && typeof tagsStr === 'string') {
+    const tagsStr = formData.get("tags");
+    if (tagsStr && typeof tagsStr === "string") {
       try {
         const tagsParsed = JSON.parse(tagsStr);
         if (Array.isArray(tagsParsed)) {
-          parsed.tags = tagsParsed.filter(t => typeof t === 'string');
+          parsed.tags = tagsParsed.filter((t) => typeof t === "string");
         }
       } catch {
         // If not JSON, treat as comma-separated string
-        parsed.tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
+        parsed.tags = tagsStr
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
       }
     }
 
     // Parse gear (JSON object)
-    const gearStr = formData.get('gear');
-    if (gearStr && typeof gearStr === 'string') {
+    const gearStr = formData.get("gear");
+    if (gearStr && typeof gearStr === "string") {
       try {
         const gearParsed = JSON.parse(gearStr);
-        if (typeof gearParsed === 'object' && gearParsed !== null) {
+        if (typeof gearParsed === "object" && gearParsed !== null) {
           parsed.gear = gearParsed as GearInfo;
         }
       } catch {
@@ -294,11 +253,6 @@ export async function parseMultipartRequest(request: Request): Promise<ParsedFor
     }
 
     // Wrap other errors
-    throw new MultipartParseError(
-      'Failed to parse multipart form data',
-      'PARSE_ERROR',
-      400
-    );
+    throw new MultipartParseError("Failed to parse multipart form data", "PARSE_ERROR", 400);
   }
 }
-

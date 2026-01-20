@@ -1,15 +1,15 @@
 /**
  * Dropzone Component
- * 
+ *
  * File upload with drag & drop support, image preview, and EXIF extraction.
  */
 
-import { useCallback, useState, useRef } from 'react';
-import { Upload, ImageIcon, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { FILE_UPLOAD_CONSTRAINTS } from '@/types';
-import { validateFile } from './validation';
-import type { DropzoneProps, FileWithPreview, ValidationError, ExifData } from './types';
+import { useCallback, useState, useRef } from "react";
+import { Upload, ImageIcon, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FILE_UPLOAD_CONSTRAINTS } from "@/types";
+import { validateFile } from "./validation";
+import type { DropzoneProps, FileWithPreview, ValidationError, ExifData } from "./types";
 
 export function Dropzone({ initialFile, onFileAccepted, onValidationError }: DropzoneProps) {
   const [filePreview, setFilePreview] = useState<FileWithPreview | null>(null);
@@ -25,9 +25,9 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
   const extractExif = async (file: File): Promise<ExifData | undefined> => {
     try {
       // Dynamically import exifr only when needed
-      const exifr = await import('exifr');
+      const exifr = await import("exifr");
       const exifData = await exifr.parse(file, {
-        pick: ['Make', 'Model', 'LensModel', 'FNumber', 'ExposureTime', 'ISO', 'FocalLength', 'DateTimeOriginal'],
+        pick: ["Make", "Model", "LensModel", "FNumber", "ExposureTime", "ISO", "FocalLength", "DateTimeOriginal"],
       });
 
       if (!exifData) return undefined;
@@ -48,9 +48,8 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
       }
 
       if (exifData.ExposureTime) {
-        formatted.shutter_speed = exifData.ExposureTime < 1 
-          ? `1/${Math.round(1 / exifData.ExposureTime)}` 
-          : `${exifData.ExposureTime}s`;
+        formatted.shutter_speed =
+          exifData.ExposureTime < 1 ? `1/${Math.round(1 / exifData.ExposureTime)}` : `${exifData.ExposureTime}s`;
       }
 
       if (exifData.ISO) {
@@ -67,7 +66,7 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
 
       return Object.keys(formatted).length > 0 ? formatted : undefined;
     } catch (err) {
-      console.warn('Failed to extract EXIF data:', err);
+      console.warn("Failed to extract EXIF data:", err);
       return undefined;
     }
   };
@@ -84,8 +83,8 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
       // Validate file
       const validation = validateFile(file);
       if (!validation.success) {
-        setError(validation.error || 'Invalid file');
-        onValidationError({ field: 'file', message: validation.error || 'Invalid file' });
+        setError(validation.error || "Invalid file");
+        onValidationError({ field: "file", message: validation.error || "Invalid file" });
         setIsProcessing(false);
         return;
       }
@@ -106,8 +105,8 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
         setFilePreview(fileWithPreview);
         onFileAccepted(fileWithPreview);
       } catch (err) {
-        setError('Failed to process file');
-        onValidationError({ field: 'file', message: 'Failed to process file' });
+        setError("Failed to process file");
+        onValidationError({ field: "file", message: "Failed to process file" });
       } finally {
         setIsProcessing(false);
       }
@@ -155,8 +154,8 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
       const files = event.dataTransfer.files;
       if (files && files.length > 0) {
         if (files.length > 1) {
-          setError('Please select only one file');
-          onValidationError({ field: 'file', message: 'Please select only one file' });
+          setError("Please select only one file");
+          onValidationError({ field: "file", message: "Please select only one file" });
           return;
         }
         processFile(files[0]);
@@ -172,7 +171,7 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
     setFilePreview(null);
     setError(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   }, [filePreview]);
 
@@ -189,17 +188,8 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
       <div className="space-y-4">
         {/* Image Preview */}
         <div className="relative overflow-hidden rounded-lg border border-gray-300">
-          <img
-            src={filePreview.previewUrl}
-            alt="Preview"
-            className="h-auto w-full max-h-[500px] object-contain"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            className="absolute right-2 top-2 bg-white/90"
-            onClick={handleRemoveFile}
-          >
+          <img src={filePreview.previewUrl} alt="Preview" className="h-auto w-full max-h-[500px] object-contain" />
+          <Button variant="outline" size="sm" className="absolute right-2 top-2 bg-white/90" onClick={handleRemoveFile}>
             <X className="mr-1 h-4 w-4" />
             Remove
           </Button>
@@ -215,9 +205,7 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
             </div>
             <div>
               <span className="text-gray-600">Size:</span>
-              <span className="ml-2 text-gray-900">
-                {(filePreview.file.size / 1024 / 1024).toFixed(2)} MB
-              </span>
+              <span className="ml-2 text-gray-900">{(filePreview.file.size / 1024 / 1024).toFixed(2)} MB</span>
             </div>
           </div>
         </div>
@@ -276,10 +264,10 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
       <div
         className={`flex min-h-[400px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
           isDragging
-            ? 'border-blue-500 bg-blue-50'
+            ? "border-blue-500 bg-blue-50"
             : error
-              ? 'border-red-300 bg-red-50'
-              : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'
+              ? "border-red-300 bg-red-50"
+              : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
         }`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -303,12 +291,10 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
             </div>
 
             <h3 className="mb-2 text-lg font-semibold text-gray-700">
-              {isDragging ? 'Drop your photo here' : 'Upload a Photo'}
+              {isDragging ? "Drop your photo here" : "Upload a Photo"}
             </h3>
 
-            <p className="mb-4 text-sm text-gray-600">
-              Drag and drop your photo here, or click to browse
-            </p>
+            <p className="mb-4 text-sm text-gray-600">Drag and drop your photo here, or click to browse</p>
 
             <Button type="button" variant="outline" onClick={(e) => e.stopPropagation()}>
               Browse Files
@@ -333,7 +319,7 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
       <input
         ref={fileInputRef}
         type="file"
-        accept={FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.join(',')}
+        accept={FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.join(",")}
         onChange={handleFileChange}
         className="hidden"
       />

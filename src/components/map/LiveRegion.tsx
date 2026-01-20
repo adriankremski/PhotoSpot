@@ -1,11 +1,11 @@
 /**
  * LiveRegion Component
- * 
+ *
  * Accessible live region for announcing dynamic content changes
  * to screen readers. Uses aria-live="polite" for non-intrusive announcements.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface LiveRegionProps {
   message: string;
@@ -43,12 +43,7 @@ export function LiveRegion({ message, clearAfter = 3000 }: LiveRegionProps) {
   }
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      className="sr-only"
-    >
+    <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
       {message}
     </div>
   );
@@ -68,4 +63,3 @@ export function LiveRegion({ message, clearAfter = 3000 }: LiveRegionProps) {
  *   border-width: 0;
  * }
  */
-

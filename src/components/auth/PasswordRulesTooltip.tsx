@@ -3,8 +3,8 @@
  * Displays password requirements in a tooltip
  */
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 export function PasswordRulesTooltip() {
   return (
@@ -31,4 +31,3 @@ export function PasswordRulesTooltip() {
     </TooltipProvider>
   );
 }
-

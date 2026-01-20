@@ -1,17 +1,17 @@
 /**
  * FilterPanel Component
- * 
+ *
  * Collapsible panel with filter controls for category, season, time of day,
  * and photographer-only toggle. Responsive: floating panel on desktop,
  * slide-up drawer on mobile.
  */
 
-import { useState, useEffect } from 'react';
-import type { PhotoFilters, PhotoCategory, Season, TimeOfDay } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
-import { countActiveFilters } from '@/lib/utils/filterHelpers';
+import { useState, useEffect } from "react";
+import type { PhotoFilters, PhotoCategory, Season, TimeOfDay } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { ChevronDown, ChevronUp, Filter, X } from "lucide-react";
+import { countActiveFilters } from "@/lib/utils/filterHelpers";
 
 interface FilterPanelProps {
   filters: PhotoFilters;
@@ -20,59 +20,59 @@ interface FilterPanelProps {
   isLoading?: boolean;
 }
 
-const CATEGORIES: (PhotoCategory | 'all')[] = [
-  'all',
-  'landscape',
-  'portrait',
-  'street',
-  'architecture',
-  'nature',
-  'wildlife',
-  'macro',
-  'aerial',
-  'astrophotography',
-  'urban',
-  'seascape',
-  'other',
+const CATEGORIES: (PhotoCategory | "all")[] = [
+  "all",
+  "landscape",
+  "portrait",
+  "street",
+  "architecture",
+  "nature",
+  "wildlife",
+  "macro",
+  "aerial",
+  "astrophotography",
+  "urban",
+  "seascape",
+  "other",
 ];
 
-const SEASONS: (Season | 'all')[] = ['all', 'spring', 'summer', 'autumn', 'winter'];
+const SEASONS: (Season | "all")[] = ["all", "spring", "summer", "autumn", "winter"];
 
-const TIME_OF_DAY_OPTIONS: (TimeOfDay | 'all')[] = [
-  'all',
-  'golden_hour_morning',
-  'morning',
-  'midday',
-  'afternoon',
-  'golden_hour_evening',
-  'blue_hour',
-  'night',
+const TIME_OF_DAY_OPTIONS: (TimeOfDay | "all")[] = [
+  "all",
+  "golden_hour_morning",
+  "morning",
+  "midday",
+  "afternoon",
+  "golden_hour_evening",
+  "blue_hour",
+  "night",
 ];
 
 /**
  * Formats time of day option for display
  */
-function formatTimeOfDay(time: TimeOfDay | 'all'): string {
-  if (time === 'all') return 'All Times';
+function formatTimeOfDay(time: TimeOfDay | "all"): string {
+  if (time === "all") return "All Times";
   return time
-    .split('_')
+    .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .join(" ");
 }
 
 /**
  * Formats category for display
  */
-function formatCategory(category: PhotoCategory | 'all'): string {
-  if (category === 'all') return 'All Categories';
+function formatCategory(category: PhotoCategory | "all"): string {
+  if (category === "all") return "All Categories";
   return category.charAt(0).toUpperCase() + category.slice(1);
 }
 
 /**
  * Formats season for display
  */
-function formatSeason(season: Season | 'all'): string {
-  if (season === 'all') return 'All Seasons';
+function formatSeason(season: Season | "all"): string {
+  if (season === "all") return "All Seasons";
   return season.charAt(0).toUpperCase() + season.slice(1);
 }
 
@@ -96,7 +96,7 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
   const handleCategoryChange = (value: string) => {
     setLocalFilters((prev) => ({
       ...prev,
-      category: value === 'all' ? null : (value as PhotoCategory),
+      category: value === "all" ? null : (value as PhotoCategory),
     }));
   };
 
@@ -106,7 +106,7 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
   const handleSeasonChange = (value: string) => {
     setLocalFilters((prev) => ({
       ...prev,
-      season: value === 'all' ? null : (value as Season),
+      season: value === "all" ? null : (value as Season),
     }));
   };
 
@@ -116,7 +116,7 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
   const handleTimeOfDayChange = (value: string) => {
     setLocalFilters((prev) => ({
       ...prev,
-      time_of_day: value === 'all' ? null : (value as TimeOfDay),
+      time_of_day: value === "all" ? null : (value as TimeOfDay),
     }));
   };
 
@@ -167,7 +167,7 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="rounded-md p-1 hover:bg-accent"
-          aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
+          aria-label={isExpanded ? "Collapse filters" : "Expand filters"}
         >
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
@@ -183,7 +183,7 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
             </Label>
             <select
               id="category-select"
-              value={localFilters.category || 'all'}
+              value={localFilters.category || "all"}
               onChange={(e) => handleCategoryChange(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               disabled={isLoading}
@@ -203,7 +203,7 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
             </Label>
             <select
               id="season-select"
-              value={localFilters.season || 'all'}
+              value={localFilters.season || "all"}
               onChange={(e) => handleSeasonChange(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               disabled={isLoading}
@@ -223,7 +223,7 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
             </Label>
             <select
               id="time-select"
-              value={localFilters.time_of_day || 'all'}
+              value={localFilters.time_of_day || "all"}
               onChange={(e) => handleTimeOfDayChange(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               disabled={isLoading}
@@ -253,20 +253,10 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
-            <Button
-              onClick={handleApply}
-              disabled={isLoading}
-              className="flex-1"
-              size="sm"
-            >
-              {isLoading ? 'Loading...' : 'Apply Filters'}
+            <Button onClick={handleApply} disabled={isLoading} className="flex-1" size="sm">
+              {isLoading ? "Loading..." : "Apply Filters"}
             </Button>
-            <Button
-              onClick={handleReset}
-              disabled={isLoading}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={handleReset} disabled={isLoading} variant="outline" size="sm">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -275,4 +265,3 @@ export function FilterPanel({ filters, onFiltersChange, onReset, isLoading }: Fi
     </div>
   );
 }
-

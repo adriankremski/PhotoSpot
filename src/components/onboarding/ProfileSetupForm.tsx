@@ -2,24 +2,24 @@
  * ProfileSetupForm component - form for creating user profile during onboarding
  */
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { AvatarPicker } from './AvatarPicker';
-import { PhotographerFields } from './PhotographerFields';
-import { useCreateProfile } from './useCreateProfile';
-import { getProfileSchema } from './validation';
-import type { ProfileSetupFormProps, ProfileFormValues, SocialLinkEntry, ApiCreateProfileRequest } from './types';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { AvatarPicker } from "./AvatarPicker";
+import { PhotographerFields } from "./PhotographerFields";
+import { useCreateProfile } from "./useCreateProfile";
+import { getProfileSchema } from "./validation";
+import type { ProfileSetupFormProps, ProfileFormValues, SocialLinkEntry, ApiCreateProfileRequest } from "./types";
 
 export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormProps) {
   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>([]);
-  
+
   const schema = getProfileSchema(role);
-  
+
   const {
     register,
     handleSubmit,
@@ -29,7 +29,7 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      display_name: '',
+      display_name: "",
       avatar_url: null,
       bio: null,
       company_name: null,
@@ -38,9 +38,9 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
     },
   });
 
-  const avatarUrl = watch('avatar_url');
-  const companyName = watch('company_name') || '';
-  const websiteUrl = watch('website_url') || '';
+  const avatarUrl = watch("avatar_url");
+  const companyName = watch("company_name") || "";
+  const websiteUrl = watch("website_url") || "";
 
   const { createProfile, isLoading, error, fieldErrors } = useCreateProfile({
     userId,
@@ -52,11 +52,11 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
   const onSubmit = async (data: ProfileFormValues) => {
     // Convert social links array to object
     let socialLinksObject: Record<string, string> | undefined = undefined;
-    if (role === 'photographer' && socialLinks.length > 0) {
+    if (role === "photographer" && socialLinks.length > 0) {
       socialLinksObject = {};
       socialLinks.forEach((link) => {
         if (link.label && link.url) {
-          socialLinksObject![link.label.toLowerCase().replace(/\s+/g, '_')] = link.url;
+          socialLinksObject![link.label.toLowerCase().replace(/\s+/g, "_")] = link.url;
         }
       });
     }
@@ -71,21 +71,21 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
     if (data.avatar_url) {
       payload.avatar_url = data.avatar_url;
     }
-    
+
     if (data.bio) {
       payload.bio = data.bio;
     }
 
     // Add photographer fields if applicable
-    if (role === 'photographer') {
+    if (role === "photographer") {
       if (data.company_name) {
         payload.company_name = data.company_name;
       }
-      
+
       if (data.website_url) {
         payload.website_url = data.website_url;
       }
-      
+
       // Only add social_links if we have at least one link
       if (socialLinksObject && Object.keys(socialLinksObject).length > 0) {
         payload.social_links = socialLinksObject;
@@ -98,21 +98,14 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md space-y-6">
       <div className="text-center">
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Create Your Profile
-        </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Set up your profile to get started
-        </p>
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Create Your Profile</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Set up your profile to get started</p>
       </div>
 
       {/* Avatar */}
       <div className="space-y-2">
         <Label>Profile Photo (Optional)</Label>
-        <AvatarPicker
-          value={avatarUrl || null}
-          onChange={(url) => setValue('avatar_url', url)}
-        />
+        <AvatarPicker value={avatarUrl || null} onChange={(url) => setValue("avatar_url", url)} />
         {(errors.avatar_url || fieldErrors?.avatar_url) && (
           <p className="text-sm text-red-600 dark:text-red-400">
             {errors.avatar_url?.message || fieldErrors?.avatar_url}
@@ -128,15 +121,11 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
         <Input
           id="display_name"
           type="text"
-          {...register('display_name')}
+          {...register("display_name")}
           placeholder="Your name"
           maxLength={100}
           aria-invalid={!!errors.display_name || !!fieldErrors?.display_name}
-          aria-describedby={
-            errors.display_name || fieldErrors?.display_name
-              ? 'display_name-error'
-              : undefined
-          }
+          aria-describedby={errors.display_name || fieldErrors?.display_name ? "display_name-error" : undefined}
         />
         {(errors.display_name || fieldErrors?.display_name) && (
           <p id="display_name-error" className="text-sm text-red-600 dark:text-red-400">
@@ -150,12 +139,12 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
         <Label htmlFor="bio">Bio (Optional)</Label>
         <Textarea
           id="bio"
-          {...register('bio')}
+          {...register("bio")}
           placeholder="Tell us about yourself..."
           maxLength={500}
           rows={4}
           aria-invalid={!!errors.bio || !!fieldErrors?.bio}
-          aria-describedby={errors.bio || fieldErrors?.bio ? 'bio-error' : undefined}
+          aria-describedby={errors.bio || fieldErrors?.bio ? "bio-error" : undefined}
         />
         {(errors.bio || fieldErrors?.bio) && (
           <p id="bio-error" className="text-sm text-red-600 dark:text-red-400">
@@ -165,18 +154,24 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
       </div>
 
       {/* Photographer-specific fields */}
-      {role === 'photographer' && (
+      {role === "photographer" && (
         <PhotographerFields
           companyName={companyName}
           websiteUrl={websiteUrl}
           socialLinks={socialLinks}
-          onCompanyNameChange={(value) => setValue('company_name', value)}
-          onWebsiteUrlChange={(value) => setValue('website_url', value)}
+          onCompanyNameChange={(value) => setValue("company_name", value)}
+          onWebsiteUrlChange={(value) => setValue("website_url", value)}
           onSocialLinksChange={setSocialLinks}
           errors={{
-            company_name: (typeof errors.company_name?.message === 'string' ? errors.company_name.message : undefined) || fieldErrors?.company_name,
-            website_url: (typeof errors.website_url?.message === 'string' ? errors.website_url.message : undefined) || fieldErrors?.website_url,
-            social_links: (typeof errors.social_links?.message === 'string' ? errors.social_links.message : undefined) || fieldErrors?.social_links,
+            company_name:
+              (typeof errors.company_name?.message === "string" ? errors.company_name.message : undefined) ||
+              fieldErrors?.company_name,
+            website_url:
+              (typeof errors.website_url?.message === "string" ? errors.website_url.message : undefined) ||
+              fieldErrors?.website_url,
+            social_links:
+              (typeof errors.social_links?.message === "string" ? errors.social_links.message : undefined) ||
+              fieldErrors?.social_links,
           }}
         />
       )}
@@ -193,7 +188,7 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
 
       {/* Submit button */}
       <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-        {isLoading ? 'Creating Profile...' : 'Complete Setup'}
+        {isLoading ? "Creating Profile..." : "Complete Setup"}
       </Button>
 
       <p className="text-center text-xs text-gray-500 dark:text-gray-400">
@@ -202,4 +197,3 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
     </form>
   );
 }
-

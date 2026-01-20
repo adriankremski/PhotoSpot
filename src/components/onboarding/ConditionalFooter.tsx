@@ -2,18 +2,12 @@
  * ConditionalFooter component - shows different content based on current step
  */
 
-import { Button } from '@/components/ui/button';
-import { ProfileSetupForm } from './ProfileSetupForm';
-import { useOnboarding } from './useOnboarding';
-import type { ConditionalFooterProps } from './types';
+import { Button } from "@/components/ui/button";
+import { ProfileSetupForm } from "./ProfileSetupForm";
+import { useOnboarding } from "./useOnboarding";
+import type { ConditionalFooterProps } from "./types";
 
-export function ConditionalFooter({
-  step,
-  isProfileMissing,
-  onFinish,
-  userId,
-  role,
-}: ConditionalFooterProps) {
+export function ConditionalFooter({ step, isProfileMissing, onFinish, userId, role }: ConditionalFooterProps) {
   const { next } = useOnboarding();
 
   // Steps 0-1: Show Next button
@@ -45,4 +39,3 @@ export function ConditionalFooter({
     </div>
   );
 }
-

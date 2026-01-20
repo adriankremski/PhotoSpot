@@ -2,10 +2,10 @@
  * OnboardingCarousel component - horizontally scrollable container for slides
  */
 
-import { useEffect, useRef } from 'react';
-import { useOnboarding } from './useOnboarding';
-import { CarouselDots } from './CarouselDots';
-import type { OnboardingStep } from './types';
+import { useEffect, useRef } from "react";
+import { useOnboarding } from "./useOnboarding";
+import { CarouselDots } from "./CarouselDots";
+import type { OnboardingStep } from "./types";
 
 interface OnboardingCarouselProps {
   children: React.ReactNode;
@@ -22,7 +22,7 @@ export function OnboardingCarousel({ children, slideCount }: OnboardingCarouselP
       const slideWidth = containerRef.current.offsetWidth;
       containerRef.current.scrollTo({
         left: slideWidth * currentStep,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, [currentStep]);
@@ -39,20 +39,15 @@ export function OnboardingCarousel({ children, slideCount }: OnboardingCarouselP
       <div
         ref={containerRef}
         className="flex w-full overflow-x-hidden scroll-smooth"
-        style={{ scrollSnapType: 'x mandatory' }}
+        style={{ scrollSnapType: "x mandatory" }}
       >
         {children}
       </div>
 
       {/* Progress dots */}
       <div className="mt-8">
-        <CarouselDots
-          activeIndex={currentStep}
-          count={slideCount}
-          onDotClick={handleDotClick}
-        />
+        <CarouselDots activeIndex={currentStep} count={slideCount} onDotClick={handleDotClick} />
       </div>
     </div>
   );
 }
-

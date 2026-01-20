@@ -3,8 +3,8 @@
  * Provides test doubles for Supabase Auth operations
  */
 
-import { vi } from 'vitest';
-import type { SupabaseClient } from '../../db/supabase.client';
+import { vi } from "vitest";
+import type { SupabaseClient } from "../../db/supabase.client";
 
 /**
  * Creates a mock Supabase client with configurable responses
@@ -19,13 +19,13 @@ export function createMockSupabaseClient(overrides?: {
       overrides?.signUpResponse || {
         data: {
           user: {
-            id: 'test-user-id',
-            email: 'test@example.com',
-            user_metadata: { role: 'photographer' },
+            id: "test-user-id",
+            email: "test@example.com",
+            user_metadata: { role: "photographer" },
           },
           session: {
-            access_token: 'mock-access-token',
-            refresh_token: 'mock-refresh-token',
+            access_token: "mock-access-token",
+            refresh_token: "mock-refresh-token",
             expires_in: 3600,
           },
         },
@@ -36,22 +36,20 @@ export function createMockSupabaseClient(overrides?: {
       overrides?.signInResponse || {
         data: {
           user: {
-            id: 'test-user-id',
-            email: 'test@example.com',
-            user_metadata: { role: 'photographer' },
+            id: "test-user-id",
+            email: "test@example.com",
+            user_metadata: { role: "photographer" },
           },
           session: {
-            access_token: 'mock-access-token',
-            refresh_token: 'mock-refresh-token',
+            access_token: "mock-access-token",
+            refresh_token: "mock-refresh-token",
             expires_in: 3600,
           },
         },
         error: null,
       }
     ),
-    resetPasswordForEmail: vi.fn().mockResolvedValue(
-      overrides?.resetPasswordResponse || { error: null }
-    ),
+    resetPasswordForEmail: vi.fn().mockResolvedValue(overrides?.resetPasswordResponse || { error: null }),
     getUser: vi.fn(),
     getSession: vi.fn(),
     signOut: vi.fn(),
@@ -72,33 +70,33 @@ export function createMockSupabaseClient(overrides?: {
  */
 export const mockSupabaseErrors = {
   userAlreadyExists: {
-    message: 'User already registered',
-    code: 'user_already_exists',
+    message: "User already registered",
+    code: "user_already_exists",
     status: 400,
   },
   invalidEmail: {
-    message: 'Invalid email address',
-    code: 'invalid_email',
+    message: "Invalid email address",
+    code: "invalid_email",
     status: 400,
   },
   weakPassword: {
-    message: 'Password is too weak',
-    code: 'weak_password',
+    message: "Password is too weak",
+    code: "weak_password",
     status: 400,
   },
   invalidCredentials: {
-    message: 'Invalid login credentials',
-    code: 'invalid_credentials',
+    message: "Invalid login credentials",
+    code: "invalid_credentials",
     status: 400,
   },
   rateLimitExceeded: {
-    message: 'Rate limit exceeded',
-    code: 'rate_limit',
+    message: "Rate limit exceeded",
+    code: "rate_limit",
     status: 429,
   },
   genericError: {
-    message: 'An error occurred',
-    code: 'error',
+    message: "An error occurred",
+    code: "error",
     status: 500,
   },
 };
@@ -106,23 +104,19 @@ export const mockSupabaseErrors = {
 /**
  * Creates a mock successful auth response
  */
-export function createMockAuthResponse(overrides?: {
-  userId?: string;
-  email?: string;
-  role?: string;
-}) {
+export function createMockAuthResponse(overrides?: { userId?: string; email?: string; role?: string }) {
   return {
     data: {
       user: {
-        id: overrides?.userId || 'test-user-id',
-        email: overrides?.email || 'test@example.com',
+        id: overrides?.userId || "test-user-id",
+        email: overrides?.email || "test@example.com",
         user_metadata: {
-          role: overrides?.role || 'photographer',
+          role: overrides?.role || "photographer",
         },
       },
       session: {
-        access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
+        access_token: "mock-access-token",
+        refresh_token: "mock-refresh-token",
         expires_in: 3600,
       },
     },
@@ -133,11 +127,7 @@ export function createMockAuthResponse(overrides?: {
 /**
  * Creates a mock error response
  */
-export function createMockErrorResponse(error: {
-  message: string;
-  code?: string;
-  status?: number;
-}) {
+export function createMockErrorResponse(error: { message: string; code?: string; status?: number }) {
   return {
     data: {
       user: null,
@@ -150,4 +140,3 @@ export function createMockErrorResponse(error: {
     },
   };
 }
-

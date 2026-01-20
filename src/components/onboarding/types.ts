@@ -2,7 +2,7 @@
  * Types for Onboarding Flow
  */
 
-import type { UserRole, CreateProfileCommand, UserProfileDto } from '@/types';
+import type { UserRole, CreateProfileCommand, UserProfileDto } from "@/types";
 
 /**
  * Onboarding step numbers
@@ -123,4 +123,3 @@ export interface PhotographerFieldsProps {
     social_links?: string;
   };
 }
-

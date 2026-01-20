@@ -2,19 +2,15 @@
  * OnboardingPage component - Main container for the onboarding flow
  */
 
-import { useState, useEffect } from 'react';
-import { OnboardingProvider } from './useOnboarding';
-import { OnboardingCarousel } from './OnboardingCarousel';
-import { OnboardingSlide } from './OnboardingSlide';
-import { ConditionalFooter } from './ConditionalFooter';
-import { Button } from '@/components/ui/button';
-import { useOnboarding } from './useOnboarding';
-import {
-  WelcomeIllustration,
-  DiscoverIllustration,
-  ShareIllustration,
-} from './illustrations';
-import type { OnboardingPageProps } from './types';
+import { useState, useEffect } from "react";
+import { OnboardingProvider } from "./useOnboarding";
+import { OnboardingCarousel } from "./OnboardingCarousel";
+import { OnboardingSlide } from "./OnboardingSlide";
+import { ConditionalFooter } from "./ConditionalFooter";
+import { Button } from "@/components/ui/button";
+import { useOnboarding } from "./useOnboarding";
+import { WelcomeIllustration, DiscoverIllustration, ShareIllustration } from "./illustrations";
+import type { OnboardingPageProps } from "./types";
 
 /**
  * Inner component that uses the onboarding context
@@ -38,7 +34,7 @@ function OnboardingContent({ userId, userRole }: OnboardingPageProps) {
           setIsProfileMissing(false);
         }
       } catch (error) {
-        console.error('Error checking profile:', error);
+        console.error("Error checking profile:", error);
         // Assume profile is missing on error
         setIsProfileMissing(true);
       } finally {
@@ -53,20 +49,20 @@ function OnboardingContent({ userId, userRole }: OnboardingPageProps) {
     setIsCompleting(true);
     try {
       // Update user metadata to mark onboarding as completed
-      const response = await fetch('/api/auth/update-metadata', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/update-metadata", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ onboardingCompleted: true }),
       });
 
       if (response.ok) {
         // Redirect to home/map
-        window.location.href = '/';
+        window.location.href = "/";
       } else {
-        throw new Error('Failed to update onboarding status');
+        throw new Error("Failed to update onboarding status");
       }
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.error("Error completing onboarding:", error);
       setIsCompleting(false);
     }
   };
@@ -79,12 +75,7 @@ function OnboardingContent({ userId, userRole }: OnboardingPageProps) {
     <div className="relative flex min-h-screen flex-col bg-white dark:bg-gray-900">
       {/* Skip button - fixed top-right */}
       <div className="absolute right-4 top-4 z-10">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSkip}
-          disabled={isCompleting || isCheckingProfile}
-        >
+        <Button variant="ghost" size="sm" onClick={handleSkip} disabled={isCompleting || isCheckingProfile}>
           Skip
         </Button>
       </div>
@@ -100,7 +91,7 @@ function OnboardingContent({ userId, userRole }: OnboardingPageProps) {
               <OnboardingSlide
                 title="Welcome to PhotoSpot"
                 description={`Great to have you here${
-                  userRole === 'photographer' ? ', photographer' : ''
+                  userRole === "photographer" ? ", photographer" : ""
                 }! Discover amazing photo locations and share your own hidden gems with the community.`}
                 illustration={<WelcomeIllustration />}
               />
@@ -145,4 +136,3 @@ export function Onboarding(props: OnboardingPageProps) {
     </OnboardingProvider>
   );
 }
-

@@ -1,15 +1,15 @@
 /**
  * ThumbnailStrip Component
- * 
+ *
  * Horizontal scrollable strip at the bottom of the screen (desktop)
  * displaying photo thumbnails. Synchronized with map pins.
  */
 
-import React, { useRef, useEffect } from 'react';
-import type { PhotoListItemDto, PaginationMeta } from '@/types';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Loader2, Camera } from 'lucide-react';
+import React, { useRef, useEffect } from "react";
+import type { PhotoListItemDto, PaginationMeta } from "@/types";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Loader2, Camera } from "lucide-react";
 
 interface ThumbnailStripProps {
   photos: PhotoListItemDto[];
@@ -33,9 +33,9 @@ const PhotoCard = React.memo(function PhotoCard({
   onClick: () => void;
 }) {
   const initials = photo.user.display_name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 
@@ -44,9 +44,9 @@ const PhotoCard = React.memo(function PhotoCard({
       data-photo-id={photo.id}
       onClick={onClick}
       className={`thumbnail-card group relative flex-shrink-0 overflow-hidden rounded-lg bg-card shadow-md transition-all hover:shadow-lg focus-ring ${
-        isSelected ? 'ring-2 ring-primary ring-offset-2' : ''
+        isSelected ? "ring-2 ring-primary ring-offset-2" : ""
       }`}
-      style={{ width: '200px' }}
+      style={{ width: "200px" }}
       role="listitem"
       aria-label={`Photo: ${photo.title} by ${photo.user.display_name}`}
       aria-pressed={isSelected}
@@ -59,9 +59,9 @@ const PhotoCard = React.memo(function PhotoCard({
           className="h-full w-full object-cover transition-transform group-hover:scale-105"
           loading="lazy"
         />
-        
+
         {/* Photographer badge overlay */}
-        {photo.user.role === 'photographer' && (
+        {photo.user.role === "photographer" && (
           <div className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-md">
             Pro
           </div>
@@ -76,9 +76,7 @@ const PhotoCard = React.memo(function PhotoCard({
       {/* Card Content */}
       <div className="space-y-2 p-3 text-left">
         {/* Title */}
-        <h4 className="line-clamp-1 text-sm font-semibold text-card-foreground">
-          {photo.title}
-        </h4>
+        <h4 className="line-clamp-1 text-sm font-semibold text-card-foreground">{photo.title}</h4>
 
         {/* Author */}
         <div className="flex items-center gap-2">
@@ -86,9 +84,7 @@ const PhotoCard = React.memo(function PhotoCard({
             <AvatarImage src={photo.user.avatar_url || undefined} alt={photo.user.display_name} />
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
-          <span className="line-clamp-1 text-xs text-muted-foreground">
-            {photo.user.display_name}
-          </span>
+          <span className="line-clamp-1 text-xs text-muted-foreground">{photo.user.display_name}</span>
         </div>
 
         {/* Favorites */}
@@ -112,9 +108,7 @@ function EmptyState() {
       <div className="space-y-2">
         <Camera className="mx-auto h-12 w-12 text-muted-foreground" />
         <p className="text-sm font-medium text-card-foreground">No photos found</p>
-        <p className="text-xs text-muted-foreground">
-          Try adjusting your filters or exploring a different area
-        </p>
+        <p className="text-xs text-muted-foreground">Try adjusting your filters or exploring a different area</p>
       </div>
     </div>
   );
@@ -138,15 +132,13 @@ export function ThumbnailStrip({
    */
   useEffect(() => {
     if (selectedPhotoId && containerRef.current) {
-      const selectedElement = containerRef.current.querySelector(
-        `[data-photo-id="${selectedPhotoId}"]`
-      );
-      
+      const selectedElement = containerRef.current.querySelector(`[data-photo-id="${selectedPhotoId}"]`);
+
       if (selectedElement) {
         selectedElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
         });
       }
     }
@@ -159,21 +151,19 @@ export function ThumbnailStrip({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!photos.length || !containerRef.current) return;
 
-      const currentIndex = selectedPhotoId
-        ? photos.findIndex((p) => p.id === selectedPhotoId)
-        : -1;
+      const currentIndex = selectedPhotoId ? photos.findIndex((p) => p.id === selectedPhotoId) : -1;
 
-      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+      if (e.key === "ArrowLeft" && currentIndex > 0) {
         e.preventDefault();
         onThumbnailClick(photos[currentIndex - 1].id);
-      } else if (e.key === 'ArrowRight' && currentIndex < photos.length - 1) {
+      } else if (e.key === "ArrowRight" && currentIndex < photos.length - 1) {
         e.preventDefault();
         onThumbnailClick(photos[currentIndex + 1].id);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [photos, selectedPhotoId, onThumbnailClick]);
 
   // Show empty state if no photos
@@ -206,20 +196,14 @@ export function ThumbnailStrip({
         {/* Load More button */}
         {hasMore && (
           <div className="flex flex-shrink-0 items-center">
-            <Button
-              onClick={onLoadMore}
-              disabled={isLoading}
-              variant="outline"
-              size="lg"
-              className="h-full"
-            >
+            <Button onClick={onLoadMore} disabled={isLoading} variant="outline" size="lg" className="h-full">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Loading...
                 </>
               ) : (
-                'Load More'
+                "Load More"
               )}
             </Button>
           </div>
@@ -228,4 +212,3 @@ export function ThumbnailStrip({
     </div>
   );
 }
-

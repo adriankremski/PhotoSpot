@@ -2,33 +2,33 @@
  * Unit Tests for useMapPhotos Hook
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { useMapPhotos } from './useMapPhotos';
-import type { ListResponse, PhotoListItemDto, PaginationMeta } from '@/types';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { useMapPhotos } from "./useMapPhotos";
+import type { ListResponse, PhotoListItemDto, PaginationMeta } from "@/types";
 
 // Mock fetch
 global.fetch = vi.fn();
 
 const mockPhotos: PhotoListItemDto[] = [
   {
-    id: 'photo1',
-    title: 'Test Photo 1',
-    description: 'Description',
-    category: 'landscape',
-    season: 'summer',
-    time_of_day: 'golden_hour_morning',
-    file_url: 'https://example.com/photo1.jpg',
-    thumbnail_url: 'https://example.com/thumb1.jpg',
-    location_public: { type: 'Point', coordinates: [-122.4194, 37.7749] },
+    id: "photo1",
+    title: "Test Photo 1",
+    description: "Description",
+    category: "landscape",
+    season: "summer",
+    time_of_day: "golden_hour_morning",
+    file_url: "https://example.com/photo1.jpg",
+    thumbnail_url: "https://example.com/thumb1.jpg",
+    location_public: { type: "Point", coordinates: [-122.4194, 37.7749] },
     user: {
-      id: 'user1',
-      display_name: 'Test User',
+      id: "user1",
+      display_name: "Test User",
       avatar_url: null,
-      role: 'photographer',
+      role: "photographer",
     },
-    tags: ['nature', 'landscape'],
-    created_at: '2024-01-01T00:00:00Z',
+    tags: ["nature", "landscape"],
+    created_at: "2024-01-01T00:00:00Z",
     favorite_count: 5,
   },
 ];
@@ -43,7 +43,7 @@ const mockResponse: ListResponse<PhotoListItemDto> = {
   },
 };
 
-describe('useMapPhotos', () => {
+describe("useMapPhotos", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -56,7 +56,7 @@ describe('useMapPhotos', () => {
     vi.restoreAllMocks();
   });
 
-  it('should initialize with empty state', () => {
+  it("should initialize with empty state", () => {
     const { result } = renderHook(() =>
       useMapPhotos({
         latitude: 37.7749,
@@ -70,7 +70,7 @@ describe('useMapPhotos', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('should fetch photos on mount', async () => {
+  it("should fetch photos on mount", async () => {
     const { result } = renderHook(() =>
       useMapPhotos({
         latitude: 37.7749,
@@ -87,16 +87,16 @@ describe('useMapPhotos', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('should handle API errors', async () => {
+  it("should handle API errors", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: false,
       status: 500,
-      statusText: 'Internal Server Error',
+      statusText: "Internal Server Error",
       headers: new Headers(),
       json: async () => ({
         error: {
-          code: 'SERVER_ERROR',
-          message: 'Server error occurred',
+          code: "SERVER_ERROR",
+          message: "Server error occurred",
         },
       }),
     });
@@ -114,7 +114,7 @@ describe('useMapPhotos', () => {
     });
   });
 
-  it('should update filters and refetch', async () => {
+  it("should update filters and refetch", async () => {
     const { result } = renderHook(() =>
       useMapPhotos({
         latitude: 37.7749,
@@ -129,7 +129,7 @@ describe('useMapPhotos', () => {
 
     // Change filters
     result.current.setFilters({
-      category: 'portrait',
+      category: "portrait",
       season: null,
       time_of_day: null,
       photographer_only: false,
@@ -140,7 +140,7 @@ describe('useMapPhotos', () => {
     });
   });
 
-  it('should reset filters', async () => {
+  it("should reset filters", async () => {
     const { result } = renderHook(() =>
       useMapPhotos({
         latitude: 37.7749,
@@ -154,9 +154,9 @@ describe('useMapPhotos', () => {
     });
 
     result.current.setFilters({
-      category: 'portrait',
-      season: 'winter',
-      time_of_day: 'night',
+      category: "portrait",
+      season: "winter",
+      time_of_day: "night",
       photographer_only: true,
     });
 
@@ -172,7 +172,7 @@ describe('useMapPhotos', () => {
     });
   });
 
-  it('should clear error', () => {
+  it("should clear error", () => {
     const { result } = renderHook(() =>
       useMapPhotos({
         latitude: 37.7749,
@@ -186,4 +186,3 @@ describe('useMapPhotos', () => {
     expect(result.current.error).toBeNull();
   });
 });
-

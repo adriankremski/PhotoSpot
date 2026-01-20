@@ -3,7 +3,7 @@
  * Displays logo and links to Register and PRD
  */
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 export function NavbarPublic() {
   return (
@@ -16,7 +16,7 @@ export function NavbarPublic() {
         >
           PhotoSpot
         </a>
-        
+
         <ul className="flex items-center gap-4">
           <li>
             <Button variant="ghost" asChild>
@@ -40,4 +40,3 @@ export function NavbarPublic() {
     </header>
   );
 }
-

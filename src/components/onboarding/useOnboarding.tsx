@@ -2,8 +2,8 @@
  * Custom hook and context for managing onboarding state
  */
 
-import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { OnboardingContextValue, OnboardingStep } from './types';
+import { createContext, useContext, useState, type ReactNode } from "react";
+import type { OnboardingContextValue, OnboardingStep } from "./types";
 
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 
@@ -28,9 +28,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <OnboardingContext.Provider value={{ currentStep, next, prev, goToStep }}>
-      {children}
-    </OnboardingContext.Provider>
+    <OnboardingContext.Provider value={{ currentStep, next, prev, goToStep }}>{children}</OnboardingContext.Provider>
   );
 }
 
@@ -40,8 +38,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 export function useOnboarding(): OnboardingContextValue {
   const context = useContext(OnboardingContext);
   if (!context) {
-    throw new Error('useOnboarding must be used within OnboardingProvider');
+    throw new Error("useOnboarding must be used within OnboardingProvider");
   }
   return context;
 }
-

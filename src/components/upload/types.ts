@@ -2,7 +2,7 @@
  * Types and Schemas for Photo Upload Wizard
  */
 
-import type { PhotoCategory, Season, TimeOfDay, GearInfo, ExifData } from '@/types';
+import type { PhotoCategory, Season, TimeOfDay, GearInfo, ExifData } from "@/types";
 
 // ============================================================================
 // Wizard Step Enum
@@ -34,9 +34,9 @@ export interface FileWithPreview {
 export interface MetadataState {
   title: string;
   description: string;
-  category: PhotoCategory | '';
-  season: Season | '';
-  time_of_day: TimeOfDay | '';
+  category: PhotoCategory | "";
+  season: Season | "";
+  time_of_day: TimeOfDay | "";
   tags: string[];
   gear: GearInfo;
 }
@@ -60,7 +60,7 @@ export interface UploadWizardState {
   filePreview: FileWithPreview | null;
   metadata: MetadataState;
   location: LocationState;
-  errors: Partial<Record<'file' | 'metadata' | 'location', string>>;
+  errors: Partial<Record<"file" | "metadata" | "location", string>>;
   isSubmitting: boolean;
 }
 
@@ -77,7 +77,7 @@ export interface ValidationError {
 // ============================================================================
 
 export interface UploadWizardProps {
-  mode: 'page' | 'modal';
+  mode: "page" | "modal";
   userRole: string | null;
   onSuccess?: (photoId: string) => void;
   onCancel?: () => void;
@@ -136,9 +136,8 @@ export interface WizardFooterProps {
 // ============================================================================
 
 export const STEP_LABELS: Record<UploadStep, string> = {
-  [UploadStep.File]: 'Select Photo',
-  [UploadStep.Metadata]: 'Add Details',
-  [UploadStep.Location]: 'Set Location',
-  [UploadStep.Review]: 'Review & Submit',
+  [UploadStep.File]: "Select Photo",
+  [UploadStep.Metadata]: "Add Details",
+  [UploadStep.Location]: "Set Location",
+  [UploadStep.Review]: "Review & Submit",
 };
-

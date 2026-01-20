@@ -1,19 +1,19 @@
 /**
  * MapPicker Component
- * 
+ *
  * Map interface for selecting photo location with blur settings.
  * Allows users to click on map to set location or search for a place.
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { Marker, type MapMouseEvent } from 'react-map-gl/mapbox';
-import { MapPin, Search } from 'lucide-react';
-import { MapGL } from '@/components/map/MapGL';
-import { BlurSlider } from './BlurSlider';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import type { MapViewport, BoundingBox } from '@/types';
-import type { MapPickerProps } from './types';
+import { useState, useCallback, useEffect } from "react";
+import { Marker, type MapMouseEvent } from "react-map-gl/mapbox";
+import { MapPin, Search } from "lucide-react";
+import { MapGL } from "@/components/map/MapGL";
+import { BlurSlider } from "./BlurSlider";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { MapViewport, BoundingBox } from "@/types";
+import type { MapPickerProps } from "./types";
 
 const DEFAULT_VIEWPORT: MapViewport = {
   latitude: 52.2297, // Warsaw, Poland (default)
@@ -23,7 +23,7 @@ const DEFAULT_VIEWPORT: MapViewport = {
 
 export function MapPicker({ value, onChange, errors }: MapPickerProps) {
   const [viewport, setViewport] = useState<MapViewport>(DEFAULT_VIEWPORT);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
   // Initialize map with existing location if available
@@ -60,34 +60,34 @@ export function MapPicker({ value, onChange, errors }: MapPickerProps) {
     setIsSearching(true);
     try {
       const response = await fetch(`/api/locations/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
-      
+
       if (!response.ok) {
-        throw new Error('Search failed');
+        throw new Error("Search failed");
       }
 
       const result = await response.json();
-      
+
       if (result.data && result.data.length > 0) {
         const location = result.data[0];
-        
+
         // Update viewport to searched location
         setViewport({
           latitude: location.lat,
           longitude: location.lon,
           zoom: 12,
         });
-        
+
         // Set the location
         onChange({
           latitude: location.lat,
           longitude: location.lon,
         });
       } else {
-        alert('Location not found. Try a different search term.');
+        alert("Location not found. Try a different search term.");
       }
     } catch (error) {
-      console.error('Search error:', error);
-      alert('Failed to search for location. Please try again.');
+      console.error("Search error:", error);
+      alert("Failed to search for location. Please try again.");
     } finally {
       setIsSearching(false);
     }
@@ -95,7 +95,7 @@ export function MapPicker({ value, onChange, errors }: MapPickerProps) {
 
   const handleSearchKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Enter') {
+      if (event.key === "Enter") {
         event.preventDefault();
         handleSearch();
       }
@@ -131,12 +131,8 @@ export function MapPicker({ value, onChange, errors }: MapPickerProps) {
               className="pl-10"
             />
           </div>
-          <Button
-            type="button"
-            onClick={handleSearch}
-            disabled={!searchQuery.trim() || isSearching}
-          >
-            {isSearching ? 'Searching...' : 'Search'}
+          <Button type="button" onClick={handleSearch} disabled={!searchQuery.trim() || isSearching}>
+            {isSearching ? "Searching..." : "Search"}
           </Button>
         </div>
         <p className="mt-1 text-xs text-gray-600">
@@ -154,14 +150,10 @@ export function MapPicker({ value, onChange, errors }: MapPickerProps) {
         >
           {/* Marker at selected location */}
           {value.latitude !== null && value.longitude !== null && (
-            <Marker
-              latitude={value.latitude}
-              longitude={value.longitude}
-              anchor="bottom"
-            >
+            <Marker latitude={value.latitude} longitude={value.longitude} anchor="bottom">
               <div className="relative">
                 <MapPin className="h-10 w-10 text-red-600 drop-shadow-lg" fill="currentColor" />
-                
+
                 {/* Blur radius circle (if blur is enabled) */}
                 {value.blur_location && (
                   <div
@@ -190,11 +182,7 @@ export function MapPicker({ value, onChange, errors }: MapPickerProps) {
       )}
 
       {/* Error Display */}
-      {errors?.latitude && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
-          {errors.latitude}
-        </div>
-      )}
+      {errors?.latitude && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{errors.latitude}</div>}
 
       {/* Blur Settings */}
       <BlurSlider

@@ -3,7 +3,7 @@
  * Runs before all test files
  */
 
-import { beforeAll, afterEach, afterAll } from 'vitest';
+import { beforeAll, afterEach, afterAll } from "vitest";
 
 // Setup runs before all tests
 beforeAll(() => {
@@ -19,4 +19,3 @@ afterEach(() => {
 afterAll(() => {
   // Clean up any resources
 });
-

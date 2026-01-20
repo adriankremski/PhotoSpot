@@ -2,19 +2,15 @@
  * Tests for photos service layer
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { getPublicPhotos, getPhotoById, PhotoServiceError, type Requester } from './photos';
-import type { SupabaseClient } from '../../db/supabase.client';
-import type { PhotoCategory, Season, TimeOfDay, PhotoStatus, UserRole } from '../../types';
+import { describe, it, expect, vi } from "vitest";
+import { getPublicPhotos, getPhotoById, PhotoServiceError, type Requester } from "./photos";
+import type { SupabaseClient } from "../../db/supabase.client";
+import type { PhotoCategory, Season, TimeOfDay, PhotoStatus, UserRole } from "../../types";
 
 /**
  * Creates a mock Supabase client for photo retrieval operations
  */
-function createMockSupabaseClient(overrides?: {
-  queryData?: any[];
-  queryError?: any;
-  count?: number;
-}): SupabaseClient {
+function createMockSupabaseClient(overrides?: { queryData?: any[]; queryError?: any; count?: number }): SupabaseClient {
   const mockOrderResult = {
     data: overrides?.queryData || [],
     error: overrides?.queryError || null,
@@ -22,21 +18,21 @@ function createMockSupabaseClient(overrides?: {
   };
 
   const mockOrder = vi.fn().mockResolvedValue(mockOrderResult);
-  
+
   // Create a builder that can chain methods
   const createChainableBuilder = (): any => {
     const builder: any = {
       order: mockOrder,
     };
-    
+
     builder.range = vi.fn().mockReturnValue(builder);
     builder.filter = vi.fn().mockReturnValue(builder);
     builder.eq = vi.fn().mockReturnValue(builder);
     builder.is = vi.fn().mockReturnValue(builder);
-    
+
     return builder;
   };
-  
+
   const mockSelect = vi.fn().mockImplementation(() => createChainableBuilder());
 
   return {
@@ -56,41 +52,38 @@ function createMockSupabaseClient(overrides?: {
  */
 function createMockPhotoRow(overrides?: Partial<any>) {
   return {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    title: 'Beautiful Landscape',
-    description: 'A stunning view of the mountains',
-    category: 'landscape' as PhotoCategory,
-    season: 'summer' as Season,
-    time_of_day: 'golden_hour_morning' as TimeOfDay,
-    file_url: 'https://example.com/photo.jpg',
+    id: "123e4567-e89b-12d3-a456-426614174000",
+    title: "Beautiful Landscape",
+    description: "A stunning view of the mountains",
+    category: "landscape" as PhotoCategory,
+    season: "summer" as Season,
+    time_of_day: "golden_hour_morning" as TimeOfDay,
+    file_url: "https://example.com/photo.jpg",
     location_public: JSON.stringify({
-      type: 'Point',
+      type: "Point",
       coordinates: [-122.4, 37.8],
     }),
-    user_id: '456e4567-e89b-12d3-a456-426614174001',
-    author_name: 'John Doe',
-    author_avatar: 'https://example.com/avatar.jpg',
-    tags: ['nature', 'mountains'],
-    created_at: '2024-01-01T00:00:00Z',
+    user_id: "456e4567-e89b-12d3-a456-426614174001",
+    author_name: "John Doe",
+    author_avatar: "https://example.com/avatar.jpg",
+    tags: ["nature", "mountains"],
+    created_at: "2024-01-01T00:00:00Z",
     favorites_count: 42,
     cluster_id: null,
     ...overrides,
   };
 }
 
-describe('getPublicPhotos', () => {
-  describe('successful queries', () => {
-    it('should retrieve photos with default pagination', async () => {
-      const mockPhotos = [createMockPhotoRow(), createMockPhotoRow({ id: '2' })];
+describe("getPublicPhotos", () => {
+  describe("successful queries", () => {
+    it("should retrieve photos with default pagination", async () => {
+      const mockPhotos = [createMockPhotoRow(), createMockPhotoRow({ id: "2" })];
       const mockClient = createMockSupabaseClient({
         queryData: mockPhotos,
         count: 2,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data).toHaveLength(2);
       expect(result.meta.total).toBe(2);
@@ -99,17 +92,14 @@ describe('getPublicPhotos', () => {
       expect(result.meta.has_more).toBe(false);
     });
 
-    it('should map photo data correctly', async () => {
+    it("should map photo data correctly", async () => {
       const mockPhoto = createMockPhotoRow();
       const mockClient = createMockSupabaseClient({
         queryData: [mockPhoto],
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       const photo = result.data[0];
       expect(photo.id).toBe(mockPhoto.id);
@@ -126,19 +116,14 @@ describe('getPublicPhotos', () => {
       expect(photo.favorite_count).toBe(mockPhoto.favorites_count);
     });
 
-    it('should handle pagination correctly', async () => {
-      const mockPhotos = Array.from({ length: 50 }, (_, i) => 
-        createMockPhotoRow({ id: `photo-${i}` })
-      );
+    it("should handle pagination correctly", async () => {
+      const mockPhotos = Array.from({ length: 50 }, (_, i) => createMockPhotoRow({ id: `photo-${i}` }));
       const mockClient = createMockSupabaseClient({
         queryData: mockPhotos,
         count: 250, // Total 250 photos
       });
 
-      const result = await getPublicPhotos(
-        { limit: 50, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 50, offset: 0 }, mockClient);
 
       expect(result.data).toHaveLength(50);
       expect(result.meta.total).toBe(250);
@@ -147,19 +132,14 @@ describe('getPublicPhotos', () => {
       expect(result.meta.has_more).toBe(true);
     });
 
-    it('should handle last page of pagination', async () => {
-      const mockPhotos = Array.from({ length: 50 }, (_, i) => 
-        createMockPhotoRow({ id: `photo-${i}` })
-      );
+    it("should handle last page of pagination", async () => {
+      const mockPhotos = Array.from({ length: 50 }, (_, i) => createMockPhotoRow({ id: `photo-${i}` }));
       const mockClient = createMockSupabaseClient({
         queryData: mockPhotos,
         count: 250, // Total 250 photos
       });
 
-      const result = await getPublicPhotos(
-        { limit: 50, offset: 200 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 50, offset: 200 }, mockClient);
 
       expect(result.data).toHaveLength(50);
       expect(result.meta.total).toBe(250);
@@ -167,16 +147,13 @@ describe('getPublicPhotos', () => {
       expect(result.meta.has_more).toBe(false);
     });
 
-    it('should handle empty results', async () => {
+    it("should handle empty results", async () => {
       const mockClient = createMockSupabaseClient({
         queryData: [],
         count: 0,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data).toHaveLength(0);
       expect(result.meta.total).toBe(0);
@@ -184,8 +161,8 @@ describe('getPublicPhotos', () => {
     });
   });
 
-  describe('filtering', () => {
-    it('should accept bbox filter', async () => {
+  describe("filtering", () => {
+    it("should accept bbox filter", async () => {
       const mockPhotos = [createMockPhotoRow()];
       const mockClient = createMockSupabaseClient({
         queryData: mockPhotos,
@@ -204,8 +181,8 @@ describe('getPublicPhotos', () => {
       expect(result.data).toHaveLength(1);
     });
 
-    it('should accept category filter', async () => {
-      const mockPhotos = [createMockPhotoRow({ category: 'landscape' })];
+    it("should accept category filter", async () => {
+      const mockPhotos = [createMockPhotoRow({ category: "landscape" })];
       const mockClient = createMockSupabaseClient({
         queryData: mockPhotos,
         count: 1,
@@ -213,7 +190,7 @@ describe('getPublicPhotos', () => {
 
       const result = await getPublicPhotos(
         {
-          category: 'landscape' as PhotoCategory,
+          category: "landscape" as PhotoCategory,
           limit: 200,
           offset: 0,
         },
@@ -221,11 +198,11 @@ describe('getPublicPhotos', () => {
       );
 
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].category).toBe('landscape');
+      expect(result.data[0].category).toBe("landscape");
     });
 
-    it('should accept season filter', async () => {
-      const mockPhotos = [createMockPhotoRow({ season: 'summer' })];
+    it("should accept season filter", async () => {
+      const mockPhotos = [createMockPhotoRow({ season: "summer" })];
       const mockClient = createMockSupabaseClient({
         queryData: mockPhotos,
         count: 1,
@@ -233,7 +210,7 @@ describe('getPublicPhotos', () => {
 
       const result = await getPublicPhotos(
         {
-          season: 'summer' as Season,
+          season: "summer" as Season,
           limit: 200,
           offset: 0,
         },
@@ -241,11 +218,11 @@ describe('getPublicPhotos', () => {
       );
 
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].season).toBe('summer');
+      expect(result.data[0].season).toBe("summer");
     });
 
-    it('should accept time_of_day filter', async () => {
-      const mockPhotos = [createMockPhotoRow({ time_of_day: 'golden_hour_morning' })];
+    it("should accept time_of_day filter", async () => {
+      const mockPhotos = [createMockPhotoRow({ time_of_day: "golden_hour_morning" })];
       const mockClient = createMockSupabaseClient({
         queryData: mockPhotos,
         count: 1,
@@ -253,7 +230,7 @@ describe('getPublicPhotos', () => {
 
       const result = await getPublicPhotos(
         {
-          time_of_day: 'golden_hour_morning' as TimeOfDay,
+          time_of_day: "golden_hour_morning" as TimeOfDay,
           limit: 200,
           offset: 0,
         },
@@ -261,15 +238,15 @@ describe('getPublicPhotos', () => {
       );
 
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].time_of_day).toBe('golden_hour_morning');
+      expect(result.data[0].time_of_day).toBe("golden_hour_morning");
     });
 
-    it('should accept multiple filters', async () => {
+    it("should accept multiple filters", async () => {
       const mockPhotos = [
         createMockPhotoRow({
-          category: 'landscape',
-          season: 'summer',
-          time_of_day: 'golden_hour_morning',
+          category: "landscape",
+          season: "summer",
+          time_of_day: "golden_hour_morning",
         }),
       ];
       const mockClient = createMockSupabaseClient({
@@ -280,9 +257,9 @@ describe('getPublicPhotos', () => {
       const result = await getPublicPhotos(
         {
           bbox: [-122.5, 37.7, -122.3, 37.9],
-          category: 'landscape' as PhotoCategory,
-          season: 'summer' as Season,
-          time_of_day: 'golden_hour_morning' as TimeOfDay,
+          category: "landscape" as PhotoCategory,
+          season: "summer" as Season,
+          time_of_day: "golden_hour_morning" as TimeOfDay,
           limit: 50,
           offset: 0,
         },
@@ -293,93 +270,75 @@ describe('getPublicPhotos', () => {
     });
   });
 
-  describe('data mapping edge cases', () => {
-    it('should handle null description', async () => {
+  describe("data mapping edge cases", () => {
+    it("should handle null description", async () => {
       const mockPhoto = createMockPhotoRow({ description: null });
       const mockClient = createMockSupabaseClient({
         queryData: [mockPhoto],
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data[0].description).toBeNull();
     });
 
-    it('should handle null season', async () => {
+    it("should handle null season", async () => {
       const mockPhoto = createMockPhotoRow({ season: null });
       const mockClient = createMockSupabaseClient({
         queryData: [mockPhoto],
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data[0].season).toBeNull();
     });
 
-    it('should handle null time_of_day', async () => {
+    it("should handle null time_of_day", async () => {
       const mockPhoto = createMockPhotoRow({ time_of_day: null });
       const mockClient = createMockSupabaseClient({
         queryData: [mockPhoto],
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data[0].time_of_day).toBeNull();
     });
 
-    it('should handle null cluster_id', async () => {
+    it("should handle null cluster_id", async () => {
       const mockPhoto = createMockPhotoRow({ cluster_id: null });
       const mockClient = createMockSupabaseClient({
         queryData: [mockPhoto],
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data[0].cluster_id).toBeNull();
     });
 
-    it('should handle empty tags array', async () => {
+    it("should handle empty tags array", async () => {
       const mockPhoto = createMockPhotoRow({ tags: [] });
       const mockClient = createMockSupabaseClient({
         queryData: [mockPhoto],
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data[0].tags).toEqual([]);
     });
 
-    it('should handle null avatar_url', async () => {
+    it("should handle null avatar_url", async () => {
       const mockPhoto = createMockPhotoRow({ author_avatar: null });
       const mockClient = createMockSupabaseClient({
         queryData: [mockPhoto],
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
       expect(result.data[0].user.avatar_url).toBeNull();
     });
@@ -391,94 +350,84 @@ describe('getPublicPhotos', () => {
         count: 1,
       });
 
-      const result = await getPublicPhotos(
-        { limit: 200, offset: 0 },
-        mockClient
-      );
+      const result = await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
 
-      expect(result.data[0].user.display_name).toBe('Unknown');
+      expect(result.data[0].user.display_name).toBe("Unknown");
     });
   });
 
-  describe('error handling', () => {
-    it('should throw PhotoServiceError on database error', async () => {
+  describe("error handling", () => {
+    it("should throw PhotoServiceError on database error", async () => {
       const mockClient = createMockSupabaseClient({
-        queryError: { message: 'Database connection failed' },
+        queryError: { message: "Database connection failed" },
       });
 
-      await expect(
-        getPublicPhotos({ limit: 200, offset: 0 }, mockClient)
-      ).rejects.toThrow(PhotoServiceError);
+      await expect(getPublicPhotos({ limit: 200, offset: 0 }, mockClient)).rejects.toThrow(PhotoServiceError);
     });
 
-    it('should include error details in PhotoServiceError', async () => {
+    it("should include error details in PhotoServiceError", async () => {
       const mockClient = createMockSupabaseClient({
-        queryError: { message: 'Database connection failed' },
+        queryError: { message: "Database connection failed" },
       });
 
       try {
         await getPublicPhotos({ limit: 200, offset: 0 }, mockClient);
-        expect.fail('Should have thrown error');
+        expect.fail("Should have thrown error");
       } catch (error) {
         expect(error).toBeInstanceOf(PhotoServiceError);
         if (error instanceof PhotoServiceError) {
-          expect(error.code).toBe('DATABASE_ERROR');
+          expect(error.code).toBe("DATABASE_ERROR");
           expect(error.statusCode).toBe(500);
-          expect(error.details?.supabaseError).toBe('Database connection failed');
+          expect(error.details?.supabaseError).toBe("Database connection failed");
         }
       }
     });
 
-    it('should handle unexpected errors', async () => {
+    it("should handle unexpected errors", async () => {
       const mockClient = {
         from: vi.fn().mockImplementation(() => {
-          throw new Error('Unexpected error');
+          throw new Error("Unexpected error");
         }),
       } as unknown as SupabaseClient;
 
-      await expect(
-        getPublicPhotos({ limit: 200, offset: 0 }, mockClient)
-      ).rejects.toThrow(PhotoServiceError);
+      await expect(getPublicPhotos({ limit: 200, offset: 0 }, mockClient)).rejects.toThrow(PhotoServiceError);
     });
   });
 });
 
-describe('getPhotoById', () => {
+describe("getPhotoById", () => {
   /**
    * Creates a mock photo detail row from the photos table
    */
   function createMockPhotoDetailRow(overrides?: Partial<any>) {
     return {
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      title: 'Beautiful Landscape',
-      description: 'A stunning view of the mountains',
-      category: 'landscape' as PhotoCategory,
-      season: 'summer' as Season,
-      time_of_day: 'golden_hour_morning' as TimeOfDay,
-      file_url: 'https://example.com/photo.jpg',
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      title: "Beautiful Landscape",
+      description: "A stunning view of the mountains",
+      category: "landscape" as PhotoCategory,
+      season: "summer" as Season,
+      time_of_day: "golden_hour_morning" as TimeOfDay,
+      file_url: "https://example.com/photo.jpg",
       location_public: JSON.stringify({
-        type: 'Point',
+        type: "Point",
         coordinates: [-122.4, 37.8],
       }),
       location_exact: JSON.stringify({
-        type: 'Point',
+        type: "Point",
         coordinates: [-122.401, 37.801],
       }),
-      gear: { camera: 'Canon EOS R5', lens: 'RF 24-70mm f/2.8' },
-      exif: { aperture: 'f/8', shutter_speed: '1/250', iso: 100 },
-      status: 'approved' as PhotoStatus,
-      user_id: '456e4567-e89b-12d3-a456-426614174001',
+      gear: { camera: "Canon EOS R5", lens: "RF 24-70mm f/2.8" },
+      exif: { aperture: "f/8", shutter_speed: "1/250", iso: 100 },
+      status: "approved" as PhotoStatus,
+      user_id: "456e4567-e89b-12d3-a456-426614174001",
       user_profiles: {
-        user_id: '456e4567-e89b-12d3-a456-426614174001',
-        display_name: 'John Doe',
-        avatar_url: 'https://example.com/avatar.jpg',
-        role: 'photographer' as UserRole,
+        user_id: "456e4567-e89b-12d3-a456-426614174001",
+        display_name: "John Doe",
+        avatar_url: "https://example.com/avatar.jpg",
+        role: "photographer" as UserRole,
       },
-      photo_tags: [
-        { tags: { name: 'nature' } },
-        { tags: { name: 'mountains' } },
-      ],
-      created_at: '2024-01-01T00:00:00Z',
+      photo_tags: [{ tags: { name: "nature" } }, { tags: { name: "mountains" } }],
+      created_at: "2024-01-01T00:00:00Z",
       deleted_at: null,
       ...overrides,
     };
@@ -504,7 +453,7 @@ describe('getPhotoById', () => {
     };
 
     const mockFavoriteQuery = {
-      data: overrides?.isFavorited ? { photo_id: 'test' } : null,
+      data: overrides?.isFavorited ? { photo_id: "test" } : null,
       error: null,
     };
 
@@ -523,7 +472,7 @@ describe('getPhotoById', () => {
       };
       // For favorite count query (head: true)
       chain.eq.mockImplementation((field: string) => {
-        if (field === 'photo_id') {
+        if (field === "photo_id") {
           return Promise.resolve(mockFavoriteCountQuery);
         }
         return chain;
@@ -543,19 +492,17 @@ describe('getPhotoById', () => {
 
     return {
       from: vi.fn().mockImplementation((table: string) => {
-        if (table === 'photos') {
+        if (table === "photos") {
           return {
             select: vi.fn().mockReturnValue(createPhotoQueryChain()),
           };
         }
-        if (table === 'favorites') {
+        if (table === "favorites") {
           selectCallCount++;
           return {
-            select: vi.fn().mockReturnValue(
-              selectCallCount === 1 
-                ? createCountQueryChain() 
-                : createFavoriteQueryChain()
-            ),
+            select: vi
+              .fn()
+              .mockReturnValue(selectCallCount === 1 ? createCountQueryChain() : createFavoriteQueryChain()),
           };
         }
         return { select: vi.fn() };
@@ -566,10 +513,10 @@ describe('getPhotoById', () => {
     } as unknown as SupabaseClient;
   }
 
-  describe('successful queries', () => {
-    it('should retrieve approved photo for anonymous user without sensitive fields', async () => {
+  describe("successful queries", () => {
+    it("should retrieve approved photo for anonymous user without sensitive fields", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        status: 'approved',
+        status: "approved",
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -587,18 +534,18 @@ describe('getPhotoById', () => {
       expect(result.title).toBe(mockPhoto.title);
       expect(result.description).toBe(mockPhoto.description);
       expect(result.favorite_count).toBe(42);
-      
+
       // Sensitive fields should NOT be present
       expect(result.exif).toBeUndefined();
       expect(result.location_exact).toBeUndefined();
       expect(result.status).toBeUndefined();
     });
 
-    it('should retrieve own photo with all sensitive fields', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+    it("should retrieve own photo with all sensitive fields", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'pending',
+        status: "pending",
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -607,25 +554,21 @@ describe('getPhotoById', () => {
 
       const requester: Requester = {
         id: ownerId,
-        role: 'photographer',
+        role: "photographer",
       };
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        requester,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, requester, mockClient);
 
       // All fields including sensitive ones should be present
       expect(result.id).toBe(mockPhoto.id);
       expect(result.title).toBe(mockPhoto.title);
       expect(result.exif).toEqual(mockPhoto.exif);
       expect(result.location_exact).toBeDefined();
-      expect(result.status).toBe('pending');
+      expect(result.status).toBe("pending");
     });
 
-    it('should include is_favorited flag for authenticated user', async () => {
-      const userId = '789e4567-e89b-12d3-a456-426614174002';
+    it("should include is_favorited flag for authenticated user", async () => {
+      const userId = "789e4567-e89b-12d3-a456-426614174002";
       const mockPhoto = createMockPhotoDetailRow();
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -635,20 +578,16 @@ describe('getPhotoById', () => {
 
       const requester: Requester = {
         id: userId,
-        role: 'enthusiast',
+        role: "enthusiast",
       };
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        requester,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, requester, mockClient);
 
       expect(result.is_favorited).toBe(true);
     });
 
-    it('should set is_favorited to false when user has not favorited', async () => {
-      const userId = '789e4567-e89b-12d3-a456-426614174002';
+    it("should set is_favorited to false when user has not favorited", async () => {
+      const userId = "789e4567-e89b-12d3-a456-426614174002";
       const mockPhoto = createMockPhotoDetailRow();
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -658,29 +597,21 @@ describe('getPhotoById', () => {
 
       const requester: Requester = {
         id: userId,
-        role: 'enthusiast',
+        role: "enthusiast",
       };
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        requester,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, requester, mockClient);
 
       expect(result.is_favorited).toBe(false);
     });
 
-    it('should map user profile data correctly', async () => {
+    it("should map user profile data correctly", async () => {
       const mockPhoto = createMockPhotoDetailRow();
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
       });
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        null,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
 
       expect(result.user.id).toBe(mockPhoto.user_profiles.user_id);
       expect(result.user.display_name).toBe(mockPhoto.user_profiles.display_name);
@@ -688,35 +619,27 @@ describe('getPhotoById', () => {
       expect(result.user.role).toBe(mockPhoto.user_profiles.role);
     });
 
-    it('should extract tags from nested structure', async () => {
+    it("should extract tags from nested structure", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        photo_tags: [
-          { tags: { name: 'landscape' } },
-          { tags: { name: 'sunset' } },
-          { tags: { name: 'nature' } },
-        ],
+        photo_tags: [{ tags: { name: "landscape" } }, { tags: { name: "sunset" } }, { tags: { name: "nature" } }],
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
       });
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        null,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
 
-      expect(result.tags).toEqual(['landscape', 'sunset', 'nature']);
+      expect(result.tags).toEqual(["landscape", "sunset", "nature"]);
     });
 
-    it('should calculate is_location_blurred correctly when locations differ', async () => {
+    it("should calculate is_location_blurred correctly when locations differ", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         location_public: JSON.stringify({
-          type: 'Point',
+          type: "Point",
           coordinates: [-122.4, 37.8],
         }),
         location_exact: JSON.stringify({
-          type: 'Point',
+          type: "Point",
           coordinates: [-122.401, 37.801],
         }),
       });
@@ -724,16 +647,12 @@ describe('getPhotoById', () => {
         photoData: mockPhoto,
       });
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        null,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
 
       expect(result.is_location_blurred).toBe(true);
     });
 
-    it('should set is_location_blurred to false when no exact location', async () => {
+    it("should set is_location_blurred to false when no exact location", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         location_exact: null,
       });
@@ -741,47 +660,41 @@ describe('getPhotoById', () => {
         photoData: mockPhoto,
       });
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        null,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, null, mockClient);
 
       expect(result.is_location_blurred).toBe(false);
     });
   });
 
-  describe('authorization checks', () => {
-    it('should throw 403 when anonymous user tries to view non-approved photo', async () => {
+  describe("authorization checks", () => {
+    it("should throw 403 when anonymous user tries to view non-approved photo", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        status: 'pending',
+        status: "pending",
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
       });
 
-      await expect(
-        getPhotoById(mockPhoto.id, null, mockClient)
-      ).rejects.toThrow(PhotoServiceError);
+      await expect(getPhotoById(mockPhoto.id, null, mockClient)).rejects.toThrow(PhotoServiceError);
 
       try {
         await getPhotoById(mockPhoto.id, null, mockClient);
       } catch (error) {
         expect(error).toBeInstanceOf(PhotoServiceError);
         if (error instanceof PhotoServiceError) {
-          expect(error.code).toBe('FORBIDDEN');
+          expect(error.code).toBe("FORBIDDEN");
           expect(error.statusCode).toBe(403);
         }
       }
     });
 
-    it('should throw 403 when non-owner tries to view pending photo', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
-      const otherUserId = '789e4567-e89b-12d3-a456-426614174002';
-      
+    it("should throw 403 when non-owner tries to view pending photo", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
+      const otherUserId = "789e4567-e89b-12d3-a456-426614174002";
+
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'pending',
+        status: "pending",
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -789,30 +702,28 @@ describe('getPhotoById', () => {
 
       const requester: Requester = {
         id: otherUserId,
-        role: 'photographer',
+        role: "photographer",
       };
 
-      await expect(
-        getPhotoById(mockPhoto.id, requester, mockClient)
-      ).rejects.toThrow(PhotoServiceError);
+      await expect(getPhotoById(mockPhoto.id, requester, mockClient)).rejects.toThrow(PhotoServiceError);
 
       try {
         await getPhotoById(mockPhoto.id, requester, mockClient);
       } catch (error) {
         expect(error).toBeInstanceOf(PhotoServiceError);
         if (error instanceof PhotoServiceError) {
-          expect(error.code).toBe('FORBIDDEN');
+          expect(error.code).toBe("FORBIDDEN");
           expect(error.statusCode).toBe(403);
         }
       }
     });
 
-    it('should allow owner to view their own pending photo', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
-      
+    it("should allow owner to view their own pending photo", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
+
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'pending',
+        status: "pending",
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -820,25 +731,21 @@ describe('getPhotoById', () => {
 
       const requester: Requester = {
         id: ownerId,
-        role: 'photographer',
+        role: "photographer",
       };
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        requester,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, requester, mockClient);
 
       expect(result.id).toBe(mockPhoto.id);
-      expect(result.status).toBe('pending');
+      expect(result.status).toBe("pending");
     });
 
-    it('should allow owner to view their own rejected photo', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
-      
+    it("should allow owner to view their own rejected photo", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
+
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'rejected',
+        status: "rejected",
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -846,76 +753,66 @@ describe('getPhotoById', () => {
 
       const requester: Requester = {
         id: ownerId,
-        role: 'photographer',
+        role: "photographer",
       };
 
-      const result = await getPhotoById(
-        mockPhoto.id,
-        requester,
-        mockClient
-      );
+      const result = await getPhotoById(mockPhoto.id, requester, mockClient);
 
       expect(result.id).toBe(mockPhoto.id);
-      expect(result.status).toBe('rejected');
+      expect(result.status).toBe("rejected");
     });
   });
 
-  describe('error handling', () => {
-    it('should throw 404 when photo not found', async () => {
+  describe("error handling", () => {
+    it("should throw 404 when photo not found", async () => {
       const mockClient = createMockSupabaseClientForDetail({
-        photoError: { code: 'PGRST116', message: 'No rows returned' },
+        photoError: { code: "PGRST116", message: "No rows returned" },
       });
 
-      await expect(
-        getPhotoById('nonexistent-uuid', null, mockClient)
-      ).rejects.toThrow(PhotoServiceError);
+      await expect(getPhotoById("nonexistent-uuid", null, mockClient)).rejects.toThrow(PhotoServiceError);
 
       try {
-        await getPhotoById('nonexistent-uuid', null, mockClient);
+        await getPhotoById("nonexistent-uuid", null, mockClient);
       } catch (error) {
         expect(error).toBeInstanceOf(PhotoServiceError);
         if (error instanceof PhotoServiceError) {
-          expect(error.code).toBe('PHOTO_NOT_FOUND');
+          expect(error.code).toBe("PHOTO_NOT_FOUND");
           expect(error.statusCode).toBe(404);
         }
       }
     });
 
-    it('should throw 500 on database error', async () => {
+    it("should throw 500 on database error", async () => {
       const mockClient = createMockSupabaseClientForDetail({
-        photoError: { code: 'DATABASE_ERROR', message: 'Connection failed' },
+        photoError: { code: "DATABASE_ERROR", message: "Connection failed" },
       });
 
-      await expect(
-        getPhotoById('test-uuid', null, mockClient)
-      ).rejects.toThrow(PhotoServiceError);
+      await expect(getPhotoById("test-uuid", null, mockClient)).rejects.toThrow(PhotoServiceError);
 
       try {
-        await getPhotoById('test-uuid', null, mockClient);
+        await getPhotoById("test-uuid", null, mockClient);
       } catch (error) {
         expect(error).toBeInstanceOf(PhotoServiceError);
         if (error instanceof PhotoServiceError) {
-          expect(error.code).toBe('DATABASE_ERROR');
+          expect(error.code).toBe("DATABASE_ERROR");
           expect(error.statusCode).toBe(500);
         }
       }
     });
 
-    it('should handle unexpected errors', async () => {
+    it("should handle unexpected errors", async () => {
       const mockClient = {
         from: vi.fn().mockImplementation(() => {
-          throw new Error('Unexpected error');
+          throw new Error("Unexpected error");
         }),
       } as unknown as SupabaseClient;
 
-      await expect(
-        getPhotoById('test-uuid', null, mockClient)
-      ).rejects.toThrow(PhotoServiceError);
+      await expect(getPhotoById("test-uuid", null, mockClient)).rejects.toThrow(PhotoServiceError);
     });
   });
 
-  describe('data mapping edge cases', () => {
-    it('should handle null description', async () => {
+  describe("data mapping edge cases", () => {
+    it("should handle null description", async () => {
       const mockPhoto = createMockPhotoDetailRow({ description: null });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -925,7 +822,7 @@ describe('getPhotoById', () => {
       expect(result.description).toBeNull();
     });
 
-    it('should handle null season', async () => {
+    it("should handle null season", async () => {
       const mockPhoto = createMockPhotoDetailRow({ season: null });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -935,7 +832,7 @@ describe('getPhotoById', () => {
       expect(result.season).toBeNull();
     });
 
-    it('should handle null time_of_day', async () => {
+    it("should handle null time_of_day", async () => {
       const mockPhoto = createMockPhotoDetailRow({ time_of_day: null });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -945,7 +842,7 @@ describe('getPhotoById', () => {
       expect(result.time_of_day).toBeNull();
     });
 
-    it('should handle null gear', async () => {
+    it("should handle null gear", async () => {
       const mockPhoto = createMockPhotoDetailRow({ gear: null });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -955,8 +852,8 @@ describe('getPhotoById', () => {
       expect(result.gear).toBeNull();
     });
 
-    it('should handle null exif', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+    it("should handle null exif", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
         exif: null,
@@ -965,12 +862,12 @@ describe('getPhotoById', () => {
         photoData: mockPhoto,
       });
 
-      const requester: Requester = { id: ownerId, role: 'photographer' };
+      const requester: Requester = { id: ownerId, role: "photographer" };
       const result = await getPhotoById(mockPhoto.id, requester, mockClient);
       expect(result.exif).toBeNull();
     });
 
-    it('should handle empty tags array', async () => {
+    it("should handle empty tags array", async () => {
       const mockPhoto = createMockPhotoDetailRow({ photo_tags: [] });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
@@ -980,31 +877,33 @@ describe('getPhotoById', () => {
       expect(result.tags).toEqual([]);
     });
 
-    it('should handle user_profiles as array', async () => {
+    it("should handle user_profiles as array", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        user_profiles: [{
-          user_id: '456e4567-e89b-12d3-a456-426614174001',
-          display_name: 'Jane Smith',
-          avatar_url: null,
-          role: 'enthusiast' as UserRole,
-        }],
+        user_profiles: [
+          {
+            user_id: "456e4567-e89b-12d3-a456-426614174001",
+            display_name: "Jane Smith",
+            avatar_url: null,
+            role: "enthusiast" as UserRole,
+          },
+        ],
       });
       const mockClient = createMockSupabaseClientForDetail({
         photoData: mockPhoto,
       });
 
       const result = await getPhotoById(mockPhoto.id, null, mockClient);
-      expect(result.user.display_name).toBe('Jane Smith');
+      expect(result.user.display_name).toBe("Jane Smith");
       expect(result.user.avatar_url).toBeNull();
     });
 
-    it('should fallback to Unknown for missing display_name', async () => {
+    it("should fallback to Unknown for missing display_name", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         user_profiles: {
-          user_id: '456e4567-e89b-12d3-a456-426614174001',
+          user_id: "456e4567-e89b-12d3-a456-426614174001",
           display_name: null,
           avatar_url: null,
-          role: 'photographer' as UserRole,
+          role: "photographer" as UserRole,
         },
       });
       const mockClient = createMockSupabaseClientForDetail({
@@ -1012,8 +911,7 @@ describe('getPhotoById', () => {
       });
 
       const result = await getPhotoById(mockPhoto.id, null, mockClient);
-      expect(result.user.display_name).toBe('Unknown');
+      expect(result.user.display_name).toBe("Unknown");
     });
   });
 });
-

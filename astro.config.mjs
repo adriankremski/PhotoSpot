@@ -14,7 +14,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     ssr: {
-      noExternal: ['react-map-gl', 'mapbox-gl'],
+      noExternal: ["react-map-gl", "mapbox-gl"],
     },
   },
   adapter: node({

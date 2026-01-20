@@ -1,20 +1,20 @@
 ---
 /**
  * Photo Upload Page
- * 
+ *
  * Full-screen wizard for uploading new photos with metadata and location.
  * Only accessible to authenticated users (protected by auth middleware).
  */
 
-import Layout from '@/layouts/Layout.astro';
-import { UploadWizard } from '@/components/upload/UploadWizard';
+import Layout from "@/layouts/Layout.astro";
+import { UploadWizard } from "@/components/upload/UploadWizard";
 
 // Check authentication - middleware handles redirect
 const user = Astro.locals.user;
 const userRole = Astro.locals.userRole;
 
 if (!user) {
-  return Astro.redirect('/login');
+  return Astro.redirect("/login");
 }
 ---
 
@@ -23,4 +23,3 @@ if (!user) {
     <UploadWizard client:load mode="page" userRole={userRole} />
   </main>
 </Layout>
-

@@ -2,10 +2,10 @@
  * Integration tests for GET /api/photos/:photoId endpoint
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { GET } from './[photoId]';
-import type { SupabaseClient } from '../../../db/supabase.client';
-import type { PhotoCategory, Season, TimeOfDay, PhotoStatus, UserRole } from '../../../types';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { GET } from "./[photoId]";
+import type { SupabaseClient } from "../../../db/supabase.client";
+import type { PhotoCategory, Season, TimeOfDay, PhotoStatus, UserRole } from "../../../types";
 
 /**
  * Helper to create a mock Astro APIContext
@@ -15,7 +15,7 @@ function createMockContext(photoId: string, supabaseClient: any) {
 
   return {
     request: new Request(url.toString(), {
-      method: 'GET',
+      method: "GET",
     }),
     locals: {
       supabase: supabaseClient,
@@ -26,10 +26,10 @@ function createMockContext(photoId: string, supabaseClient: any) {
     url,
     redirect: vi.fn(),
     cookies: {} as any,
-    clientAddress: '127.0.0.1',
-    generator: 'test',
+    clientAddress: "127.0.0.1",
+    generator: "test",
     props: {},
-    site: new URL('http://localhost'),
+    site: new URL("http://localhost"),
   };
 }
 
@@ -50,36 +50,33 @@ async function parseResponse(response: Response) {
  */
 function createMockPhotoDetailRow(overrides?: Partial<any>) {
   return {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    title: 'Beautiful Landscape',
-    description: 'A stunning view of the mountains',
-    category: 'landscape' as PhotoCategory,
-    season: 'summer' as Season,
-    time_of_day: 'golden_hour_morning' as TimeOfDay,
-    file_url: 'https://example.com/photo.jpg',
+    id: "123e4567-e89b-12d3-a456-426614174000",
+    title: "Beautiful Landscape",
+    description: "A stunning view of the mountains",
+    category: "landscape" as PhotoCategory,
+    season: "summer" as Season,
+    time_of_day: "golden_hour_morning" as TimeOfDay,
+    file_url: "https://example.com/photo.jpg",
     location_public: JSON.stringify({
-      type: 'Point',
+      type: "Point",
       coordinates: [-122.4, 37.8],
     }),
     location_exact: JSON.stringify({
-      type: 'Point',
+      type: "Point",
       coordinates: [-122.401, 37.801],
     }),
-    gear: { camera: 'Canon EOS R5', lens: 'RF 24-70mm f/2.8' },
-    exif: { aperture: 'f/8', shutter_speed: '1/250', iso: 100 },
-    status: 'approved' as PhotoStatus,
-    user_id: '456e4567-e89b-12d3-a456-426614174001',
+    gear: { camera: "Canon EOS R5", lens: "RF 24-70mm f/2.8" },
+    exif: { aperture: "f/8", shutter_speed: "1/250", iso: 100 },
+    status: "approved" as PhotoStatus,
+    user_id: "456e4567-e89b-12d3-a456-426614174001",
     user_profiles: {
-      user_id: '456e4567-e89b-12d3-a456-426614174001',
-      display_name: 'John Doe',
-      avatar_url: 'https://example.com/avatar.jpg',
-      role: 'photographer' as UserRole,
+      user_id: "456e4567-e89b-12d3-a456-426614174001",
+      display_name: "John Doe",
+      avatar_url: "https://example.com/avatar.jpg",
+      role: "photographer" as UserRole,
     },
-    photo_tags: [
-      { tags: { name: 'nature' } },
-      { tags: { name: 'mountains' } },
-    ],
-    created_at: '2024-01-01T00:00:00Z',
+    photo_tags: [{ tags: { name: "nature" } }, { tags: { name: "mountains" } }],
+    created_at: "2024-01-01T00:00:00Z",
     deleted_at: null,
     ...overrides,
   };
@@ -107,7 +104,7 @@ function createMockSupabaseClient(overrides?: {
   };
 
   const mockFavoriteQuery = {
-    data: overrides?.isFavorited ? { photo_id: 'test' } : null,
+    data: overrides?.isFavorited ? { photo_id: "test" } : null,
     error: null,
   };
 
@@ -131,7 +128,7 @@ function createMockSupabaseClient(overrides?: {
     };
     // For favorite count query (head: true)
     chain.eq.mockImplementation((field: string) => {
-      if (field === 'photo_id') {
+      if (field === "photo_id") {
         return Promise.resolve(mockFavoriteCountQuery);
       }
       return chain;
@@ -151,19 +148,15 @@ function createMockSupabaseClient(overrides?: {
 
   return {
     from: vi.fn().mockImplementation((table: string) => {
-      if (table === 'photos') {
+      if (table === "photos") {
         return {
           select: vi.fn().mockReturnValue(createPhotoQueryChain()),
         };
       }
-      if (table === 'favorites') {
+      if (table === "favorites") {
         selectCallCount++;
         return {
-          select: vi.fn().mockReturnValue(
-            selectCallCount === 1 
-              ? createCountQueryChain() 
-              : createFavoriteQueryChain()
-          ),
+          select: vi.fn().mockReturnValue(selectCallCount === 1 ? createCountQueryChain() : createFavoriteQueryChain()),
         };
       }
       return { select: vi.fn() };
@@ -176,15 +169,15 @@ function createMockSupabaseClient(overrides?: {
   } as unknown as SupabaseClient;
 }
 
-describe('GET /api/photos/:photoId', () => {
+describe("GET /api/photos/:photoId", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('successful requests - anonymous users', () => {
-    it('should return approved photo for anonymous user', async () => {
+  describe("successful requests - anonymous users", () => {
+    it("should return approved photo for anonymous user", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        status: 'approved',
+        status: "approved",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
@@ -200,7 +193,7 @@ describe('GET /api/photos/:photoId', () => {
       expect(data.title).toBe(mockPhoto.title);
       expect(data.description).toBe(mockPhoto.description);
       expect(data.favorite_count).toBe(42);
-      
+
       // Sensitive fields should NOT be present
       expect(data.exif).toBeUndefined();
       expect(data.location_exact).toBeUndefined();
@@ -208,12 +201,12 @@ describe('GET /api/photos/:photoId', () => {
 
       // Cache headers for public content (optional check)
       // Note: Response headers may not be properly serialized in tests
-      if (headers['cache-control']) {
-        expect(headers['cache-control']).toBe('public, max-age=60');
+      if (headers["cache-control"]) {
+        expect(headers["cache-control"]).toBe("public, max-age=60");
       }
     });
 
-    it('should return photo with correct structure', async () => {
+    it("should return photo with correct structure", async () => {
       const mockPhoto = createMockPhotoDetailRow();
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
@@ -235,7 +228,7 @@ describe('GET /api/photos/:photoId', () => {
         file_url: mockPhoto.file_url,
         thumbnail_url: mockPhoto.file_url,
         location_public: {
-          type: 'Point',
+          type: "Point",
           coordinates: [-122.4, 37.8],
         },
         is_location_blurred: true,
@@ -246,15 +239,15 @@ describe('GET /api/photos/:photoId', () => {
           avatar_url: mockPhoto.user_profiles.avatar_url,
           role: mockPhoto.user_profiles.role,
         },
-        tags: ['nature', 'mountains'],
+        tags: ["nature", "mountains"],
         favorite_count: 10,
         is_favorited: false,
       });
     });
 
-    it('should return 403 when anonymous user tries to view pending photo', async () => {
+    it("should return 403 when anonymous user tries to view pending photo", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        status: 'pending',
+        status: "pending",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
@@ -265,13 +258,13 @@ describe('GET /api/photos/:photoId', () => {
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(403);
-      expect(data.error.code).toBe('FORBIDDEN');
-      expect(data.error.message).toBe('You do not have permission to view this photo');
+      expect(data.error.code).toBe("FORBIDDEN");
+      expect(data.error.message).toBe("You do not have permission to view this photo");
     });
 
-    it('should return 403 when anonymous user tries to view rejected photo', async () => {
+    it("should return 403 when anonymous user tries to view rejected photo", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        status: 'rejected',
+        status: "rejected",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
@@ -282,24 +275,24 @@ describe('GET /api/photos/:photoId', () => {
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(403);
-      expect(data.error.code).toBe('FORBIDDEN');
+      expect(data.error.code).toBe("FORBIDDEN");
     });
   });
 
-  describe('successful requests - authenticated users (owner)', () => {
-    it('should return own pending photo with all sensitive fields', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+  describe("successful requests - authenticated users (owner)", () => {
+    it("should return own pending photo with all sensitive fields", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'pending',
+        status: "pending",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
         favoriteCount: 5,
         authUser: {
           id: ownerId,
-          email: 'owner@example.com',
-          user_metadata: { role: 'photographer' },
+          email: "owner@example.com",
+          user_metadata: { role: "photographer" },
         },
       });
 
@@ -309,34 +302,34 @@ describe('GET /api/photos/:photoId', () => {
 
       expect(status).toBe(200);
       expect(data.id).toBe(mockPhoto.id);
-      
+
       // All fields including sensitive ones should be present
       expect(data.exif).toEqual(mockPhoto.exif);
       expect(data.location_exact).toEqual({
-        type: 'Point',
+        type: "Point",
         coordinates: [-122.401, 37.801],
       });
-      expect(data.status).toBe('pending');
+      expect(data.status).toBe("pending");
 
       // No caching for authenticated requests (optional check)
       // Note: Response headers may not be properly serialized in tests
-      if (headers['cache-control']) {
-        expect(headers['cache-control']).toBe('private, no-cache');
+      if (headers["cache-control"]) {
+        expect(headers["cache-control"]).toBe("private, no-cache");
       }
     });
 
-    it('should return own rejected photo with status field', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+    it("should return own rejected photo with status field", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'rejected',
+        status: "rejected",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
         authUser: {
           id: ownerId,
-          email: 'owner@example.com',
-          user_metadata: { role: 'photographer' },
+          email: "owner@example.com",
+          user_metadata: { role: "photographer" },
         },
       });
 
@@ -345,11 +338,11 @@ describe('GET /api/photos/:photoId', () => {
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(200);
-      expect(data.status).toBe('rejected');
+      expect(data.status).toBe("rejected");
     });
 
-    it('should set is_favorited to true when user has favorited', async () => {
-      const userId = '456e4567-e89b-12d3-a456-426614174001';
+    it("should set is_favorited to true when user has favorited", async () => {
+      const userId = "456e4567-e89b-12d3-a456-426614174001";
       const mockPhoto = createMockPhotoDetailRow({
         user_id: userId,
       });
@@ -359,8 +352,8 @@ describe('GET /api/photos/:photoId', () => {
         isFavorited: true,
         authUser: {
           id: userId,
-          email: 'user@example.com',
-          user_metadata: { role: 'photographer' },
+          email: "user@example.com",
+          user_metadata: { role: "photographer" },
         },
       });
 
@@ -372,18 +365,18 @@ describe('GET /api/photos/:photoId', () => {
       expect(data.is_favorited).toBe(true);
     });
 
-    it('should return own approved photo with sensitive fields', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
+    it("should return own approved photo with sensitive fields", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'approved',
+        status: "approved",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
         authUser: {
           id: ownerId,
-          email: 'owner@example.com',
-          user_metadata: { role: 'photographer' },
+          email: "owner@example.com",
+          user_metadata: { role: "photographer" },
         },
       });
 
@@ -394,26 +387,26 @@ describe('GET /api/photos/:photoId', () => {
       expect(status).toBe(200);
       expect(data.exif).toEqual(mockPhoto.exif);
       expect(data.location_exact).toBeDefined();
-      expect(data.status).toBe('approved');
+      expect(data.status).toBe("approved");
     });
   });
 
-  describe('successful requests - authenticated users (non-owner)', () => {
-    it('should return approved photo without sensitive fields for non-owner', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
-      const otherUserId = '789e4567-e89b-12d3-a456-426614174002';
-      
+  describe("successful requests - authenticated users (non-owner)", () => {
+    it("should return approved photo without sensitive fields for non-owner", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
+      const otherUserId = "789e4567-e89b-12d3-a456-426614174002";
+
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'approved',
+        status: "approved",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
         favoriteCount: 20,
         authUser: {
           id: otherUserId,
-          email: 'other@example.com',
-          user_metadata: { role: 'enthusiast' },
+          email: "other@example.com",
+          user_metadata: { role: "enthusiast" },
         },
       });
 
@@ -423,7 +416,7 @@ describe('GET /api/photos/:photoId', () => {
 
       expect(status).toBe(200);
       expect(data.id).toBe(mockPhoto.id);
-      
+
       // Sensitive fields should NOT be present
       expect(data.exif).toBeUndefined();
       expect(data.location_exact).toBeUndefined();
@@ -431,25 +424,25 @@ describe('GET /api/photos/:photoId', () => {
 
       // No caching for authenticated requests (optional check)
       // Note: Response headers may not be properly serialized in tests
-      if (headers['cache-control']) {
-        expect(headers['cache-control']).toBe('private, no-cache');
+      if (headers["cache-control"]) {
+        expect(headers["cache-control"]).toBe("private, no-cache");
       }
     });
 
-    it('should return 403 when non-owner tries to view pending photo', async () => {
-      const ownerId = '456e4567-e89b-12d3-a456-426614174001';
-      const otherUserId = '789e4567-e89b-12d3-a456-426614174002';
-      
+    it("should return 403 when non-owner tries to view pending photo", async () => {
+      const ownerId = "456e4567-e89b-12d3-a456-426614174001";
+      const otherUserId = "789e4567-e89b-12d3-a456-426614174002";
+
       const mockPhoto = createMockPhotoDetailRow({
         user_id: ownerId,
-        status: 'pending',
+        status: "pending",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
         authUser: {
           id: otherUserId,
-          email: 'other@example.com',
-          user_metadata: { role: 'photographer' },
+          email: "other@example.com",
+          user_metadata: { role: "photographer" },
         },
       });
 
@@ -458,54 +451,54 @@ describe('GET /api/photos/:photoId', () => {
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(403);
-      expect(data.error.code).toBe('FORBIDDEN');
+      expect(data.error.code).toBe("FORBIDDEN");
     });
   });
 
-  describe('validation errors', () => {
-    it('should return 400 for invalid UUID format', async () => {
+  describe("validation errors", () => {
+    it("should return 400 for invalid UUID format", async () => {
       const mockClient = createMockSupabaseClient();
-      const context = createMockContext('invalid-uuid', mockClient);
+      const context = createMockContext("invalid-uuid", mockClient);
       const response = await GET(context as any);
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(400);
-      expect(data.error.code).toBe('INVALID_INPUT');
-      expect(data.error.message).toBe('Invalid photo ID format');
+      expect(data.error.code).toBe("INVALID_INPUT");
+      expect(data.error.message).toBe("Invalid photo ID format");
     });
 
-    it('should return 400 for non-UUID string', async () => {
+    it("should return 400 for non-UUID string", async () => {
       const mockClient = createMockSupabaseClient();
-      const context = createMockContext('not-a-uuid-at-all', mockClient);
+      const context = createMockContext("not-a-uuid-at-all", mockClient);
       const response = await GET(context as any);
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(400);
-      expect(data.error.code).toBe('INVALID_INPUT');
+      expect(data.error.code).toBe("INVALID_INPUT");
     });
   });
 
-  describe('not found errors', () => {
-    it('should return 404 when photo does not exist', async () => {
+  describe("not found errors", () => {
+    it("should return 404 when photo does not exist", async () => {
       const mockClient = createMockSupabaseClient({
-        photoError: { code: 'PGRST116', message: 'No rows returned' },
+        photoError: { code: "PGRST116", message: "No rows returned" },
       });
 
-      const context = createMockContext('123e4567-e89b-12d3-a456-426614174000', mockClient);
+      const context = createMockContext("123e4567-e89b-12d3-a456-426614174000", mockClient);
       const response = await GET(context as any);
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(404);
-      expect(data.error.code).toBe('PHOTO_NOT_FOUND');
-      expect(data.error.message).toBe('Photo not found');
+      expect(data.error.code).toBe("PHOTO_NOT_FOUND");
+      expect(data.error.message).toBe("Photo not found");
     });
 
-    it('should return 404 when photo is soft-deleted', async () => {
+    it("should return 404 when photo is soft-deleted", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        deleted_at: '2024-01-15T00:00:00Z',
+        deleted_at: "2024-01-15T00:00:00Z",
       });
       const mockClient = createMockSupabaseClient({
-        photoError: { code: 'PGRST116', message: 'No rows returned' },
+        photoError: { code: "PGRST116", message: "No rows returned" },
       });
 
       const context = createMockContext(mockPhoto.id, mockClient);
@@ -513,17 +506,17 @@ describe('GET /api/photos/:photoId', () => {
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(404);
-      expect(data.error.code).toBe('PHOTO_NOT_FOUND');
+      expect(data.error.code).toBe("PHOTO_NOT_FOUND");
     });
   });
 
-  describe('authentication errors', () => {
-    it('should return 401 for invalid authentication token', async () => {
+  describe("authentication errors", () => {
+    it("should return 401 for invalid authentication token", async () => {
       const mockPhoto = createMockPhotoDetailRow();
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
         authError: {
-          message: 'Invalid JWT token',
+          message: "Invalid JWT token",
           status: 401,
         },
       });
@@ -533,19 +526,19 @@ describe('GET /api/photos/:photoId', () => {
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(401);
-      expect(data.error.code).toBe('INVALID_TOKEN');
-      expect(data.error.message).toBe('Invalid or expired authentication token');
+      expect(data.error.code).toBe("INVALID_TOKEN");
+      expect(data.error.message).toBe("Invalid or expired authentication token");
     });
 
-    it('should handle missing auth session gracefully (treat as anonymous)', async () => {
+    it("should handle missing auth session gracefully (treat as anonymous)", async () => {
       const mockPhoto = createMockPhotoDetailRow({
-        status: 'approved',
+        status: "approved",
       });
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
         favoriteCount: 10,
         authError: {
-          message: 'Auth session missing!',
+          message: "Auth session missing!",
         },
       });
 
@@ -560,42 +553,42 @@ describe('GET /api/photos/:photoId', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('should return 500 for database errors', async () => {
+  describe("error handling", () => {
+    it("should return 500 for database errors", async () => {
       const mockClient = createMockSupabaseClient({
-        photoError: { code: 'DATABASE_ERROR', message: 'Connection failed' },
+        photoError: { code: "DATABASE_ERROR", message: "Connection failed" },
       });
 
-      const context = createMockContext('123e4567-e89b-12d3-a456-426614174000', mockClient);
+      const context = createMockContext("123e4567-e89b-12d3-a456-426614174000", mockClient);
       const response = await GET(context as any);
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(500);
-      expect(data.error.code).toBe('DATABASE_ERROR');
-      expect(data.error.message).toBe('Failed to retrieve photo from database');
+      expect(data.error.code).toBe("DATABASE_ERROR");
+      expect(data.error.message).toBe("Failed to retrieve photo from database");
     });
 
-    it('should handle unexpected errors', async () => {
+    it("should handle unexpected errors", async () => {
       const mockClient = {
         from: vi.fn().mockImplementation(() => {
-          throw new Error('Unexpected error');
+          throw new Error("Unexpected error");
         }),
         auth: {
           getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
         },
       } as unknown as SupabaseClient;
 
-      const context = createMockContext('123e4567-e89b-12d3-a456-426614174000', mockClient);
+      const context = createMockContext("123e4567-e89b-12d3-a456-426614174000", mockClient);
       const response = await GET(context as any);
       const { status, data } = await parseResponse(response);
 
       expect(status).toBe(500);
-      expect(data.error.code).toBe('INTERNAL_ERROR');
+      expect(data.error.code).toBe("INTERNAL_ERROR");
     });
   });
 
-  describe('data mapping edge cases', () => {
-    it('should handle null optional fields', async () => {
+  describe("data mapping edge cases", () => {
+    it("should handle null optional fields", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         description: null,
         season: null,
@@ -618,7 +611,7 @@ describe('GET /api/photos/:photoId', () => {
       expect(data.gear).toBeNull();
     });
 
-    it('should handle empty tags array', async () => {
+    it("should handle empty tags array", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         photo_tags: [],
       });
@@ -634,7 +627,7 @@ describe('GET /api/photos/:photoId', () => {
       expect(data.tags).toEqual([]);
     });
 
-    it('should handle zero favorite count', async () => {
+    it("should handle zero favorite count", async () => {
       const mockPhoto = createMockPhotoDetailRow();
       const mockClient = createMockSupabaseClient({
         photoData: mockPhoto,
@@ -649,13 +642,13 @@ describe('GET /api/photos/:photoId', () => {
       expect(data.favorite_count).toBe(0);
     });
 
-    it('should handle null avatar_url', async () => {
+    it("should handle null avatar_url", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         user_profiles: {
-          user_id: '456e4567-e89b-12d3-a456-426614174001',
-          display_name: 'Jane Smith',
+          user_id: "456e4567-e89b-12d3-a456-426614174001",
+          display_name: "Jane Smith",
           avatar_url: null,
-          role: 'enthusiast' as UserRole,
+          role: "enthusiast" as UserRole,
         },
       });
       const mockClient = createMockSupabaseClient({
@@ -670,14 +663,14 @@ describe('GET /api/photos/:photoId', () => {
       expect(data.user.avatar_url).toBeNull();
     });
 
-    it('should calculate is_location_blurred correctly', async () => {
+    it("should calculate is_location_blurred correctly", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         location_public: JSON.stringify({
-          type: 'Point',
+          type: "Point",
           coordinates: [-122.4, 37.8],
         }),
         location_exact: JSON.stringify({
-          type: 'Point',
+          type: "Point",
           coordinates: [-122.401, 37.801],
         }),
       });
@@ -693,7 +686,7 @@ describe('GET /api/photos/:photoId', () => {
       expect(data.is_location_blurred).toBe(true);
     });
 
-    it('should set is_location_blurred to false when no exact location', async () => {
+    it("should set is_location_blurred to false when no exact location", async () => {
       const mockPhoto = createMockPhotoDetailRow({
         location_exact: null,
       });
@@ -710,5 +703,3 @@ describe('GET /api/photos/:photoId', () => {
     });
   });
 });
-
-

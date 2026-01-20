@@ -1,14 +1,14 @@
 ---
 /**
  * Map View Page
- * 
+ *
  * Main page for discovering photo locations through an interactive map.
  * Public view - accessible to all users, with additional features for authenticated users.
  */
 
-import Layout from '../layouts/Layout.astro';
-import { MapSection } from '../components/map/MapSection';
-import type { UserRole } from '../types';
+import Layout from "../layouts/Layout.astro";
+import { MapSection } from "../components/map/MapSection";
+import type { UserRole } from "../types";
 
 // Get user authentication state from middleware
 const session = Astro.locals.session;
@@ -24,21 +24,29 @@ const userRole: UserRole | null = user?.user_metadata?.role || null;
 
 <Layout title="Map - Discover Photo Spots | PhotoSpot">
   <!-- Meta tags for SEO -->
-  <meta name="description" content="Discover amazing photo locations on an interactive map. Filter by category, season, and time of day to find your perfect shot." slot="head" />
-  <meta name="keywords" content="photo map, photography locations, photo spots, landscape photography, travel photography" slot="head" />
-  
+  <meta
+    name="description"
+    content="Discover amazing photo locations on an interactive map. Filter by category, season, and time of day to find your perfect shot."
+    slot="head"
+  />
+  <meta
+    name="keywords"
+    content="photo map, photography locations, photo spots, landscape photography, travel photography"
+    slot="head"
+  />
+
   <!-- Open Graph tags -->
   <meta property="og:title" content="Photo Map - Discover Perfect Spots" slot="head" />
-  <meta property="og:description" content="Explore an interactive map of stunning photo locations shared by photographers worldwide." slot="head" />
+  <meta
+    property="og:description"
+    content="Explore an interactive map of stunning photo locations shared by photographers worldwide."
+    slot="head"
+  />
   <meta property="og:type" content="website" slot="head" />
 
   <!-- Full-screen map container -->
   <div class="h-screen w-screen overflow-hidden">
-    <MapSection
-      client:load
-      isAuthenticated={isAuthenticated}
-      userRole={userRole}
-    />
+    <MapSection client:load isAuthenticated={isAuthenticated} userRole={userRole} />
   </div>
 </Layout>
 
@@ -50,4 +58,3 @@ const userRole: UserRole | null = user?.user_metadata?.role || null;
     overflow: hidden;
   }
 </style>
-

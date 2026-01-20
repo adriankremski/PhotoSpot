@@ -1,46 +1,63 @@
 /**
  * UploadWizard Component
- * 
+ *
  * Main controller for the multi-step photo upload wizard.
  * Can be rendered as a full page or in a modal.
  */
 
-import { useCallback, useState } from 'react';
-import { useUploadWizard } from './useUploadWizard';
-import { useCreatePhoto } from './useCreatePhoto';
-import { StepIndicator } from './StepIndicator';
-import { Dropzone } from './Dropzone';
-import { MetadataForm } from './MetadataForm';
-import { MapPicker } from './MapPicker';
-import { ReviewSummary } from './ReviewSummary';
-import { WizardFooter } from './WizardFooter';
-import { UploadStep } from './types';
-import type { UploadWizardProps, FileWithPreview, ValidationError } from './types';
+import { useCallback, useState } from "react";
+import { useUploadWizard } from "./useUploadWizard";
+import { useCreatePhoto } from "./useCreatePhoto";
+import { StepIndicator } from "./StepIndicator";
+import { Dropzone } from "./Dropzone";
+import { MetadataForm } from "./MetadataForm";
+import { MapPicker } from "./MapPicker";
+import { ReviewSummary } from "./ReviewSummary";
+import { WizardFooter } from "./WizardFooter";
+import { UploadStep } from "./types";
+import type { UploadWizardProps, FileWithPreview, ValidationError } from "./types";
 
 /**
  * UploadWizard - Multi-step photo upload flow
  */
 export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWizardProps) {
   const wizard = useUploadWizard();
-  const { state, setFile, updateMetadata, updateLocation, next, back, canGoNext, canGoBack, totalSteps, setSubmitting, reset } = wizard;
-  
+  const {
+    state,
+    setFile,
+    updateMetadata,
+    updateLocation,
+    next,
+    back,
+    canGoNext,
+    canGoBack,
+    totalSteps,
+    setSubmitting,
+    reset,
+  } = wizard;
+
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  
+
   // Photo creation hook
-  const { createPhoto, isLoading: isUploading, error: uploadApiError, fieldErrors } = useCreatePhoto({
+  const {
+    createPhoto,
+    isLoading: isUploading,
+    error: uploadApiError,
+    fieldErrors,
+  } = useCreatePhoto({
     onSuccess: (response) => {
       setUploadSuccess(true);
       setUploadError(null);
-      
+
       // Show success message
       setTimeout(() => {
         reset();
         onSuccess?.(response.photo.id);
-        
+
         // Redirect to map if in page mode
-        if (mode === 'page') {
-          window.location.href = '/map';
+        if (mode === "page") {
+          window.location.href = "/map";
         }
       }, 1500);
     },
@@ -57,13 +74,13 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
   const handleFileAccepted = useCallback(
     (fileWithPreview: FileWithPreview) => {
       setFile(fileWithPreview);
-      
+
       // Auto-populate metadata from EXIF if available
       if (fileWithPreview.exif) {
         updateMetadata({
           gear: {
-            camera: fileWithPreview.exif.camera || '',
-            lens: fileWithPreview.exif.lens || '',
+            camera: fileWithPreview.exif.camera || "",
+            lens: fileWithPreview.exif.lens || "",
           },
         });
       }
@@ -72,7 +89,7 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
   );
 
   const handleFileError = useCallback((error: ValidationError) => {
-    console.error('File validation error:', error);
+    console.error("File validation error:", error);
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -86,39 +103,39 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
 
     // Build FormData
     const formData = new FormData();
-    formData.append('file', state.file);
-    formData.append('title', state.metadata.title);
-    
+    formData.append("file", state.file);
+    formData.append("title", state.metadata.title);
+
     if (state.metadata.description) {
-      formData.append('description', state.metadata.description);
+      formData.append("description", state.metadata.description);
     }
-    
-    formData.append('category', state.metadata.category);
-    
+
+    formData.append("category", state.metadata.category);
+
     if (state.metadata.season) {
-      formData.append('season', state.metadata.season);
+      formData.append("season", state.metadata.season);
     }
-    
+
     if (state.metadata.time_of_day) {
-      formData.append('time_of_day', state.metadata.time_of_day);
+      formData.append("time_of_day", state.metadata.time_of_day);
     }
-    
-    formData.append('latitude', state.location.latitude!.toString());
-    formData.append('longitude', state.location.longitude!.toString());
-    
+
+    formData.append("latitude", state.location.latitude!.toString());
+    formData.append("longitude", state.location.longitude!.toString());
+
     if (state.location.blur_location) {
-      formData.append('blur_location', 'true');
-      formData.append('blur_radius', state.location.blur_radius.toString());
+      formData.append("blur_location", "true");
+      formData.append("blur_radius", state.location.blur_radius.toString());
     }
-    
+
     // Tags array
     state.metadata.tags.forEach((tag) => {
-      formData.append('tags[]', tag);
+      formData.append("tags[]", tag);
     });
-    
+
     // Gear as JSON
     if (state.metadata.gear.camera || state.metadata.gear.lens) {
-      formData.append('gear', JSON.stringify(state.metadata.gear));
+      formData.append("gear", JSON.stringify(state.metadata.gear));
     }
 
     // Call the upload hook
@@ -126,10 +143,10 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
   }, [state, setSubmitting, createPhoto]);
 
   const handleCancel = useCallback(() => {
-    const shouldCancel = confirm('Are you sure you want to cancel? Your changes will be lost.');
+    const shouldCancel = confirm("Are you sure you want to cancel? Your changes will be lost.");
     if (shouldCancel) {
       reset();
-      if (mode === 'modal') {
+      if (mode === "modal") {
         onCancel?.();
       } else {
         window.history.back();
@@ -165,9 +182,7 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
   // Render
   // ============================================================================
 
-  const containerClass = mode === 'modal' 
-    ? 'flex h-full flex-col' 
-    : 'mx-auto max-w-4xl';
+  const containerClass = mode === "modal" ? "flex h-full flex-col" : "mx-auto max-w-4xl";
 
   return (
     <div className={containerClass}>
@@ -193,16 +208,17 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
           {Object.values(state.errors).map((error, idx) => (
             <p key={idx}>{error}</p>
           ))}
-          {fieldErrors && Object.entries(fieldErrors).map(([field, error]) => (
-            <p key={field}>{field}: {error}</p>
-          ))}
+          {fieldErrors &&
+            Object.entries(fieldErrors).map(([field, error]) => (
+              <p key={field}>
+                {field}: {error}
+              </p>
+            ))}
         </div>
       )}
 
       {/* Step Content */}
-      <div className="mb-6 flex-1 overflow-auto">
-        {renderStep()}
-      </div>
+      <div className="mb-6 flex-1 overflow-auto">{renderStep()}</div>
 
       {/* Footer with Navigation */}
       <WizardFooter
@@ -219,4 +235,3 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
     </div>
   );
 }
-

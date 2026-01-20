@@ -3,10 +3,10 @@
  * Handles form state, validation, API calls, and session management
  */
 
-import { useState, useCallback } from 'react';
-import { z } from 'zod';
-import type { RegisterUserCommand, AuthResponse, UserRole } from '@/types';
-import { supabaseClient } from '@/db/supabase.client';
+import { useState, useCallback } from "react";
+import { z } from "zod";
+import type { RegisterUserCommand, AuthResponse, UserRole } from "@/types";
+import { supabaseClient } from "@/db/supabase.client";
 
 /**
  * Registration form internal state
@@ -40,14 +40,14 @@ export interface RegisterViewModel {
  * Client-side validation schema
  */
 const registerFormSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email("Invalid email address"),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters long')
-    .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  role: z.enum(['photographer', 'enthusiast'], {
-    errorMap: () => ({ message: 'Please select a role' }),
+    .min(8, "Password must be at least 8 characters long")
+    .regex(/[a-zA-Z]/, "Password must contain at least one letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  role: z.enum(["photographer", "enthusiast"], {
+    errorMap: () => ({ message: "Please select a role" }),
   }),
 });
 
@@ -56,8 +56,8 @@ const registerFormSchema = z.object({
  */
 export function useRegisterUser(): RegisterViewModel {
   const [values, setValues] = useState<RegisterFormValues>({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     role: null,
   });
 
@@ -68,18 +68,15 @@ export function useRegisterUser(): RegisterViewModel {
   /**
    * Handle field value changes
    */
-  const handleChange = useCallback(
-    (field: keyof RegisterFormValues, value: string | UserRole | null) => {
-      setValues((prev) => ({ ...prev, [field]: value }));
-      // Clear field error on change
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    },
-    []
-  );
+  const handleChange = useCallback((field: keyof RegisterFormValues, value: string | UserRole | null) => {
+    setValues((prev) => ({ ...prev, [field]: value }));
+    // Clear field error on change
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
 
   /**
    * Handle form submission
@@ -118,10 +115,10 @@ export function useRegisterUser(): RegisterViewModel {
         };
 
         // Call registration API
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
         });
@@ -136,23 +133,23 @@ export function useRegisterUser(): RegisterViewModel {
               // Map API field errors
               const apiErrors: RegisterFormErrors = {};
               Object.entries(data.error.details).forEach(([field, message]) => {
-                if (field === 'email' || field === 'password' || field === 'role') {
+                if (field === "email" || field === "password" || field === "role") {
                   apiErrors[field] = String(message);
                 }
               });
               setErrors(apiErrors);
             } else {
-              setErrors({ form: data.error?.message || 'Invalid input. Please check your details.' });
+              setErrors({ form: data.error?.message || "Invalid input. Please check your details." });
             }
           } else if (response.status === 409) {
             // Conflict - email already registered
-            setErrors({ form: 'Email already registered. Please sign in instead.' });
+            setErrors({ form: "Email already registered. Please sign in instead." });
           } else if (response.status === 429) {
             // Rate limit
-            setErrors({ form: 'Too many registration attempts. Please try again later.' });
+            setErrors({ form: "Too many registration attempts. Please try again later." });
           } else {
             // Generic error
-            setErrors({ form: data.error?.message || 'Registration failed. Please try again.' });
+            setErrors({ form: data.error?.message || "Registration failed. Please try again." });
           }
           setLoading(false);
           return;
@@ -160,7 +157,7 @@ export function useRegisterUser(): RegisterViewModel {
 
         // Success - store session
         const authResponse = data as AuthResponse;
-        
+
         // Set session in Supabase client
         await supabaseClient.auth.setSession({
           access_token: authResponse.session.access_token,
@@ -171,11 +168,11 @@ export function useRegisterUser(): RegisterViewModel {
         setLoading(false);
 
         // Redirect to onboarding
-        window.location.href = '/onboarding';
+        window.location.href = "/onboarding";
       } catch (error) {
         // Network or unexpected error
-        console.error('Registration error:', error);
-        setErrors({ form: 'Unable to connect. Please check your internet connection and try again.' });
+        console.error("Registration error:", error);
+        setErrors({ form: "Unable to connect. Please check your internet connection and try again." });
         setLoading(false);
       }
     },
@@ -191,4 +188,3 @@ export function useRegisterUser(): RegisterViewModel {
     handleSubmit,
   };
 }
-

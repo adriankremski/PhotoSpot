@@ -1,8 +1,8 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import { NavbarPublic } from '@/components/NavbarPublic';
-import { RegisterForm } from '@/components/auth/RegisterForm';
-import Footer from '@/components/Footer.astro';
+import Layout from "@/layouts/Layout.astro";
+import { NavbarPublic } from "@/components/NavbarPublic";
+import { RegisterForm } from "@/components/auth/RegisterForm";
+import Footer from "@/components/Footer.astro";
 
 // Export to disable prerendering for this dynamic page
 export const prerender = false;
@@ -14,35 +14,30 @@ const user = Astro.locals.user;
 // Auth guard: Redirect authenticated users to home (middleware will handle further routing)
 if (session && user) {
   const isOnboarded = user.user_metadata?.onboardingCompleted === true;
-  return Astro.redirect(isOnboarded ? '/map' : '/onboarding');
+  return Astro.redirect(isOnboarded ? "/map" : "/onboarding");
 }
 ---
 
 <Layout title="Register - PhotoSpot">
   <div class="flex min-h-screen flex-col">
     <NavbarPublic client:load />
-    
+
     <main class="flex-1 flex items-center justify-center px-4 py-12">
       <div class="w-full max-w-md">
         <div class="mb-8 text-center">
           <h1 class="text-3xl font-bold tracking-tight">Create your account</h1>
-          <p class="mt-2 text-muted-foreground">
-            Join PhotoSpot to discover and share amazing photo locations
-          </p>
+          <p class="mt-2 text-muted-foreground">Join PhotoSpot to discover and share amazing photo locations</p>
         </div>
-        
+
         <RegisterForm client:load />
-        
+
         <p class="mt-6 text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <a href="/login" class="font-medium text-primary hover:underline">
-            Sign in
-          </a>
+          Already have an account?{" "}
+          <a href="/login" class="font-medium text-primary hover:underline"> Sign in </a>
         </p>
       </div>
     </main>
-    
+
     <Footer />
   </div>
 </Layout>
-

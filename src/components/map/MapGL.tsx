@@ -1,13 +1,19 @@
 /**
  * MapGL Component
- * 
+ *
  * Mapbox GL wrapper component that renders the interactive map.
  * Manages map instance, viewport state, and provides event handlers.
  */
 
-import { useCallback, useState } from 'react';
-import Map, { NavigationControl, GeolocateControl, type MapRef, type ViewStateChangeEvent, type MapMouseEvent } from 'react-map-gl/mapbox';
-import type { MapViewport, BoundingBox } from '@/types';
+import { useCallback, useState } from "react";
+import Map, {
+  NavigationControl,
+  GeolocateControl,
+  type MapRef,
+  type ViewStateChangeEvent,
+  type MapMouseEvent,
+} from "react-map-gl/mapbox";
+import type { MapViewport, BoundingBox } from "@/types";
 
 interface MapGLProps {
   viewport: MapViewport;
@@ -48,12 +54,7 @@ export function MapGL({ viewport, onViewportChange, onBoundsChange, onClick, chi
       if (mapRef) {
         const bounds = mapRef.getBounds();
         if (bounds) {
-          const boundingBox: BoundingBox = [
-            bounds.getWest(),
-            bounds.getSouth(),
-            bounds.getEast(),
-            bounds.getNorth(),
-          ];
+          const boundingBox: BoundingBox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
           onBoundsChange(boundingBox);
         }
       }
@@ -65,7 +66,7 @@ export function MapGL({ viewport, onViewportChange, onBoundsChange, onClick, chi
    * Handles map load event
    */
   const handleLoad = useCallback(() => {
-    console.log('Map loaded successfully');
+    console.log("Map loaded successfully");
     setMapError(null);
   }, []);
 
@@ -73,8 +74,8 @@ export function MapGL({ viewport, onViewportChange, onBoundsChange, onClick, chi
    * Handles map errors
    */
   const handleError = useCallback((evt: { error: Error }) => {
-    console.error('Map error:', evt.error);
-    setMapError('Map failed to load. Please refresh the page.');
+    console.error("Map error:", evt.error);
+    setMapError("Map failed to load. Please refresh the page.");
   }, []);
 
   // Check if Mapbox token is present
@@ -119,7 +120,7 @@ export function MapGL({ viewport, onViewportChange, onBoundsChange, onClick, chi
       onClick={onClick}
       mapboxAccessToken={MAPBOX_TOKEN}
       mapStyle="mapbox://styles/mapbox/streets-v12"
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: "100%", height: "100%" }}
       reuseMaps
       attributionControl={true}
     >
@@ -132,7 +133,7 @@ export function MapGL({ viewport, onViewportChange, onBoundsChange, onClick, chi
         trackUserLocation
         showUserHeading
         onError={(err) => {
-          console.warn('Geolocation error:', err);
+          console.warn("Geolocation error:", err);
         }}
       />
 
@@ -141,4 +142,3 @@ export function MapGL({ viewport, onViewportChange, onBoundsChange, onClick, chi
     </Map>
   );
 }
-

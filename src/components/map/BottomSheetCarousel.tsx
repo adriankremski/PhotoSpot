@@ -1,15 +1,15 @@
 /**
  * BottomSheetCarousel Component
- * 
+ *
  * Mobile-optimized bottom sheet with swipeable carousel of photo cards.
  * Draggable to expand/collapse. Synchronized with map like ThumbnailStrip.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import type { PhotoListItemDto } from '@/types';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, Loader2, Camera } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import type { PhotoListItemDto } from "@/types";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ChevronUp, ChevronDown, Loader2, Camera } from "lucide-react";
 
 interface BottomSheetCarouselProps {
   photos: PhotoListItemDto[];
@@ -20,7 +20,7 @@ interface BottomSheetCarouselProps {
   isLoading?: boolean;
 }
 
-type SheetState = 'collapsed' | 'expanded';
+type SheetState = "collapsed" | "expanded";
 
 /**
  * Mobile photo card component
@@ -35,9 +35,9 @@ const MobilePhotoCard = React.memo(function MobilePhotoCard({
   onClick: () => void;
 }) {
   const initials = photo.user.display_name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 
@@ -46,24 +46,19 @@ const MobilePhotoCard = React.memo(function MobilePhotoCard({
       data-photo-id={photo.id}
       onClick={onClick}
       className={`thumbnail-card relative flex-shrink-0 overflow-hidden rounded-lg bg-card shadow-lg transition-all focus-ring ${
-        isActive ? 'ring-2 ring-primary' : ''
+        isActive ? "ring-2 ring-primary" : ""
       }`}
-      style={{ width: '85vw', maxWidth: '400px' }}
+      style={{ width: "85vw", maxWidth: "400px" }}
       role="listitem"
       aria-label={`Photo: ${photo.title} by ${photo.user.display_name}`}
-      aria-current={isActive ? 'true' : 'false'}
+      aria-current={isActive ? "true" : "false"}
     >
       {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img
-          src={photo.thumbnail_url}
-          alt={photo.title}
-          className="h-full w-full object-cover"
-          loading="lazy"
-        />
-        
+        <img src={photo.thumbnail_url} alt={photo.title} className="h-full w-full object-cover" loading="lazy" />
+
         {/* Photographer badge */}
-        {photo.user.role === 'photographer' && (
+        {photo.user.role === "photographer" && (
           <div className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-1 text-xs font-bold text-white shadow-lg">
             Pro
           </div>
@@ -78,9 +73,7 @@ const MobilePhotoCard = React.memo(function MobilePhotoCard({
       {/* Content */}
       <div className="space-y-3 p-4">
         {/* Title */}
-        <h3 className="line-clamp-2 text-base font-semibold text-card-foreground">
-          {photo.title}
-        </h3>
+        <h3 className="line-clamp-2 text-base font-semibold text-card-foreground">{photo.title}</h3>
 
         {/* Author and stats */}
         <div className="flex items-center justify-between">
@@ -91,10 +84,8 @@ const MobilePhotoCard = React.memo(function MobilePhotoCard({
             </Avatar>
             <span className="text-sm text-muted-foreground">{photo.user.display_name}</span>
           </div>
-          
-          {photo.favorite_count > 0 && (
-            <span className="text-sm text-muted-foreground">❤️ {photo.favorite_count}</span>
-          )}
+
+          {photo.favorite_count > 0 && <span className="text-sm text-muted-foreground">❤️ {photo.favorite_count}</span>}
         </div>
 
         {/* View button */}
@@ -119,9 +110,7 @@ function EmptyState() {
       <div className="space-y-2">
         <Camera className="mx-auto h-10 w-10 text-muted-foreground" />
         <p className="text-sm font-medium text-card-foreground">No photos found</p>
-        <p className="text-xs text-muted-foreground">
-          Try adjusting your filters or exploring a different area
-        </p>
+        <p className="text-xs text-muted-foreground">Try adjusting your filters or exploring a different area</p>
       </div>
     </div>
   );
@@ -138,7 +127,7 @@ export function BottomSheetCarousel({
   hasMore,
   isLoading,
 }: BottomSheetCarouselProps) {
-  const [sheetState, setSheetState] = useState<SheetState>('collapsed');
+  const [sheetState, setSheetState] = useState<SheetState>("collapsed");
   const carouselRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -150,14 +139,12 @@ export function BottomSheetCarousel({
       const index = photos.findIndex((p) => p.id === selectedPhotoId);
       if (index !== -1) {
         setCurrentIndex(index);
-        const selectedElement = carouselRef.current.querySelector(
-          `[data-photo-id="${selectedPhotoId}"]`
-        );
+        const selectedElement = carouselRef.current.querySelector(`[data-photo-id="${selectedPhotoId}"]`);
         if (selectedElement) {
           selectedElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-            inline: 'center',
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
           });
         }
       }
@@ -173,7 +160,7 @@ export function BottomSheetCarousel({
     const scrollLeft = carouselRef.current.scrollLeft;
     const cardWidth = carouselRef.current.offsetWidth * 0.85; // Approximate card width
     const newIndex = Math.round(scrollLeft / cardWidth);
-    
+
     if (newIndex !== currentIndex && newIndex < photos.length) {
       setCurrentIndex(newIndex);
       onPhotoSelect(photos[newIndex].id);
@@ -184,10 +171,10 @@ export function BottomSheetCarousel({
    * Toggle sheet state
    */
   const toggleSheet = () => {
-    setSheetState((prev) => (prev === 'collapsed' ? 'expanded' : 'collapsed'));
+    setSheetState((prev) => (prev === "collapsed" ? "expanded" : "collapsed"));
   };
 
-  const sheetHeight = sheetState === 'expanded' ? 'h-[70vh]' : 'h-[280px]';
+  const sheetHeight = sheetState === "expanded" ? "h-[70vh]" : "h-[280px]";
 
   // Show empty state if no photos
   if (photos.length === 0 && !isLoading) {
@@ -207,10 +194,10 @@ export function BottomSheetCarousel({
         <button
           onClick={toggleSheet}
           className="flex w-full flex-col items-center gap-1"
-          aria-label={sheetState === 'collapsed' ? 'Expand sheet' : 'Collapse sheet'}
+          aria-label={sheetState === "collapsed" ? "Expand sheet" : "Collapse sheet"}
         >
           <div className="h-1 w-12 rounded-full bg-muted-foreground/30" />
-          {sheetState === 'collapsed' ? (
+          {sheetState === "collapsed" ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -228,30 +215,24 @@ export function BottomSheetCarousel({
       >
         {photos.map((photo, index) => (
           <div key={photo.id} className="snap-center">
-            <MobilePhotoCard
-              photo={photo}
-              isActive={index === currentIndex}
-              onClick={() => onPhotoSelect(photo.id)}
-            />
+            <MobilePhotoCard photo={photo} isActive={index === currentIndex} onClick={() => onPhotoSelect(photo.id)} />
           </div>
         ))}
 
         {/* Load More */}
         {hasMore && (
-          <div className="flex flex-shrink-0 items-center justify-center snap-center" style={{ width: '85vw', maxWidth: '400px' }}>
-            <Button
-              onClick={onLoadMore}
-              disabled={isLoading}
-              variant="outline"
-              size="lg"
-            >
+          <div
+            className="flex flex-shrink-0 items-center justify-center snap-center"
+            style={{ width: "85vw", maxWidth: "400px" }}
+          >
+            <Button onClick={onLoadMore} disabled={isLoading} variant="outline" size="lg">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Loading...
                 </>
               ) : (
-                'Load More'
+                "Load More"
               )}
             </Button>
           </div>
@@ -265,16 +246,13 @@ export function BottomSheetCarousel({
             <div
               key={index}
               className={`h-1.5 w-1.5 rounded-full transition-all ${
-                index === currentIndex ? 'bg-primary w-3' : 'bg-muted-foreground/30'
+                index === currentIndex ? "bg-primary w-3" : "bg-muted-foreground/30"
               }`}
             />
           ))}
-          {photos.length > 10 && (
-            <span className="text-xs text-muted-foreground">+{photos.length - 10}</span>
-          )}
+          {photos.length > 10 && <span className="text-xs text-muted-foreground">+{photos.length - 10}</span>}
         </div>
       )}
     </div>
   );
 }
-

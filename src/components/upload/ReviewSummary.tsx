@@ -1,14 +1,14 @@
 /**
  * ReviewSummary Component
- * 
+ *
  * Final review screen showing all collected data before submission.
  * Displays photo preview, metadata, location, and terms notice.
  */
 
-import { MapPin, Camera, Tag, Calendar, Clock, Info } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { ReviewSummaryProps } from './types';
-import { STEP_LABELS } from './types';
+import { MapPin, Camera, Tag, Calendar, Clock, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { ReviewSummaryProps } from "./types";
+import { STEP_LABELS } from "./types";
 
 const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
@@ -16,16 +16,16 @@ export function ReviewSummary({ file, metadata, location }: ReviewSummaryProps) 
   // Generate static map image URL
   const getStaticMapUrl = () => {
     if (location.latitude === null || location.longitude === null) return null;
-    
+
     const lng = location.longitude;
     const lat = location.latitude;
     const zoom = 12;
     const width = 600;
     const height = 300;
-    
+
     // Add marker with custom pin
     const marker = `pin-l-camera+ff0000(${lng},${lat})`;
-    
+
     return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${marker}/${lng},${lat},${zoom}/${width}x${height}@2x?access_token=${MAPBOX_TOKEN}`;
   };
 
@@ -53,11 +53,7 @@ export function ReviewSummary({ file, metadata, location }: ReviewSummaryProps) 
           Photo
         </h3>
         <div className="overflow-hidden rounded-lg border border-gray-300">
-          <img
-            src={file.previewUrl}
-            alt="Preview"
-            className="h-auto w-full max-h-[400px] object-contain bg-gray-50"
-          />
+          <img src={file.previewUrl} alt="Preview" className="h-auto w-full max-h-[400px] object-contain bg-gray-50" />
         </div>
         <div className="mt-2 text-sm text-gray-600">
           <span className="font-medium">{file.file.name}</span>
@@ -90,7 +86,7 @@ export function ReviewSummary({ file, metadata, location }: ReviewSummaryProps) 
           {/* Category */}
           <div>
             <span className="text-sm font-medium text-gray-600">Category</span>
-            <p className="mt-1 capitalize text-gray-900">{metadata.category.replace('_', ' ')}</p>
+            <p className="mt-1 capitalize text-gray-900">{metadata.category.replace("_", " ")}</p>
           </div>
 
           {/* Season & Time of Day */}
@@ -110,9 +106,7 @@ export function ReviewSummary({ file, metadata, location }: ReviewSummaryProps) 
                   <Clock className="h-4 w-4" />
                   Time of Day
                 </span>
-                <p className="mt-1 capitalize text-gray-900">
-                  {metadata.time_of_day.replace(/_/g, ' ')}
-                </p>
+                <p className="mt-1 capitalize text-gray-900">{metadata.time_of_day.replace(/_/g, " ")}</p>
               </div>
             )}
           </div>
@@ -161,15 +155,11 @@ export function ReviewSummary({ file, metadata, location }: ReviewSummaryProps) 
           <MapPin className="h-5 w-5" />
           Location
         </h3>
-        
+
         {/* Static Map Preview */}
         {staticMapUrl && (
           <div className="mb-3 overflow-hidden rounded-lg border border-gray-300">
-            <img
-              src={staticMapUrl}
-              alt="Location map"
-              className="h-auto w-full"
-            />
+            <img src={staticMapUrl} alt="Location map" className="h-auto w-full" />
           </div>
         )}
 
@@ -187,9 +177,7 @@ export function ReviewSummary({ file, metadata, location }: ReviewSummaryProps) 
             <span className="text-sm font-medium text-gray-600">Privacy Settings</span>
             {location.blur_location ? (
               <div className="mt-1">
-                <p className="text-gray-900">
-                  Location blurred with {location.blur_radius}m radius
-                </p>
+                <p className="text-gray-900">Location blurred with {location.blur_radius}m radius</p>
                 <p className="mt-1 text-xs text-gray-600">
                   Your exact location will be hidden. The photo will be displayed within a {location.blur_radius}m area.
                 </p>

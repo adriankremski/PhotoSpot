@@ -1,12 +1,12 @@
 /**
  * WizardFooter Component
- * 
+ *
  * Navigation controls for wizard: Back, Next, Submit, Cancel.
  */
 
-import { Button } from '@/components/ui/button';
-import { UploadStep } from './types';
-import type { WizardFooterProps } from './types';
+import { Button } from "@/components/ui/button";
+import { UploadStep } from "./types";
+import type { WizardFooterProps } from "./types";
 
 export function WizardFooter({
   currentStep,
@@ -38,7 +38,7 @@ export function WizardFooter({
 
         {isReviewStep ? (
           <Button onClick={onSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Uploading...' : 'Submit Photo'}
+            {isSubmitting ? "Uploading..." : "Submit Photo"}
           </Button>
         ) : (
           <Button onClick={onNext} disabled={!canGoNext || isSubmitting}>
@@ -49,4 +49,3 @@ export function WizardFooter({
     </div>
   );
 }
-

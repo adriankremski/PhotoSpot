@@ -1,15 +1,15 @@
 /**
  * ErrorBoundary Component
- * 
+ *
  * React error boundary to catch and handle component errors gracefully.
  * Integrates with error tracking service.
  */
 
-import React, { Component, type ReactNode } from 'react';
-import { handleComponentError } from '@/lib/monitoring/errorTracking';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { Component, type ReactNode } from "react";
+import { handleComponentError } from "@/lib/monitoring/errorTracking";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   children: ReactNode;
@@ -74,9 +74,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <AlertDescription>
                 <div className="space-y-2">
                   <p className="font-semibold">Something went wrong</p>
-                  <p className="text-sm">
-                    {this.state.error?.message || 'An unexpected error occurred'}
-                  </p>
+                  <p className="text-sm">{this.state.error?.message || "An unexpected error occurred"}</p>
                 </div>
               </AlertDescription>
             </Alert>
@@ -86,11 +84,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => window.location.reload()}
-                className="flex-1"
-              >
+              <Button variant="outline" onClick={() => window.location.reload()} className="flex-1">
                 Reload Page
               </Button>
             </div>
@@ -98,9 +92,7 @@ export class ErrorBoundary extends Component<Props, State> {
             {import.meta.env.DEV && this.state.error && (
               <details className="rounded-lg border border-border bg-muted p-4 text-sm">
                 <summary className="cursor-pointer font-semibold">Error Details</summary>
-                <pre className="mt-2 overflow-auto text-xs">
-                  {this.state.error.stack}
-                </pre>
+                <pre className="mt-2 overflow-auto text-xs">{this.state.error.stack}</pre>
               </details>
             )}
           </div>
@@ -111,4 +103,3 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-

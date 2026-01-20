@@ -1,14 +1,14 @@
 /**
  * Custom Hook: useMapSync
- * 
+ *
  * Manages bidirectional synchronization between map pins and thumbnail strip/carousel.
  * Handles photo selection and ensures map and UI stay in sync.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import type { PhotoListItemDto, MapViewport } from '@/types';
+import { useState, useCallback, useRef, useEffect } from "react";
+import type { PhotoListItemDto, MapViewport } from "@/types";
 
-type SelectionSource = 'map' | 'thumbnail' | null;
+type SelectionSource = "map" | "thumbnail" | null;
 
 interface UseMapSyncReturn {
   selectedPhotoId: string | null;
@@ -65,9 +65,9 @@ export function useMapSync({
 
       if (thumbnailElement) {
         thumbnailElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
         });
       }
     },
@@ -110,7 +110,7 @@ export function useMapSync({
 
       isUpdatingRef.current = true;
       setSelectedPhotoId(photoId);
-      setSelectionSource('map');
+      setSelectionSource("map");
 
       // Scroll thumbnail into view
       setTimeout(() => {
@@ -132,7 +132,7 @@ export function useMapSync({
 
       isUpdatingRef.current = true;
       setSelectedPhotoId(photoId);
-      setSelectionSource('thumbnail');
+      setSelectionSource("thumbnail");
 
       // Center map on photo
       setTimeout(() => {
@@ -173,4 +173,3 @@ export function useMapSync({
     centerMapOnPhoto,
   };
 }
-

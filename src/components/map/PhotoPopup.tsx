@@ -1,14 +1,14 @@
 /**
  * PhotoPopup Component
- * 
+ *
  * Small popup overlay that appears when a pin is clicked.
  * Shows photo preview, title, author, and a "View Details" link.
  */
 
-import { Popup } from 'react-map-gl/mapbox';
-import type { PhotoListItemDto } from '@/types';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { X } from 'lucide-react';
+import { Popup } from "react-map-gl/mapbox";
+import type { PhotoListItemDto } from "@/types";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { X } from "lucide-react";
 
 interface PhotoPopupProps {
   photo: PhotoListItemDto;
@@ -23,9 +23,9 @@ export function PhotoPopup({ photo, onClose }: PhotoPopupProps) {
 
   // Get initials for avatar fallback
   const initials = photo.user.display_name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 
@@ -52,20 +52,13 @@ export function PhotoPopup({ photo, onClose }: PhotoPopupProps) {
 
         {/* Photo thumbnail */}
         <a href={`/photo/${photo.id}`} className="block">
-          <img
-            src={photo.thumbnail_url}
-            alt={photo.title}
-            className="h-40 w-full object-cover"
-            loading="lazy"
-          />
+          <img src={photo.thumbnail_url} alt={photo.title} className="h-40 w-full object-cover" loading="lazy" />
         </a>
 
         {/* Content */}
         <div className="space-y-2 p-3">
           {/* Title */}
-          <h3 className="line-clamp-2 text-sm font-semibold text-card-foreground">
-            {photo.title}
-          </h3>
+          <h3 className="line-clamp-2 text-sm font-semibold text-card-foreground">{photo.title}</h3>
 
           {/* Author info */}
           <div className="flex items-center gap-2">
@@ -74,7 +67,7 @@ export function PhotoPopup({ photo, onClose }: PhotoPopupProps) {
               <AvatarFallback className="text-xs">{initials}</AvatarFallback>
             </Avatar>
             <span className="text-xs text-muted-foreground">{photo.user.display_name}</span>
-            {photo.user.role === 'photographer' && (
+            {photo.user.role === "photographer" && (
               <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                 Pro
               </span>
@@ -103,4 +96,3 @@ export function PhotoPopup({ photo, onClose }: PhotoPopupProps) {
     </Popup>
   );
 }
-

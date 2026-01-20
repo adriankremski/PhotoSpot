@@ -1,15 +1,15 @@
 /**
  * PinClusterLayer Component
- * 
+ *
  * Renders photo pins as markers on the map with clustering support.
  * Distinguishes between photographer pins (gold) and regular user pins (blue).
  */
 
-import React, { useMemo } from 'react';
-import { Source, Layer, Marker } from 'react-map-gl/mapbox';
-import type { CircleLayer, SymbolLayer } from 'react-map-gl/mapbox';
-import type { PhotoListItemDto } from '@/types';
-import { photosToPins } from '@/lib/utils/mapHelpers';
+import React, { useMemo } from "react";
+import { Source, Layer, Marker } from "react-map-gl/mapbox";
+import type { CircleLayer, SymbolLayer } from "react-map-gl/mapbox";
+import type { PhotoListItemDto } from "@/types";
+import { photosToPins } from "@/lib/utils/mapHelpers";
 
 interface PinClusterLayerProps {
   photos: PhotoListItemDto[];
@@ -19,31 +19,31 @@ interface PinClusterLayerProps {
 
 // Cluster circle layer style
 const clusterLayer: CircleLayer = {
-  id: 'clusters',
-  type: 'circle',
-  source: 'photos',
-  filter: ['has', 'point_count'],
+  id: "clusters",
+  type: "circle",
+  source: "photos",
+  filter: ["has", "point_count"],
   paint: {
-    'circle-color': ['step', ['get', 'point_count'], '#3b82f6', 10, '#8b5cf6', 30, '#ec4899'],
-    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
-    'circle-stroke-width': 2,
-    'circle-stroke-color': '#ffffff',
+    "circle-color": ["step", ["get", "point_count"], "#3b82f6", 10, "#8b5cf6", 30, "#ec4899"],
+    "circle-radius": ["step", ["get", "point_count"], 20, 10, 30, 30, 40],
+    "circle-stroke-width": 2,
+    "circle-stroke-color": "#ffffff",
   },
 };
 
 // Cluster count label layer style
 const clusterCountLayer: SymbolLayer = {
-  id: 'cluster-count',
-  type: 'symbol',
-  source: 'photos',
-  filter: ['has', 'point_count'],
+  id: "cluster-count",
+  type: "symbol",
+  source: "photos",
+  filter: ["has", "point_count"],
   layout: {
-    'text-field': '{point_count_abbreviated}',
-    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-    'text-size': 12,
+    "text-field": "{point_count_abbreviated}",
+    "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+    "text-size": 12,
   },
   paint: {
-    'text-color': '#ffffff',
+    "text-color": "#ffffff",
   },
 };
 
@@ -60,7 +60,7 @@ const PhotoPin = React.memo(function PhotoPin({
   onClick: () => void;
 }) {
   const [lng, lat] = photo.location_public.coordinates;
-  const isPhotographer = photo.user.role === 'photographer';
+  const isPhotographer = photo.user.role === "photographer";
 
   return (
     <Marker
@@ -74,7 +74,7 @@ const PhotoPin = React.memo(function PhotoPin({
     >
       <button
         className={`group relative cursor-pointer transition-transform hover:scale-110 ${
-          isSelected ? 'scale-125' : ''
+          isSelected ? "scale-125" : ""
         }`}
         aria-label={`Photo by ${photo.user.display_name}: ${photo.title}`}
         title={photo.title}
@@ -93,17 +93,11 @@ const PhotoPin = React.memo(function PhotoPin({
         >
           <path
             d="M16 0C7.163 0 0 7.163 0 16c0 12 16 24 16 24s16-12 16-24c0-8.837-7.163-16-16-16z"
-            fill={isPhotographer ? '#f59e0b' : '#3b82f6'}
+            fill={isPhotographer ? "#f59e0b" : "#3b82f6"}
             stroke="#ffffff"
             strokeWidth="2"
           />
-          <circle
-            cx="16"
-            cy="16"
-            r="6"
-            fill="white"
-            opacity={isSelected ? '1' : '0.9'}
-          />
+          <circle cx="16" cy="16" r="6" fill="white" opacity={isSelected ? "1" : "0.9"} />
         </svg>
 
         {/* Selection ring */}
@@ -124,16 +118,16 @@ export function PinClusterLayer({ photos, selectedPhotoId, onPinClick }: PinClus
     const pins = photosToPins(photos);
 
     return {
-      type: 'FeatureCollection' as const,
+      type: "FeatureCollection" as const,
       features: pins.map((pin) => ({
-        type: 'Feature' as const,
+        type: "Feature" as const,
         properties: {
           id: pin.id,
           isPhotographer: pin.isPhotographer,
           cluster: false,
         },
         geometry: {
-          type: 'Point' as const,
+          type: "Point" as const,
           coordinates: pin.coordinates,
         },
       })),
@@ -161,14 +155,7 @@ export function PinClusterLayer({ photos, selectedPhotoId, onPinClick }: PinClus
   // Render with clustering
   return (
     <>
-      <Source
-        id="photos"
-        type="geojson"
-        data={geojsonData}
-        cluster={true}
-        clusterMaxZoom={14}
-        clusterRadius={50}
-      >
+      <Source id="photos" type="geojson" data={geojsonData} cluster={true} clusterMaxZoom={14} clusterRadius={50}>
         <Layer {...clusterLayer} />
         <Layer {...clusterCountLayer} />
       </Source>
@@ -185,4 +172,3 @@ export function PinClusterLayer({ photos, selectedPhotoId, onPinClick }: PinClus
     </>
   );
 }
-

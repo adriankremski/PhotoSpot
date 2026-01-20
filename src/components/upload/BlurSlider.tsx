@@ -1,15 +1,15 @@
 /**
  * BlurSlider Component
- * 
+ *
  * Toggle and slider for location blur settings.
  * Allows users to enable/disable location blurring and adjust radius (100-500m).
  */
 
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { LOCATION_BLUR } from '@/types';
-import type { BlurSliderProps } from './types';
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { LOCATION_BLUR } from "@/types";
+import type { BlurSliderProps } from "./types";
 
 export function BlurSlider({ enabled, radius, onBlurToggle, onRadiusChange }: BlurSliderProps) {
   return (
@@ -20,15 +20,9 @@ export function BlurSlider({ enabled, radius, onBlurToggle, onRadiusChange }: Bl
           <Label htmlFor="blur-toggle" className="text-sm font-medium">
             Blur Location
           </Label>
-          <p className="text-xs text-gray-600">
-            Protect your exact location by showing an approximate area instead
-          </p>
+          <p className="text-xs text-gray-600">Protect your exact location by showing an approximate area instead</p>
         </div>
-        <Switch
-          id="blur-toggle"
-          checked={enabled}
-          onCheckedChange={onBlurToggle}
-        />
+        <Switch id="blur-toggle" checked={enabled} onCheckedChange={onBlurToggle} />
       </div>
 
       {/* Radius Slider (only visible when blur is enabled) */}
@@ -38,11 +32,9 @@ export function BlurSlider({ enabled, radius, onBlurToggle, onRadiusChange }: Bl
             <Label htmlFor="blur-radius" className="text-sm font-medium">
               Blur Radius
             </Label>
-            <span className="text-sm font-semibold text-blue-600">
-              {radius}m
-            </span>
+            <span className="text-sm font-semibold text-blue-600">{radius}m</span>
           </div>
-          
+
           <Slider
             id="blur-radius"
             min={LOCATION_BLUR.MIN_RADIUS_METERS}
@@ -52,12 +44,12 @@ export function BlurSlider({ enabled, radius, onBlurToggle, onRadiusChange }: Bl
             onValueChange={(values) => onRadiusChange(values[0])}
             className="w-full"
           />
-          
+
           <div className="flex justify-between text-xs text-gray-500">
             <span>{LOCATION_BLUR.MIN_RADIUS_METERS}m</span>
             <span>{LOCATION_BLUR.MAX_RADIUS_METERS}m</span>
           </div>
-          
+
           <p className="text-xs text-gray-600">
             Your photo will be displayed within a {radius}m radius of the actual location
           </p>

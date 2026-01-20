@@ -1,11 +1,11 @@
 /**
  * Custom Hook: useMapPhotos
- * 
+ *
  * Encapsulates all logic for fetching photos, managing filters,
  * pagination, and viewport-based queries for the map view.
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type {
   PhotoListItemDto,
   PaginationMeta,
@@ -15,10 +15,10 @@ import type {
   ListResponse,
   ApiError,
   MapViewport,
-} from '@/types';
-import { PAGINATION_DEFAULTS } from '@/types';
-import { boundsToString, validateBoundingBox, WORLD_BOUNDS } from '@/lib/utils/mapHelpers';
-import { filtersToQueryParams, validateFilters } from '@/lib/utils/filterHelpers';
+} from "@/types";
+import { PAGINATION_DEFAULTS } from "@/types";
+import { boundsToString, validateBoundingBox, WORLD_BOUNDS } from "@/lib/utils/mapHelpers";
+import { filtersToQueryParams, validateFilters } from "@/lib/utils/filterHelpers";
 
 const DEFAULT_LIMIT = PAGINATION_DEFAULTS.PHOTOS_MAP_VIEW.DEFAULT;
 
@@ -38,9 +38,7 @@ interface UseMapPhotosReturn {
 /**
  * Fetches photos from the API based on query parameters
  */
-async function fetchPhotos(
-  params: PhotoQueryParams
-): Promise<ListResponse<PhotoListItemDto>> {
+async function fetchPhotos(params: PhotoQueryParams): Promise<ListResponse<PhotoListItemDto>> {
   // Build query string, filtering out undefined values
   const queryString = new URLSearchParams(
     Object.entries(params)
@@ -51,7 +49,7 @@ async function fetchPhotos(
   const response = await fetch(`/api/photos?${queryString}`);
 
   if (!response.ok) {
-    if (response.headers.get('content-type')?.includes('application/json')) {
+    if (response.headers.get("content-type")?.includes("application/json")) {
       const error: ApiError = await response.json();
       throw new Error(error.error.message);
     }
@@ -95,8 +93,8 @@ export function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn {
     async (bounds: BoundingBox, currentFilters: PhotoFilters, currentOffset: number) => {
       // Validate bounds before making API call
       if (!validateBoundingBox(bounds)) {
-        console.error('Invalid bounding box:', bounds);
-        setError('Invalid map bounds. Using fallback.');
+        console.error("Invalid bounding box:", bounds);
+        setError("Invalid map bounds. Using fallback.");
         bounds = WORLD_BOUNDS;
       }
 
@@ -136,15 +134,15 @@ export function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn {
         setOffset(currentOffset);
       } catch (err) {
         if (err instanceof Error) {
-          if (err.name === 'AbortError') {
+          if (err.name === "AbortError") {
             // Request was aborted, ignore
             return;
           }
           setError(err.message);
-          console.error('Error fetching photos:', err);
+          console.error("Error fetching photos:", err);
         } else {
-          setError('An unexpected error occurred');
-          console.error('Unknown error:', err);
+          setError("An unexpected error occurred");
+          console.error("Unknown error:", err);
         }
         // Keep existing photos on error
       } finally {
@@ -269,4 +267,3 @@ export function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn {
     clearError,
   };
 }
-

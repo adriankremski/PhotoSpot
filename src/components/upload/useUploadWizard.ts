@@ -1,20 +1,14 @@
 /**
  * useUploadWizard Hook
- * 
+ *
  * Manages state and navigation for the multi-step photo upload wizard.
  */
 
-import { useState, useCallback } from 'react';
-import { LOCATION_BLUR } from '@/types';
-import { validateFile, validateMetadata, validateLocation } from './validation';
-import type {
-  UploadStep,
-  UploadWizardState,
-  FileWithPreview,
-  MetadataState,
-  LocationState,
-} from './types';
-import { UploadStep as Step } from './types';
+import { useState, useCallback } from "react";
+import { LOCATION_BLUR } from "@/types";
+import { validateFile, validateMetadata, validateLocation } from "./validation";
+import type { UploadStep, UploadWizardState, FileWithPreview, MetadataState, LocationState } from "./types";
+import { UploadStep as Step } from "./types";
 
 const TOTAL_STEPS = 4;
 
@@ -27,11 +21,11 @@ function getInitialState(): UploadWizardState {
     file: null,
     filePreview: null,
     metadata: {
-      title: '',
-      description: '',
-      category: '',
-      season: '',
-      time_of_day: '',
+      title: "",
+      description: "",
+      category: "",
+      season: "",
+      time_of_day: "",
       tags: [],
       gear: {},
     },
@@ -98,13 +92,13 @@ export function useUploadWizard() {
     } else if (currentStep === Step.Metadata) {
       const validation = validateMetadata(state.metadata);
       if (!validation.success) {
-        setState((prev) => ({ ...prev, errors: { ...prev.errors, metadata: 'Please check all required fields' } }));
+        setState((prev) => ({ ...prev, errors: { ...prev.errors, metadata: "Please check all required fields" } }));
         return;
       }
     } else if (currentStep === Step.Location) {
       const validation = validateLocation(state.location);
       if (!validation.success) {
-        setState((prev) => ({ ...prev, errors: { ...prev.errors, location: 'Please set a valid location' } }));
+        setState((prev) => ({ ...prev, errors: { ...prev.errors, location: "Please set a valid location" } }));
         return;
       }
     }
@@ -134,7 +128,7 @@ export function useUploadWizard() {
       case Step.File:
         return state.file !== null;
       case Step.Metadata:
-        return state.metadata.title.trim() !== '' && state.metadata.category !== '';
+        return state.metadata.title.trim() !== "" && state.metadata.category !== "";
       case Step.Location:
         return state.location.latitude !== null && state.location.longitude !== null;
       case Step.Review:
@@ -167,25 +161,24 @@ export function useUploadWizard() {
   return {
     // State
     state,
-    
+
     // Setters
     setFile,
     updateMetadata,
     updateLocation,
-    
+
     // Navigation
     next,
     back,
     goToStep,
     canGoNext: canGoNext(),
     canGoBack: canGoBack(),
-    
+
     // Submission
     setSubmitting,
     reset,
-    
+
     // Computed
     totalSteps: TOTAL_STEPS,
   };
 }
-

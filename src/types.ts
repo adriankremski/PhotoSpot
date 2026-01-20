@@ -1,49 +1,49 @@
 /**
  * DTO (Data Transfer Object) and Command Model Types for PhotoSpot API
- * 
+ *
  * This file contains all type definitions for API requests and responses,
  * derived from the database models in database.types.ts
  */
 
-import type { Database, Tables, TablesInsert, TablesUpdate, Enums } from './db/database.types';
+import type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "./db/database.types";
 
 // ============================================================================
 // Database Entity Type Aliases
 // ============================================================================
 
-export type Photo = Tables<'photos'>;
-export type PhotoInsert = TablesInsert<'photos'>;
-export type PhotoUpdate = TablesUpdate<'photos'>;
+export type Photo = Tables<"photos">;
+export type PhotoInsert = TablesInsert<"photos">;
+export type PhotoUpdate = TablesUpdate<"photos">;
 
-export type UserProfile = Tables<'user_profiles'>;
-export type UserProfileInsert = TablesInsert<'user_profiles'>;
-export type UserProfileUpdate = TablesUpdate<'user_profiles'>;
+export type UserProfile = Tables<"user_profiles">;
+export type UserProfileInsert = TablesInsert<"user_profiles">;
+export type UserProfileUpdate = TablesUpdate<"user_profiles">;
 
-export type Favorite = Tables<'favorites'>;
-export type FavoriteInsert = TablesInsert<'favorites'>;
+export type Favorite = Tables<"favorites">;
+export type FavoriteInsert = TablesInsert<"favorites">;
 
-export type PhotoReport = Tables<'photo_reports'>;
-export type PhotoReportInsert = TablesInsert<'photo_reports'>;
-export type PhotoReportUpdate = TablesUpdate<'photo_reports'>;
+export type PhotoReport = Tables<"photo_reports">;
+export type PhotoReportInsert = TablesInsert<"photo_reports">;
+export type PhotoReportUpdate = TablesUpdate<"photo_reports">;
 
-export type Tag = Tables<'tags'>;
-export type PhotoTag = Tables<'photo_tags'>;
+export type Tag = Tables<"tags">;
+export type PhotoTag = Tables<"photo_tags">;
 
-export type LocationCache = Tables<'location_cache'>;
+export type LocationCache = Tables<"location_cache">;
 
-export type PublicPhotoView = Tables<'public_photos_v'>;
+export type PublicPhotoView = Tables<"public_photos_v">;
 
 // ============================================================================
 // Enum Type Aliases
 // ============================================================================
 
-export type PhotoCategory = Enums<'photo_category'>;
-export type PhotoStatus = Enums<'photo_status'>;
-export type ReportReason = Enums<'report_reason'>;
-export type ReportStatus = Enums<'report_status'>;
-export type Season = Enums<'season'>;
-export type TimeOfDay = Enums<'time_of_day'>;
-export type UserRole = Enums<'user_role'>;
+export type PhotoCategory = Enums<"photo_category">;
+export type PhotoStatus = Enums<"photo_status">;
+export type ReportReason = Enums<"report_reason">;
+export type ReportStatus = Enums<"report_status">;
+export type Season = Enums<"season">;
+export type TimeOfDay = Enums<"time_of_day">;
+export type UserRole = Enums<"user_role">;
 
 // ============================================================================
 // Common Types
@@ -53,7 +53,7 @@ export type UserRole = Enums<'user_role'>;
  * GeoJSON Point representation for location data
  */
 export interface GeoPoint {
-  type: 'Point';
+  type: "Point";
   coordinates: [number, number]; // [longitude, latitude]
 }
 
@@ -392,7 +392,7 @@ export interface UserPhotoListItemDto {
  * Moderate photo request (PATCH /api/photos/:photoId/status)
  */
 export interface ModeratePhotoCommand {
-  status: 'approved' | 'rejected';
+  status: "approved" | "rejected";
   reason?: string;
 }
 
@@ -509,7 +509,7 @@ export interface ReportListItemDto {
  * Update report status request (PATCH /api/reports/:reportId)
  */
 export interface UpdateReportCommand {
-  status: 'resolved' | 'dismissed' | 'in_review';
+  status: "resolved" | "dismissed" | "in_review";
   moderator_note?: string;
 }
 
@@ -598,8 +598,8 @@ export interface LocationSearchParams {
  */
 export const FILE_UPLOAD_CONSTRAINTS = {
   MAX_SIZE_BYTES: 10 * 1024 * 1024, // 10 MB
-  ALLOWED_TYPES: ['image/jpeg', 'image/png'],
-  ALLOWED_EXTENSIONS: ['.jpg', '.jpeg', '.png'],
+  ALLOWED_TYPES: ["image/jpeg", "image/png"],
+  ALLOWED_EXTENSIONS: [".jpg", ".jpeg", ".png"],
 } as const;
 
 /**
@@ -653,28 +653,28 @@ export const PAGINATION_DEFAULTS = {
  */
 export function isPhotoCategory(value: unknown): value is PhotoCategory {
   const validCategories: PhotoCategory[] = [
-    'landscape',
-    'portrait',
-    'street',
-    'architecture',
-    'nature',
-    'wildlife',
-    'macro',
-    'aerial',
-    'astrophotography',
-    'urban',
-    'seascape',
-    'other',
+    "landscape",
+    "portrait",
+    "street",
+    "architecture",
+    "nature",
+    "wildlife",
+    "macro",
+    "aerial",
+    "astrophotography",
+    "urban",
+    "seascape",
+    "other",
   ];
-  return typeof value === 'string' && validCategories.includes(value as PhotoCategory);
+  return typeof value === "string" && validCategories.includes(value as PhotoCategory);
 }
 
 /**
  * Type guard to check if a value is a valid Season
  */
 export function isSeason(value: unknown): value is Season {
-  const validSeasons: Season[] = ['spring', 'summer', 'autumn', 'winter'];
-  return typeof value === 'string' && validSeasons.includes(value as Season);
+  const validSeasons: Season[] = ["spring", "summer", "autumn", "winter"];
+  return typeof value === "string" && validSeasons.includes(value as Season);
 }
 
 /**
@@ -682,23 +682,23 @@ export function isSeason(value: unknown): value is Season {
  */
 export function isTimeOfDay(value: unknown): value is TimeOfDay {
   const validTimes: TimeOfDay[] = [
-    'golden_hour_morning',
-    'morning',
-    'midday',
-    'afternoon',
-    'golden_hour_evening',
-    'blue_hour',
-    'night',
+    "golden_hour_morning",
+    "morning",
+    "midday",
+    "afternoon",
+    "golden_hour_evening",
+    "blue_hour",
+    "night",
   ];
-  return typeof value === 'string' && validTimes.includes(value as TimeOfDay);
+  return typeof value === "string" && validTimes.includes(value as TimeOfDay);
 }
 
 /**
  * Type guard to check if a value is a valid UserRole
  */
 export function isUserRole(value: unknown): value is UserRole {
-  const validRoles: UserRole[] = ['photographer', 'enthusiast'];
-  return typeof value === 'string' && validRoles.includes(value as UserRole);
+  const validRoles: UserRole[] = ["photographer", "enthusiast"];
+  return typeof value === "string" && validRoles.includes(value as UserRole);
 }
 
 /**
@@ -706,14 +706,14 @@ export function isUserRole(value: unknown): value is UserRole {
  */
 export function isReportReason(value: unknown): value is ReportReason {
   const validReasons: ReportReason[] = [
-    'inappropriate_content',
-    'copyright_violation',
-    'spam',
-    'incorrect_location',
-    'private_property',
-    'other',
+    "inappropriate_content",
+    "copyright_violation",
+    "spam",
+    "incorrect_location",
+    "private_property",
+    "other",
   ];
-  return typeof value === 'string' && validReasons.includes(value as ReportReason);
+  return typeof value === "string" && validReasons.includes(value as ReportReason);
 }
 
 /**
@@ -727,14 +727,14 @@ export function isValidCoordinates(lat: number, lon: number): boolean {
  * Type guard to check if a GeoPoint is valid
  */
 export function isValidGeoPoint(value: unknown): value is GeoPoint {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== "object" || value === null) return false;
   const point = value as Partial<GeoPoint>;
   return (
-    point.type === 'Point' &&
+    point.type === "Point" &&
     Array.isArray(point.coordinates) &&
     point.coordinates.length === 2 &&
-    typeof point.coordinates[0] === 'number' &&
-    typeof point.coordinates[1] === 'number' &&
+    typeof point.coordinates[0] === "number" &&
+    typeof point.coordinates[1] === "number" &&
     isValidCoordinates(point.coordinates[1], point.coordinates[0])
   );
 }
@@ -796,4 +796,3 @@ export interface PhotoPin {
   isPhotographer: boolean; // For gold vs blue pin color
   clusterId?: number | null;
 }
-

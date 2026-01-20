@@ -3,8 +3,8 @@
  * Updates user metadata (e.g., onboarding completion status)
  */
 
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
+import type { APIRoute } from "astro";
+import { z } from "zod";
 
 export const prerender = false;
 
@@ -22,11 +22,11 @@ export const PATCH: APIRoute = async ({ locals, request }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
           },
         }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -38,12 +38,12 @@ export const PATCH: APIRoute = async ({ locals, request }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid request data',
+            code: "VALIDATION_ERROR",
+            message: "Invalid request data",
             details: validation.error,
           },
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -59,40 +59,39 @@ export const PATCH: APIRoute = async ({ locals, request }) => {
     });
 
     if (error) {
-      console.error('Error updating user metadata:', error);
+      console.error("Error updating user metadata:", error);
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UPDATE_FAILED',
-            message: 'Failed to update user metadata',
+            code: "UPDATE_FAILED",
+            message: "Failed to update user metadata",
           },
         }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({
-        message: 'User metadata updated successfully',
+        message: "User metadata updated successfully",
         user: {
           id: data.user.id,
           email: data.user.email,
           user_metadata: data.user.user_metadata,
         },
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error('Error in update-metadata endpoint:', error);
+    console.error("Error in update-metadata endpoint:", error);
     return new Response(
       JSON.stringify({
         error: {
-          code: 'INTERNAL_ERROR',
-          message: 'An unexpected error occurred',
+          code: "INTERNAL_ERROR",
+          message: "An unexpected error occurred",
         },
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 };
-

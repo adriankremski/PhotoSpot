@@ -1,27 +1,27 @@
 /**
  * MapSection Component
- * 
+ *
  * Root container component that orchestrates the entire map view.
  * Manages state for photos, filters, selected photo, viewport, and
  * loading/error states. Provides context to child components.
  */
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import type { MapViewport, BoundingBox, UserRole } from '@/types';
-import { DEFAULT_VIEWPORT } from '@/lib/utils/mapHelpers';
-import { useMapPhotos } from './useMapPhotos';
-import { useMapSync } from './useMapSync';
-import { MapGL } from './MapGL';
-import { PinClusterLayer } from './PinClusterLayer';
-import { PhotoPopup } from './PhotoPopup';
-import { FilterPanel } from './FilterPanel';
-import { MapControls } from './MapControls';
-import { ThumbnailStrip } from './ThumbnailStrip';
-import { BottomSheetCarousel } from './BottomSheetCarousel';
-import { UploadPhotoButton } from './UploadPhotoButton';
-import { LiveRegion } from './LiveRegion';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { X, AlertCircle } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from "react";
+import type { MapViewport, BoundingBox, UserRole } from "@/types";
+import { DEFAULT_VIEWPORT } from "@/lib/utils/mapHelpers";
+import { useMapPhotos } from "./useMapPhotos";
+import { useMapSync } from "./useMapSync";
+import { MapGL } from "./MapGL";
+import { PinClusterLayer } from "./PinClusterLayer";
+import { PhotoPopup } from "./PhotoPopup";
+import { FilterPanel } from "./FilterPanel";
+import { MapControls } from "./MapControls";
+import { ThumbnailStrip } from "./ThumbnailStrip";
+import { BottomSheetCarousel } from "./BottomSheetCarousel";
+import { UploadPhotoButton } from "./UploadPhotoButton";
+import { LiveRegion } from "./LiveRegion";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { X, AlertCircle } from "lucide-react";
 
 interface MapSectionProps {
   userRole?: UserRole | null;
@@ -32,11 +32,7 @@ interface MapSectionProps {
 /**
  * MapSection - Main container for map view
  */
-export function MapSection({
-  userRole = null,
-  isAuthenticated = false,
-  initialViewport = {},
-}: MapSectionProps) {
+export function MapSection({ userRole = null, isAuthenticated = false, initialViewport = {} }: MapSectionProps) {
   // Viewport state
   const [viewport, setViewport] = useState<MapViewport>({
     ...DEFAULT_VIEWPORT,
@@ -44,7 +40,7 @@ export function MapSection({
   });
 
   const [isLocating, setIsLocating] = useState(false);
-  const [announcement, setAnnouncement] = useState('');
+  const [announcement, setAnnouncement] = useState("");
 
   // Refs
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
@@ -63,12 +59,7 @@ export function MapSection({
     clearError,
   } = useMapPhotos(viewport);
 
-  const {
-    selectedPhotoId,
-    selectPhotoFromPin,
-    selectPhotoFromThumbnail,
-    deselectPhoto,
-  } = useMapSync({
+  const { selectedPhotoId, selectPhotoFromPin, selectPhotoFromThumbnail, deselectPhoto } = useMapSync({
     photos,
     viewport,
     setViewport,
@@ -97,7 +88,7 @@ export function MapSection({
    */
   const handleLocateMe = useCallback(() => {
     if (!navigator.geolocation) {
-      console.error('Geolocation not supported');
+      console.error("Geolocation not supported");
       return;
     }
 
@@ -114,7 +105,7 @@ export function MapSection({
         setIsLocating(false);
       },
       (err) => {
-        console.error('Geolocation error:', err);
+        console.error("Geolocation error:", err);
         setIsLocating(false);
       }
     );
@@ -130,19 +121,17 @@ export function MapSection({
   /**
    * Get selected photo object
    */
-  const selectedPhoto = selectedPhotoId
-    ? photos.find((p) => p.id === selectedPhotoId)
-    : null;
+  const selectedPhoto = selectedPhotoId ? photos.find((p) => p.id === selectedPhotoId) : null;
 
   /**
    * Announce photo count changes
    */
   useEffect(() => {
     if (photos.length > 0 && !isLoading) {
-      const message = `${photos.length} ${photos.length === 1 ? 'photo' : 'photos'} loaded`;
+      const message = `${photos.length} ${photos.length === 1 ? "photo" : "photos"} loaded`;
       setAnnouncement(message);
       // Clear announcement after it's been read
-      const timer = setTimeout(() => setAnnouncement(''), 3000);
+      const timer = setTimeout(() => setAnnouncement(""), 3000);
       return () => clearTimeout(timer);
     }
   }, [photos.length, isLoading]);
@@ -155,10 +144,10 @@ export function MapSection({
     if (filters.category) activeFilters.push(filters.category);
     if (filters.season) activeFilters.push(filters.season);
     if (filters.time_of_day) activeFilters.push(filters.time_of_day);
-    if (filters.photographer_only) activeFilters.push('photographers only');
+    if (filters.photographer_only) activeFilters.push("photographers only");
 
     if (activeFilters.length > 0) {
-      setAnnouncement(`Filters applied: ${activeFilters.join(', ')}`);
+      setAnnouncement(`Filters applied: ${activeFilters.join(", ")}`);
     }
   }, [filters]);
 
@@ -193,43 +182,24 @@ export function MapSection({
 
       {/* Map Container */}
       <div className="h-full w-full">
-        <MapGL
-          viewport={viewport}
-          onViewportChange={handleViewportChange}
-          onBoundsChange={handleBoundsChange}
-        >
+        <MapGL viewport={viewport} onViewportChange={handleViewportChange} onBoundsChange={handleBoundsChange}>
           {/* Photo Pins */}
-          <PinClusterLayer
-            photos={photos}
-            selectedPhotoId={selectedPhotoId}
-            onPinClick={selectPhotoFromPin}
-          />
+          <PinClusterLayer photos={photos} selectedPhotoId={selectedPhotoId} onPinClick={selectPhotoFromPin} />
 
           {/* Photo Popup */}
-          {selectedPhoto && (
-            <PhotoPopup photo={selectedPhoto} onClose={deselectPhoto} />
-          )}
+          {selectedPhoto && <PhotoPopup photo={selectedPhoto} onClose={deselectPhoto} />}
         </MapGL>
       </div>
 
       {/* Filter Panel */}
-      <FilterPanel
-        filters={filters}
-        onFiltersChange={setFilters}
-        onReset={resetFilters}
-        isLoading={isLoading}
-      />
+      <FilterPanel filters={filters} onFiltersChange={setFilters} onReset={resetFilters} isLoading={isLoading} />
 
       {/* Map Controls */}
-      <MapControls
-        onLocateMe={handleLocateMe}
-        onResetView={handleResetView}
-        isLocating={isLocating}
-      />
+      <MapControls onLocateMe={handleLocateMe} onResetView={handleResetView} isLocating={isLocating} />
 
       {/* Upload Photo Button (Photographers only) - Desktop: Above thumbnail strip, right aligned */}
       {/* <div className="bottom-40 right-4 z-20"> */}
-        <UploadPhotoButton userRole={userRole} isAuthenticated={isAuthenticated} />
+      <UploadPhotoButton userRole={userRole} isAuthenticated={isAuthenticated} />
       {/* </div> */}
 
       {/* Upload Photo Button (Photographers only) - Mobile: Above bottom sheet, right aligned */}
@@ -266,4 +236,3 @@ export function MapSection({
     </div>
   );
 }
-

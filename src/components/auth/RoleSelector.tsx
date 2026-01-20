@@ -3,9 +3,9 @@
  * Provides accessible radio card selection for photographer or enthusiast roles
  */
 
-import { Camera, Heart } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import type { UserRole } from '@/types';
+import { Camera, Heart } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import type { UserRole } from "@/types";
 
 interface RoleSelectorProps {
   value: UserRole | null;
@@ -22,26 +22,26 @@ interface RoleOption {
 
 const roleOptions: RoleOption[] = [
   {
-    value: 'photographer',
-    label: 'Photographer',
-    description: 'Share your photography spots and build your portfolio',
+    value: "photographer",
+    label: "Photographer",
+    description: "Share your photography spots and build your portfolio",
     icon: Camera,
   },
   {
-    value: 'enthusiast',
-    label: 'Enthusiast',
-    description: 'Discover amazing photo locations from other photographers',
+    value: "enthusiast",
+    label: "Enthusiast",
+    description: "Discover amazing photo locations from other photographers",
     icon: Heart,
   },
 ];
 
 export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
   const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
       e.preventDefault();
       const prevIndex = currentIndex === 0 ? roleOptions.length - 1 : currentIndex - 1;
       onChange(roleOptions[prevIndex].value);
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
       const nextIndex = currentIndex === roleOptions.length - 1 ? 0 : currentIndex + 1;
       onChange(roleOptions[nextIndex].value);
@@ -50,15 +50,18 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
 
   return (
     <div role="radiogroup" aria-labelledby="role-selector-label" aria-required="true">
-      <label id="role-selector-label" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+      <label
+        id="role-selector-label"
+        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
         I am a
       </label>
-      
+
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {roleOptions.map((option, index) => {
           const isSelected = value === option.value;
           const Icon = option.icon;
-          
+
           return (
             <Card
               key={option.value}
@@ -66,9 +69,7 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
               aria-checked={isSelected}
               tabIndex={isSelected ? 0 : -1}
               className={`cursor-pointer transition-all hover:border-primary/50 ${
-                isSelected
-                  ? 'border-primary ring-2 ring-primary ring-offset-2'
-                  : 'border-border'
+                isSelected ? "border-primary ring-2 ring-primary ring-offset-2" : "border-border"
               }`}
               onClick={() => onChange(option.value)}
               onKeyDown={(e) => handleKeyDown(e, index)}
@@ -76,7 +77,7 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
               <CardContent className="flex items-start gap-4 p-4">
                 <div
                   className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
-                    isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   }`}
                 >
                   <Icon className="size-5" aria-hidden="true" />
@@ -97,7 +98,7 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
           );
         })}
       </div>
-      
+
       {error && (
         <p className="mt-2 text-sm text-destructive" role="alert">
           {error}
@@ -106,4 +107,3 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
     </div>
   );
 }
-

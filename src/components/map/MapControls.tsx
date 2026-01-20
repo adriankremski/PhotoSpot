@@ -1,13 +1,13 @@
 /**
  * MapControls Component
- * 
+ *
  * Additional map control buttons like "Locate Me" (geolocation),
  * "Reset View", and optional style switcher.
  */
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Locate, RotateCcw, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Locate, RotateCcw, Loader2 } from "lucide-react";
 
 interface MapControlsProps {
   onLocateMe: () => void;
@@ -29,7 +29,7 @@ export function MapControls({ onLocateMe, onResetView, isLocating }: MapControls
 
     // Check if geolocation is available
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser');
+      setError("Geolocation is not supported by your browser");
       return;
     }
 
@@ -39,7 +39,7 @@ export function MapControls({ onLocateMe, onResetView, isLocating }: MapControls
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed to get your location');
+        setError("Failed to get your location");
       }
     }
   };
@@ -56,11 +56,7 @@ export function MapControls({ onLocateMe, onResetView, isLocating }: MapControls
         aria-label="Locate me"
         title="Locate me"
       >
-        {isLocating ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <Locate className="h-5 w-5" />
-        )}
+        {isLocating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Locate className="h-5 w-5" />}
       </Button>
 
       {/* Reset View Button */}
@@ -76,12 +72,7 @@ export function MapControls({ onLocateMe, onResetView, isLocating }: MapControls
       </Button>
 
       {/* Error message */}
-      {error && (
-        <div className="max-w-xs rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
-          {error}
-        </div>
-      )}
+      {error && <div className="max-w-xs rounded-lg bg-destructive/10 p-2 text-xs text-destructive">{error}</div>}
     </div>
   );
 }
-

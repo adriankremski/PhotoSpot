@@ -1,6 +1,6 @@
 /**
  * Error Tracking and Monitoring Utilities
- * 
+ *
  * Centralized error tracking for production monitoring.
  * Integrates with Sentry or similar services.
  */
@@ -9,11 +9,11 @@
  * Error severity levels
  */
 export enum ErrorSeverity {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARNING = 'warning',
-  ERROR = 'error',
-  FATAL = 'fatal',
+  DEBUG = "debug",
+  INFO = "info",
+  WARNING = "warning",
+  ERROR = "error",
+  FATAL = "fatal",
 }
 
 /**
@@ -40,12 +40,12 @@ export interface TrackedError {
 
 /**
  * Initialize error tracking
- * 
+ *
  * In production, this would initialize Sentry or similar service.
  * Example:
- * 
+ *
  * import * as Sentry from '@sentry/browser';
- * 
+ *
  * Sentry.init({
  *   dsn: import.meta.env.PUBLIC_SENTRY_DSN,
  *   environment: import.meta.env.MODE,
@@ -55,32 +55,32 @@ export interface TrackedError {
 export function initErrorTracking(): void {
   if (import.meta.env.PROD) {
     // Initialize error tracking service in production
-    console.log('[ErrorTracking] Initializing error tracking for production');
-    
+    console.log("[ErrorTracking] Initializing error tracking for production");
+
     // TODO: Initialize Sentry or other service
     // Sentry.init({ ... });
   } else {
-    console.log('[ErrorTracking] Running in development mode - errors will be logged to console');
+    console.log("[ErrorTracking] Running in development mode - errors will be logged to console");
   }
 }
 
 /**
  * Track an error
- * 
+ *
  * @param trackedError - Error to track
  */
 export function trackError(trackedError: TrackedError): void {
   const { message, severity, error, context } = trackedError;
-  
+
   // Add timestamp if not provided
   const fullContext: ErrorContext = {
     ...context,
     timestamp: context?.timestamp || new Date().toISOString(),
   };
-  
+
   // In development, log to console
   if (import.meta.env.DEV) {
-    console.error('[ErrorTracking]', {
+    console.error("[ErrorTracking]", {
       message,
       severity,
       error,
@@ -88,7 +88,7 @@ export function trackError(trackedError: TrackedError): void {
     });
     return;
   }
-  
+
   // In production, send to error tracking service
   try {
     // TODO: Send to Sentry or other service
@@ -96,21 +96,21 @@ export function trackError(trackedError: TrackedError): void {
     //   level: severity as Sentry.SeverityLevel,
     //   contexts: { custom: fullContext },
     // });
-    
-    console.error('[ErrorTracking] Error tracked:', {
+
+    console.error("[ErrorTracking] Error tracked:", {
       message,
       severity,
       context: fullContext,
     });
   } catch (trackingError) {
     // Fail gracefully if error tracking itself fails
-    console.error('[ErrorTracking] Failed to track error:', trackingError);
+    console.error("[ErrorTracking] Failed to track error:", trackingError);
   }
 }
 
 /**
  * Track a warning
- * 
+ *
  * @param message - Warning message
  * @param context - Optional context
  */
@@ -124,7 +124,7 @@ export function trackWarning(message: string, context?: ErrorContext): void {
 
 /**
  * Track info event
- * 
+ *
  * @param message - Info message
  * @param context - Optional context
  */
@@ -138,16 +138,16 @@ export function trackInfo(message: string, context?: ErrorContext): void {
 
 /**
  * Set user context for error tracking
- * 
+ *
  * @param userId - User ID
  * @param email - User email (optional)
  */
 export function setUserContext(userId: string, email?: string): void {
   if (import.meta.env.DEV) {
-    console.log('[ErrorTracking] User context set:', { userId, email });
+    console.log("[ErrorTracking] User context set:", { userId, email });
     return;
   }
-  
+
   // TODO: Set user context in Sentry
   // Sentry.setUser({ id: userId, email });
 }
@@ -157,48 +157,44 @@ export function setUserContext(userId: string, email?: string): void {
  */
 export function clearUserContext(): void {
   if (import.meta.env.DEV) {
-    console.log('[ErrorTracking] User context cleared');
+    console.log("[ErrorTracking] User context cleared");
     return;
   }
-  
+
   // TODO: Clear user context in Sentry
   // Sentry.setUser(null);
 }
 
 /**
  * Track performance metric
- * 
+ *
  * @param metricName - Name of the metric
  * @param value - Metric value (e.g., duration in ms)
  * @param tags - Optional tags for categorization
  */
-export function trackPerformance(
-  metricName: string,
-  value: number,
-  tags?: Record<string, string>
-): void {
+export function trackPerformance(metricName: string, value: number, tags?: Record<string, string>): void {
   if (import.meta.env.DEV) {
-    console.log('[Performance]', { metricName, value, tags });
+    console.log("[Performance]", { metricName, value, tags });
     return;
   }
-  
+
   // TODO: Send to monitoring service
   // Sentry.metrics.distribution(metricName, value, { tags });
 }
 
 /**
  * Error boundary handler for React components
- * 
+ *
  * @param error - Error that was caught
  * @param errorInfo - React error info
  */
 export function handleComponentError(error: Error, errorInfo: { componentStack: string }): void {
   trackError({
-    message: 'React component error',
+    message: "React component error",
     severity: ErrorSeverity.ERROR,
     error,
     context: {
-      component: errorInfo.componentStack.split('\n')[1]?.trim(),
+      component: errorInfo.componentStack.split("\n")[1]?.trim(),
       metadata: {
         componentStack: errorInfo.componentStack,
       },
@@ -208,7 +204,7 @@ export function handleComponentError(error: Error, errorInfo: { componentStack: 
 
 /**
  * Track API error
- * 
+ *
  * @param endpoint - API endpoint
  * @param status - HTTP status code
  * @param message - Error message
@@ -218,7 +214,7 @@ export function trackAPIError(endpoint: string, status: number, message: string)
     message: `API Error: ${endpoint}`,
     severity: status >= 500 ? ErrorSeverity.ERROR : ErrorSeverity.WARNING,
     context: {
-      action: 'API_CALL',
+      action: "API_CALL",
       metadata: {
         endpoint,
         status,
@@ -230,7 +226,7 @@ export function trackAPIError(endpoint: string, status: number, message: string)
 
 /**
  * Track map-specific errors
- * 
+ *
  * @param action - Action that failed (e.g., 'load_photos', 'apply_filters')
  * @param error - Error object
  */
@@ -238,11 +234,10 @@ export function trackMapError(action: string, error: Error | string): void {
   trackError({
     message: `Map error: ${action}`,
     severity: ErrorSeverity.ERROR,
-    error: typeof error === 'string' ? new Error(error) : error,
+    error: typeof error === "string" ? new Error(error) : error,
     context: {
-      component: 'MapView',
+      component: "MapView",
       action,
     },
   });
 }
-
