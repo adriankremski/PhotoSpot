@@ -181,7 +181,7 @@ export function MapSection({
         </div>
       )}
 
-      {/* Loading Overlay (only on initial load) */}
+      {/* Loading Overlay (only on initial load)
       {isLoading && photos.length === 0 && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="text-center">
@@ -189,7 +189,7 @@ export function MapSection({
             <p className="text-sm font-medium text-foreground">Loading photos...</p>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Map Container */}
       <div className="h-full w-full">
@@ -227,6 +227,16 @@ export function MapSection({
         isLocating={isLocating}
       />
 
+      {/* Upload Photo Button (Photographers only) - Desktop: Above thumbnail strip, right aligned */}
+      {/* <div className="bottom-40 right-4 z-20"> */}
+        <UploadPhotoButton userRole={userRole} isAuthenticated={isAuthenticated} />
+      {/* </div> */}
+
+      {/* Upload Photo Button (Photographers only) - Mobile: Above bottom sheet, right aligned */}
+      <div className="absolute bottom-24 right-4 z-20 lg:hidden">
+        <UploadPhotoButton userRole={userRole} isAuthenticated={isAuthenticated} />
+      </div>
+
       {/* Desktop: Thumbnail Strip */}
       <div className="hidden lg:block">
         <ThumbnailStrip
@@ -250,9 +260,6 @@ export function MapSection({
           isLoading={isLoading}
         />
       </div>
-
-      {/* Upload Photo Button (Photographers only) */}
-      <UploadPhotoButton userRole={userRole} isAuthenticated={isAuthenticated} />
 
       {/* Live Region for Screen Reader Announcements */}
       <LiveRegion message={announcement} />

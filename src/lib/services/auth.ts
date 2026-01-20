@@ -135,6 +135,8 @@ function handleSupabaseAuthError(error: { message: string; status?: number; code
     );
   }
 
+  console.error('[handleSupabaseAuthError] Supabase error:', error);
+
   // Generic Supabase error
   throw new AuthServiceError(
     error.message || 'Authentication service error',
