@@ -20,8 +20,11 @@ Object.defineProperty(window, "location", {
   writable: true,
 });
 
-// Mock Supabase client
-const mockSetSession = vi.fn();
+// Mock Supabase client - use hoisted variable
+const { mockSetSession } = vi.hoisted(() => ({
+  mockSetSession: vi.fn(),
+}));
+
 vi.mock("@/db/supabase.client", () => ({
   supabaseClient: {
     auth: {

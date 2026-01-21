@@ -56,7 +56,7 @@ describe("useMapPhotos", () => {
     vi.restoreAllMocks();
   });
 
-  it("should initialize with empty state", () => {
+  it("should initialize with empty state", async () => {
     const { result } = renderHook(() =>
       useMapPhotos({
         latitude: 37.7749,
@@ -66,8 +66,12 @@ describe("useMapPhotos", () => {
     );
 
     expect(result.current.photos).toEqual([]);
-    expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
+
+    // Wait for initial load to complete
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
   });
 
   it("should fetch photos on mount", async () => {

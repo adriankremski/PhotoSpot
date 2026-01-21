@@ -77,7 +77,10 @@ function createMockSupabaseClient(overrides?: { queryData?: any[]; queryError?: 
       select: mockSelect,
     }),
     auth: {} as any,
-    rpc: vi.fn(),
+    rpc: vi.fn().mockResolvedValue({
+      data: overrides?.queryData || [],
+      error: overrides?.queryError || null,
+    }),
     storage: {
       from: vi.fn(),
     },

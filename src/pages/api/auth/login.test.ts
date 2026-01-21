@@ -47,8 +47,19 @@ describe("POST /api/auth/login", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Setup default request
+    mockRequest = new Request("http://localhost/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "password123",
+      }),
+    });
+
     // Setup default mocks
     mockContext = {
+      request: mockRequest,
       locals: {
         supabase: {} as any,
       },
@@ -81,6 +92,7 @@ describe("POST /api/auth/login", () => {
           password: "password123",
         }),
       });
+      mockContext.request = mockRequest;
 
       // Mock validation success
       vi.mocked(loginSchema.parse).mockReturnValue({
@@ -112,6 +124,7 @@ describe("POST /api/auth/login", () => {
           password: "password123",
         }),
       });
+      mockContext.request = mockRequest;
 
       // Mock Zod validation error
       const zodError = new ZodError([
@@ -148,6 +161,7 @@ describe("POST /api/auth/login", () => {
           password: "",
         }),
       });
+      mockContext.request = mockRequest;
 
       const zodError = new ZodError([
         {
@@ -185,6 +199,7 @@ describe("POST /api/auth/login", () => {
           password: "wrongpassword",
         }),
       });
+      mockContext.request = mockRequest;
 
       vi.mocked(loginSchema.parse).mockReturnValue({
         email: "test@example.com",
@@ -215,6 +230,7 @@ describe("POST /api/auth/login", () => {
           password: "password123",
         }),
       });
+      mockContext.request = mockRequest;
 
       vi.mocked(loginSchema.parse).mockReturnValue({
         email: "test@example.com",
@@ -251,6 +267,7 @@ describe("POST /api/auth/login", () => {
           password: "password123",
         }),
       });
+      mockContext.request = mockRequest;
 
       vi.mocked(loginSchema.parse).mockReturnValue({
         email: "test@example.com",
@@ -282,6 +299,7 @@ describe("POST /api/auth/login", () => {
         headers: { "Content-Type": "application/json" },
         body: "invalid json",
       });
+      mockContext.request = mockRequest;
 
       // Spy on console.error
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -309,6 +327,7 @@ describe("POST /api/auth/login", () => {
           password: "password123",
         }),
       });
+      mockContext.request = mockRequest;
 
       const mockAuthResponse: AuthResponse = {
         user: {
@@ -352,6 +371,7 @@ describe("POST /api/auth/login", () => {
           password: "wrongpassword",
         }),
       });
+      mockContext.request = mockRequest;
 
       vi.mocked(loginSchema.parse).mockReturnValue({
         email: "test@example.com",

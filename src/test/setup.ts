@@ -4,6 +4,7 @@
  */
 
 import { beforeAll, afterEach, afterAll } from "vitest";
+import "@testing-library/jest-dom/vitest";
 
 // Setup runs before all tests
 beforeAll(() => {
