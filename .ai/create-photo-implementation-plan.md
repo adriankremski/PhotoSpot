@@ -1,38 +1,44 @@
 # API Endpoint Implementation Plan: Create Photo (`POST /api/photos`)
 
 ## 1. Endpoint Overview
+
 Allows an authenticated user to upload a JPG/PNG photo (≤ 10 MB) together with metadata.
 Creates a database record (`photos`, `photo_tags`), stores the file in Supabase Storage, extracts EXIF, optionally blurs location, sets initial `status = 'pending'`, and returns a lightweight confirmation object.
 
 ## 2. Request Details
-- **HTTP Method:** POST  
-- **URL:** `/api/photos`  
-- **Auth:** Required (Supabase Auth – bearer cookie or header)  
+
+- **HTTP Method:** POST
+- **URL:** `/api/photos`
+- **Auth:** Required (Supabase Auth – bearer cookie or header)
 - **Content-Type:** `multipart/form-data`
 
 ### Parameters
-| Name            | Type / Format           | Required | Validation / Notes                                   |
-|-----------------|-------------------------|----------|-----------------------------------------------------|
-| `file`          | binary (JPG/PNG)        | ✔        | ≤ 10 MB, MIME & ext in `FILE_UPLOAD_CONSTRAINTS`     |
-| `title`         | string                  | ✔        | 1–200 chars                                         |
-| `description`   | string                  |          | ≤ 1000 chars                                        |
-| `category`      | `photo_category` enum   | ✔        | see `isPhotoCategory()`                             |
-| `season`        | `season` enum           |          | optional                                            |
-| `time_of_day`   | `time_of_day` enum      |          | optional                                            |
-| `latitude`      | number                  | ✔        | –90 … 90                                            |
-| `longitude`     | number                  | ✔        | –180 … 180                                          |
-| `blur_location` | boolean                 |          | default `false`                                     |
-| `blur_radius`   | number (m)              |          | 100–500; required only when `blur_location` true    |
-| `tags`          | string[]                |          | ≤ 10, each ≤ 30 chars, lowercase trimmed            |
-| `gear`          | JSON (`GearInfo`)       |          | optional                                            |
+
+| Name            | Type / Format         | Required | Validation / Notes                               |
+| --------------- | --------------------- | -------- | ------------------------------------------------ |
+| `file`          | binary (JPG/PNG)      | ✔       | ≤ 10 MB, MIME & ext in `FILE_UPLOAD_CONSTRAINTS` |
+| `title`         | string                | ✔       | 1–200 chars                                      |
+| `description`   | string                |          | ≤ 1000 chars                                     |
+| `category`      | `photo_category` enum | ✔       | see `isPhotoCategory()`                          |
+| `season`        | `season` enum         |          | optional                                         |
+| `time_of_day`   | `time_of_day` enum    |          | optional                                         |
+| `latitude`      | number                | ✔       | –90 … 90                                         |
+| `longitude`     | number                | ✔       | –180 … 180                                       |
+| `blur_location` | boolean               |          | default `false`                                  |
+| `blur_radius`   | number (m)            |          | 100–500; required only when `blur_location` true |
+| `tags`          | string[]              |          | ≤ 10, each ≤ 30 chars, lowercase trimmed         |
+| `gear`          | JSON (`GearInfo`)     |          | optional                                         |
 
 ### DTO / Command Model
+
 `CreatePhotoCommand` (request)  
 `CreatePhotoResponse` (success)  
 `ApiError` (errors)
 
 ## 3. Response Details
+
 ### Success — `201 Created`
+
 ```json
 {
   "message": "Photo uploaded successfully",
@@ -47,16 +53,18 @@ Creates a database record (`photos`, `photo_tags`), stores the file in Supabase 
 ```
 
 ### Error Codes
-| Status | Scenario |
-|--------|----------|
-| 400 Bad Request | missing/invalid fields, wrong enum, >10 tags |
-| 401 Unauthorized | user not signed in |
-| 413 Payload Too Large | file > 10 MB |
-| 422 Unprocessable Entity | invalid coordinates / EXIF parsing failed |
-| 429 Too Many Requests | > 5 photos / 24 h (DB trigger raises pg error – map to 429) |
-| 500 Internal Server Error | storage or DB failure |
+
+| Status                    | Scenario                                                    |
+| ------------------------- | ----------------------------------------------------------- |
+| 400 Bad Request           | missing/invalid fields, wrong enum, >10 tags                |
+| 401 Unauthorized          | user not signed in                                          |
+| 413 Payload Too Large     | file > 10 MB                                                |
+| 422 Unprocessable Entity  | invalid coordinates / EXIF parsing failed                   |
+| 429 Too Many Requests     | > 5 photos / 24 h (DB trigger raises pg error – map to 429) |
+| 500 Internal Server Error | storage or DB failure                                       |
 
 ## 4. Data Flow
+
 1. **API Route** `/src/pages/api/photos/index.ts` (POST handler)
 2. Parse multipart via `@hattip/multipart` streamed to disk/tmp buffer.
 3. **Validation Service** (`photoValidation.ts`) • Zod schema checks every field.
@@ -71,6 +79,7 @@ Creates a database record (`photos`, `photo_tags`), stores the file in Supabase 
 5. Serialize response and send 201.
 
 ## 5. Security Considerations
+
 - Enforce Supabase Auth; reject if `locals.user` undefined.
 - RLS on `photos` ensures row-level security after insert.
 - Validate MIME, magic-bytes check with `file-type` to prevent disguised files.
@@ -81,12 +90,14 @@ Creates a database record (`photos`, `photo_tags`), stores the file in Supabase 
 - Use prepared queries (`supabase.from(...).insert`) – no SQL injection.
 
 ## 6. Error Handling
+
 - Wrap each async step in try/catch and map Supabase errors to `ApiError`.
 - Database constraint errors (file_size, enum, trigger) → inspect `error.code`; if `payload_too_large` → 413, trigger name `photos_limit` → 429.
 - Log unexpected errors to `audit_log` or external logger (`sentry`). Record: `user_id`, action `create_photo`, message, stack.
 - Always return structured `ApiError`.
 
 ## 7. Performance Considerations
+
 - Stream upload directly from multipart parser to Supabase Storage (no full RAM buffering).
 - EXIF extraction offloaded to background if large (but typically fast).
 - Tag upsert executed in single bulk query.
@@ -94,7 +105,9 @@ Creates a database record (`photos`, `photo_tags`), stores the file in Supabase 
 - Ensure GIST index on `location_public` already exists for future queries.
 
 ## 8. Implementation Steps
-1. **Dependencies**  
+
+1. **Dependencies**
+
    ```bash
    pnpm add exifr file-type zod @hattip/multipart
    ```
@@ -110,6 +123,7 @@ Creates a database record (`photos`, `photo_tags`), stores the file in Supabase 
    • Export `parseCreatePhotoCommand(formData: FormData): ParsedData`.
 
 4. **geo.ts**
+
 ```ts
 export function randomOffsetPoint(lat: number, lon: number, radiusMeters: number) {
   // Haversine-based random point generator
@@ -121,20 +135,20 @@ export function randomOffsetPoint(lat: number, lon: number, radiusMeters: number
    • Return minimal DTO (`CreatePhotoResponse`).
 
 6. **API Route** `src/pages/api/photos/index.ts`
+
 ```ts
 export const prerender = false;
 
-import { photosService } from '@/lib/services/photosService';
-import { parseMultipartForm } from '@/lib/utils/multipart';
-import { photoValidation } from '@/lib/validators/photoValidation';
+import { photosService } from "@/lib/services/photosService";
+import { parseMultipartForm } from "@/lib/utils/multipart";
+import { photoValidation } from "@/lib/validators/photoValidation";
 
 export async function POST(context: APIRouteContext) {
   const { supabase, user } = context.locals;
   if (!user)
-    return new Response(
-      JSON.stringify({ error: { code: 'unauthorized', message: 'Not authenticated' } }),
-      { status: 401 }
-    );
+    return new Response(JSON.stringify({ error: { code: "unauthorized", message: "Not authenticated" } }), {
+      status: 401,
+    });
 
   const form = await parseMultipartForm(context.request); // stream-safe
   const parsed = photoValidation.parse(form);
@@ -149,18 +163,21 @@ export async function POST(context: APIRouteContext) {
 ```
 
 7. **Unit Tests**
-- Validation schema edge cases.  
+
+- Validation schema edge cases.
 - geo blur radius math.
 
 8. **Integration Tests** (Vitest + Supabase test project)
-- Successful upload.  
-- 400 on invalid category.  
-- 413 on >10 MB.  
+
+- Successful upload.
+- 400 on invalid category.
+- 413 on >10 MB.
 - 429 when limit exceeded.
 
 9. **Docs**
+
 - Update `/docs/api.md` and Swagger/OpenAPI spec.
 
 10. **CI**
-- Add test & lint step for new files.
 
+- Add test & lint step for new files.

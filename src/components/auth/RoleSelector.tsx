@@ -50,12 +50,12 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
 
   return (
     <div role="radiogroup" aria-labelledby="role-selector-label" aria-required="true">
-      <label
+      <div
         id="role-selector-label"
         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
       >
         I am a
-      </label>
+      </div>
 
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {roleOptions.map((option, index) => {

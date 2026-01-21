@@ -1,6 +1,7 @@
 # API Endpoint Implementation Plan: Get Single Photo
 
 ## 1. Endpoint Overview
+
 Fetch complete details for a single photo by its UUID. The endpoint serves three distinct audiences in a single handler:
 
 1. **Public visitors** – can only view photos that are `approved` and **never** receive sensitive fields (`exif`, `location_exact`, `status`).
@@ -10,6 +11,7 @@ Fetch complete details for a single photo by its UUID. The endpoint serves three
 The handler must enforce these visibility rules while returning a consistent DTO (`PhotoDetailDto`) with optional properties omitted from JSON when not applicable.
 
 ## 2. Request Details
+
 - **HTTP Method:** `GET`
 - **URL Structure:** `/api/photos/:photoId`
 - **Parameters:**
@@ -20,16 +22,20 @@ The handler must enforce these visibility rules while returning a consistent DTO
 - **Request Body:** _None_
 
 ## 3. Used Types
+
 ### Existing DTOs
+
 - `PhotoDetailDto` – response wrapper.
 - `UserBasicInfo` – embedded user info.
 - `GeoPoint`, `GearInfo`, `ExifData` (nested inside `PhotoDetailDto`).
 - `ApiError` – error response type.
 
 ### New / Updated Types
-_**None.**_  All required types already exist in `src/types.ts`.
+
+_**None.**_ All required types already exist in `src/types.ts`.
 
 ### Zod Schemas (to be created in `src/lib/validators/photo.ts`)
+
 ```ts
 export const GetPhotoParamsSchema = z.object({
   photoId: z.string().uuid(),
@@ -37,42 +43,47 @@ export const GetPhotoParamsSchema = z.object({
 ```
 
 ## 4. Response Details
+
 ### Success – `200 OK`
+
 Returns a `PhotoDetailDto` JSON object.
 
-| Audience | Hidden Fields |
-|----------|---------------|
-| Public   | `exif`, `location_exact`, `status` |
-| Owner    | _None_ (full set) |
-| Moderator| _None_ (full set) |
+| Audience  | Hidden Fields                      |
+| --------- | ---------------------------------- |
+| Public    | `exif`, `location_exact`, `status` |
+| Owner     | _None_ (full set)                  |
+| Moderator | _None_ (full set)                  |
 
 ### Error Codes
-| Status | Reason |
-|--------|--------|
-| 400 | Invalid UUID path parameter |
-| 401 | Supplied token invalid / expired |
-| 403 | Photo exists but user lacks permission to view (e.g. status≠`approved`) |
-| 404 | Photo not found or soft-deleted |
-| 500 | Unexpected server error |
+
+| Status | Reason                                                                  |
+| ------ | ----------------------------------------------------------------------- |
+| 400    | Invalid UUID path parameter                                             |
+| 401    | Supplied token invalid / expired                                        |
+| 403    | Photo exists but user lacks permission to view (e.g. status≠`approved`) |
+| 404    | Photo not found or soft-deleted                                         |
+| 500    | Unexpected server error                                                 |
 
 Error payload format follows `ApiError`.
 
 ## 5. Data Flow
+
 ```
-Client → Astro API Route (/src/pages/api/photos/[photoId].ts)  
-  ↳ Astro middleware injects `locals.supabase` & `locals.user` (if auth)  
-  ↳ Handler validates :photoId via Zod  
-  ↳ Calls `photoService.getPhotoById(photoId, requester)`  
-    ↳ PhotoService queries Supabase:  
-         - Select from `photos` joined with `user_profiles`, `favorites` (aggregate) & `photo_tags`  
-         - Filter: `id = :photoId` AND `deleted_at IS NULL`  
-    ↳ Service checks ownership / moderation role & status  
-         - If public + status≠approved → 403  
-         - Else map DB row → `PhotoDetailDto` with conditional field stripping  
+Client → Astro API Route (/src/pages/api/photos/[photoId].ts)
+  ↳ Astro middleware injects `locals.supabase` & `locals.user` (if auth)
+  ↳ Handler validates :photoId via Zod
+  ↳ Calls `photoService.getPhotoById(photoId, requester)`
+    ↳ PhotoService queries Supabase:
+         - Select from `photos` joined with `user_profiles`, `favorites` (aggregate) & `photo_tags`
+         - Filter: `id = :photoId` AND `deleted_at IS NULL`
+    ↳ Service checks ownership / moderation role & status
+         - If public + status≠approved → 403
+         - Else map DB row → `PhotoDetailDto` with conditional field stripping
   ↳ Handler returns JSON 200 or mapped error
 ```
 
 ## 6. Security Considerations
+
 1. **Authentication** – Parse JWT with Supabase. For anonymous users, treat as public.
 2. **Authorization (BOLA)** – Ensure requester can only fetch non-approved photos if they are the owner or moderator.
 3. **Object Property Filtering** – Never leak sensitive fields to unauthorized audiences.
@@ -81,6 +92,7 @@ Client → Astro API Route (/src/pages/api/photos/[photoId].ts)
 6. **XSS** – Escape/sanitize any string fields displayed in UI (handled client-side).
 
 ## 7. Error Handling
+
 1. **Invalid UUID** – Throw `400` early via Zod.
 2. **Not Found** – No row returned → `404`.
 3. **Forbidden** – Row found but status≠`approved` and requester isn’t owner/mod → `403`.
@@ -88,16 +100,19 @@ Client → Astro API Route (/src/pages/api/photos/[photoId].ts)
 5. **JSON Serialization Fail** – Unlikely; wrap response in `try/catch`.
 
 Logging Strategy:
+
 - Use `src/lib/services/auth.ts` logger or create `logger.error()` abstraction.
 - Persist unexpected errors into `audit_log` (table already exists) with `action = 'error'`.
 
 ## 8. Performance Considerations
+
 - Create DB index on `photos(id)` (already PK) and `photos(status)` if not present.
 - Use a single SQL view for join to minimize round-trips (could leverage existing `public_photos_v` for public read, but owner/mod requires direct table access).
 - Aggregate `favorite_count` with Supabase `select('..., favorites(count)')` to avoid N+1.
 - Send `Cache-Control: public, max-age=60` for public approved photos; disable caching for owner/mod.
 
 ## 9. Implementation Steps
+
 1. **Add Zod validator** in `src/lib/validators/photo.ts` – `GetPhotoParamsSchema`.
 2. **Create/Update service** `src/lib/services/photos.ts`
    - `getPhotoById(photoId: string, requester?: { id: string; role?: UserRole })`.
@@ -120,4 +135,3 @@ Logging Strategy:
 9. **Deploy & Monitor** – Verify audit logs, ensure no extra fields leak.
 
 > **Estimated Effort:** 4–6 dev hours (incl. tests & review)
-

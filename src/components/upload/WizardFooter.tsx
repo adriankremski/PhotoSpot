@@ -10,7 +10,6 @@ import type { WizardFooterProps } from "./types";
 
 export function WizardFooter({
   currentStep,
-  totalSteps,
   canGoNext,
   canGoBack,
   isSubmitting,

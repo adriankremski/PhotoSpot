@@ -20,7 +20,7 @@ import type { UploadWizardProps, FileWithPreview, ValidationError } from "./type
 /**
  * UploadWizard - Multi-step photo upload flow
  */
-export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWizardProps) {
+export function UploadWizard({ mode, onSuccess, onCancel }: UploadWizardProps) {
   const wizard = useUploadWizard();
   const {
     state,
@@ -42,7 +42,6 @@ export function UploadWizard({ mode, userRole, onSuccess, onCancel }: UploadWiza
   // Photo creation hook
   const {
     createPhoto,
-    isLoading: isUploading,
     error: uploadApiError,
     fieldErrors,
   } = useCreatePhoto({

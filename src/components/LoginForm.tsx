@@ -28,7 +28,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    clearErrors,
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
@@ -176,7 +175,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
         <div className="mt-4 text-center text-sm">
           <p className="text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a
               href="/register"
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -194,7 +193,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
  * Maps API errors to view-specific error format
  */
 function mapApiErrorToViewError(error: ApiError, status: number): LoginViewError {
-  const errorCode = error.error.code;
   const errorMessage = error.error.message;
 
   switch (status) {

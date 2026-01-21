@@ -1,7 +1,9 @@
 # API Endpoint Implementation Plan: Get All Tags (`GET /api/tags`)
 
 ## 1. Endpoint Overview
+
 Retrieve the complete list of tags used in PhotoSpot, ordered by their popularity (descending `usage_count`). Each tag entry includes:
+
 - `id`: Primary key of tag
 - `name`: Tag label (unique, lowercase)
 - `usage_count`: Number of approved photos that reference the tag
@@ -9,6 +11,7 @@ Retrieve the complete list of tags used in PhotoSpot, ordered by their popularit
 The endpoint is **public** (no authentication required) and read-only.
 
 ## 2. Request Details
+
 - **HTTP Method**: `GET`
 - **URL**: `/api/tags`
 - **Query Parameters**: None
@@ -16,29 +19,34 @@ The endpoint is **public** (no authentication required) and read-only.
 - **Request Body**: _N/A_
 
 ## 3. Used Types
-| Purpose | Type | File |
-|---------|------|------|
-| Response DTO for a single tag | `TagDto` | `src/types.ts` |
-| Response wrapper | `TagsResponse` | `src/types.ts` |
-| Supabase row type | `Tag` | `src/types.ts` |
+
+| Purpose                       | Type           | File           |
+| ----------------------------- | -------------- | -------------- |
+| Response DTO for a single tag | `TagDto`       | `src/types.ts` |
+| Response wrapper              | `TagsResponse` | `src/types.ts` |
+| Supabase row type             | `Tag`          | `src/types.ts` |
 
 No input DTOs/command models are necessary (no parameters).
 
 ## 4. Response Details
-| Status | Condition | Body |
-|--------|-----------|------|
-| `200 OK` | Always on success | `TagsResponse`  
+
+| Status   | Condition         | Body           |
+| -------- | ----------------- | -------------- |
+| `200 OK` | Always on success | `TagsResponse` |
+
 ```json
 {
   "data": [
     { "id": 1, "name": "landscape", "usage_count": 1247 },
-    { "id": 2, "name": "portrait",  "usage_count": 892 }
+    { "id": 2, "name": "portrait", "usage_count": 892 }
   ]
 }
 ```
+
 | `500 Internal Server Error` | Unexpected DB/runtime failure | `ApiError` |
 
 ## 5. Data Flow
+
 1. **Route Handler** (`src/pages/api/tags/index.ts`) is invoked by a GET request.
 2. Astro supplies `context.locals.supabase` (typed `SupabaseClient`) – already authenticated for the `anon` role.
 3. Handler delegates to `TagService.getAllTags()` in `src/lib/services/tags.ts`.
@@ -51,48 +59,55 @@ No input DTOs/command models are necessary (no parameters).
    GROUP BY t.id, t.name
    ORDER BY usage_count DESC;
    ```
-   *Rationale*: Filters out non-approved photos, counts usage efficiently (index on `photo_tags.tag_id`).
+   _Rationale_: Filters out non-approved photos, counts usage efficiently (index on `photo_tags.tag_id`).
 5. Raw rows are mapped to `TagDto[]` (TypeScript type-safe).
 6. Handler returns `{ data: tagDtos }` with HTTP 200.
 7. Errors are caught, logged (Sentry + console), and surfaced as `ApiError` with HTTP 500.
 
 ## 6. Security Considerations
+
 - **RLS**: The `anon` role can `SELECT` from `tags` & `photo_tags`. Ensure RLS on `photos` only allows `status='approved'`; join condition enforces that.
 - **SQL Injection**: No dynamic SQL—safe parameterised query via Supabase.
 - **Abuse / DoS**: Endpoint is lightweight but add Vercel Edge rate-limiting (existing middleware) to deter abuse.
 
 ## 7. Error Handling
-| Scenario | Status | Message | Notes |
-|----------|--------|---------|-------|
-| Supabase/network failure | 500 | "Internal server error" | Log error, include `error.code` |
-| Unexpected exception | 500 | "Internal server error" | Catch-all guard |
+
+| Scenario                 | Status | Message                 | Notes                           |
+| ------------------------ | ------ | ----------------------- | ------------------------------- |
+| Supabase/network failure | 500    | "Internal server error" | Log error, include `error.code` |
+| Unexpected exception     | 500    | "Internal server error" | Catch-all guard                 |
 
 All errors funnel through `handleApiError()` helper (exists in other routes) or create one in `src/lib/utils.ts` if missing.
 
 ## 8. Performance Considerations
+
 - **Indexes**: `photo_tags.tag_id` already exists; counts with `GROUP BY` will use it.
 - **Query plan caching**: Supabase/Postgres handles.
 - **Cold start**: Route is an Edge Function; minimal processing keeps TTFB low.
 - Response payload is tiny (<10 KB) even with thousands of tags.
 
 ## 9. Implementation Steps
+
 1. **Create Service** `src/lib/services/tags.ts`
+
    ```ts
-   import type { SupabaseClient } from '@/db/supabase.client';
-   import type { TagDto } from '@/types';
+   import type { SupabaseClient } from "@/db/supabase.client";
+   import type { TagDto } from "@/types";
 
    export async function getAllTags(supabase: SupabaseClient): Promise<TagDto[]> {
      const { data, error } = await supabase
-       .rpc('get_all_tags_with_usage') // see step 2
+       .rpc("get_all_tags_with_usage") // see step 2
        .returns<TagDto[]>();
      if (error) throw error;
      return data ?? [];
    }
    ```
-   *Alternative*: Use `.from('tags').select(...)` with joins if we don’t add the RPC.
+
+   _Alternative_: Use `.from('tags').select(...)` with joins if we don’t add the RPC.
 
 2. **Add SQL RPC / View** (migrations):
    - File: `supabase/migrations/<timestamp>_rpc_get_all_tags_with_usage.sql`
+
    ```sql
    CREATE OR REPLACE FUNCTION public.get_all_tags_with_usage()
    RETURNS TABLE(id int, name text, usage_count int) LANGUAGE sql STABLE AS $$
@@ -107,14 +122,16 @@ All errors funnel through `handleApiError()` helper (exists in other routes) or 
    ALTER FUNCTION public.get_all_tags_with_usage() OWNER TO postgres;
    GRANT EXECUTE ON FUNCTION public.get_all_tags_with_usage() TO anon, authenticated;
    ```
-   *Reason*: Keeps API code lean and query tuned inside DB.
+
+   _Reason_: Keeps API code lean and query tuned inside DB.
 
 3. **Route Handler** `src/pages/api/tags/index.ts`
+
    ```ts
-   import type { APIRoute } from 'astro';
-   import { getAllTags } from '@/lib/services/tags';
-   import type { TagsResponse } from '@/types';
-   import { handleApiError } from '@/lib/utils';
+   import type { APIRoute } from "astro";
+   import { getAllTags } from "@/lib/services/tags";
+   import type { TagsResponse } from "@/types";
+   import { handleApiError } from "@/lib/utils";
 
    export const prerender = false; // Edge
 
@@ -148,5 +165,5 @@ All errors funnel through `handleApiError()` helper (exists in other routes) or 
    - CI applies migration to staging; verify endpoint in Postman.
 
 ---
-**Estimated Effort**: 2 dev-hours (code) + 0.5 DB migration + 0.5 test & docs.
 
+**Estimated Effort**: 2 dev-hours (code) + 0.5 DB migration + 0.5 test & docs.

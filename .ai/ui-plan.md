@@ -13,7 +13,8 @@ PhotoSpot is a map-centric web application. A persistent Map view acts as the ca
 ## 2. View List
 
 ### 2.1 Landing / Login
-- **Path**: `/` *(redirects to `/map` if authenticated & onboarded)*
+
+- **Path**: `/` _(redirects to `/map` if authenticated & onboarded)_
 - **Purpose**: Brand entry point, account gateway.
 - **Key info**: Hero copy, login form (email / password), CTA links to Register & PRD docs.
 - **Components**: `NavbarPublic`, `LoginForm`, `Footer`.
@@ -23,6 +24,7 @@ PhotoSpot is a map-centric web application. A persistent Map view acts as the ca
   - Rate-limit error banner if 429.
 
 ### 2.2 Register
+
 - **Path**: `/register`
 - **Purpose**: Account creation and role selection.
 - **Key info**: Email, password, role radio buttons.
@@ -30,11 +32,13 @@ PhotoSpot is a map-centric web application. A persistent Map view acts as the ca
 - **Considerations**: Password rules tooltip; 409 conflict messaging.
 
 ### 2.3 Reset Password
+
 - **Path**: `/reset-password`
 - **Purpose**: Supabase password reset flow wrapper.
 - **Components**: `PasswordResetRequestForm`, `PasswordResetConfirmForm`.
 
 ### 2.4 Onboarding Wizard
+
 - **Path**: `/onboarding`
 - **Purpose**: Gate access until user sets role, default location, completes tutorial.
 - **Steps & Components**:
@@ -44,7 +48,8 @@ PhotoSpot is a map-centric web application. A persistent Map view acts as the ca
 - **Security**: Wizard requires auth; sets `onboarding_complete` flag via `/api/users/:id/profile` PATCH.
 
 ### 2.5 Map View (Home)
-- **Path**: `/map` *(also `/`, default route for onboarded users)*
+
+- **Path**: `/map` _(also `/`, default route for onboarded users)_
 - **Purpose**: Discover photos via interactive map & thumbnail rail.
 - **Key info**: Map tiles, clustered pins, horizontal thumbnails (desktop) or bottom sheet (mobile), filter panel, upload/favorites controls.
 - **Components**:
@@ -56,6 +61,7 @@ PhotoSpot is a map-centric web application. A persistent Map view acts as the ca
 - **A11y / UX**: Keyboard pin focus via invisible DOM markers; live-region updates when thumbnails refresh.
 
 ### 2.6 Photo Dialog (Modal Route)
+
 - **Path**: `/photo/:photoId`
 - **Purpose**: Detailed photo view without leaving the map.
 - **Key info**: Image (thumb→blur-up→full), title, author card, tags, metadata, Prev/Next nav, favorite toggle, report button (if not owner), edit/delete (if owner), status badge (owner/moderator).
@@ -64,6 +70,7 @@ PhotoSpot is a map-centric web application. A persistent Map view acts as the ca
 - **Error States**: Inline retry block for 404 / 500.
 
 ### 2.7 Author Dialog (Modal Route)
+
 - **Path**: `/user/:userId`
 - **Purpose**: View author profile & sample gallery.
 - **Key info**: Avatar, display name, bio, contact (photographers), “More from …” grid (12 photos, cached).
@@ -71,19 +78,22 @@ PhotoSpot is a map-centric web application. A persistent Map view acts as the ca
 - **Edge Cases**: Enthusiast role → hide contact section; 404 user → generic not-found state.
 
 ### 2.8 Photo Upload Flow
-- **Path**: `/upload` *(or inline modal triggered by button)*
+
+- **Path**: `/upload` _(or inline modal triggered by button)_
 - **Purpose**: Add new photo.
 - **Key info**: Dropzone, metadata form, EXIF preview, location picker / blur slider.
 - **Components**: `UploadWizard` (multistep), `Dropzone`, `MapPicker`, `BlurSlider`, `MetadataForm`.
 - **Validation**: Local file checks + server errors (413, 429).
 
 ### 2.9 Favorites List
+
 - **Path**: `/favorites`
 - **Purpose**: Personal list of favorited photos.
 - **Key info**: Paginated grid, remove toggle.
 - **Components**: `FavoritesGrid`, `EmptyState`.
 
-### 2.10 Moderator Panel *(MVP-optional)*
+### 2.10 Moderator Panel _(MVP-optional)_
+
 - **Path**: `/admin/moderation`
 - **Purpose**: Review pending photos & reports.
 - **Components**: `ModerationQueue`, `ReportTable`, `StatusUpdater`.
@@ -118,26 +128,26 @@ MainLayout (Astro)
 
 • React Router (hashless) manages page routes; modal routes render inside `ModalProvider` while keeping background routes mounted.
 • Navigation mechanisms:
-  - **Navbar links**: Home (/map), Favorites, Upload, Logout.
-  - **FilterPanel** slides from left on mobile (Hamburger).
-  - **Browser back/forward** closes / reopens dialogs seamlessly.
+
+- **Navbar links**: Home (/map), Favorites, Upload, Logout.
+- **FilterPanel** slides from left on mobile (Hamburger).
+- **Browser back/forward** closes / reopens dialogs seamlessly.
 
 ## 5. Key Components
 
-| Component | Purpose | Cross-View Usage |
-|-----------|---------|------------------|
-| `ModalProvider` | Global portal & route sync, single-layer modal management | All dialogs |
-| `MapGL` | Mapbox GL wrapper with Supabase spatial queries | Map View, Onboarding LocationStep |
-| `ThumbnailStrip` / `BottomSheetCarousel` | Viewport photo previews | Map View |
-| `FilterPanel` | Photo filters, persistent query params | Map View |
-| `PhotoCard` | Consistent photo tile (thumb, title, author) | Thumbnails, Favorites, AuthorGrid |
-| `AuthorCard` | Compact profile summary | Photo Dialog, Author Dialog |
-| `UploadWizard` | Multistep upload with validation | Upload flow |
-| `usePermissions` | Hook returning role/ownership booleans | Buttons, conditional UI |
-| `ErrorBanner` | Standardized inline error with retry | Dialogs, Upload |
-| `Skeleton` components | Loading placeholders | All data-fetching regions |
+| Component                                | Purpose                                                   | Cross-View Usage                  |
+| ---------------------------------------- | --------------------------------------------------------- | --------------------------------- |
+| `ModalProvider`                          | Global portal & route sync, single-layer modal management | All dialogs                       |
+| `MapGL`                                  | Mapbox GL wrapper with Supabase spatial queries           | Map View, Onboarding LocationStep |
+| `ThumbnailStrip` / `BottomSheetCarousel` | Viewport photo previews                                   | Map View                          |
+| `FilterPanel`                            | Photo filters, persistent query params                    | Map View                          |
+| `PhotoCard`                              | Consistent photo tile (thumb, title, author)              | Thumbnails, Favorites, AuthorGrid |
+| `AuthorCard`                             | Compact profile summary                                   | Photo Dialog, Author Dialog       |
+| `UploadWizard`                           | Multistep upload with validation                          | Upload flow                       |
+| `usePermissions`                         | Hook returning role/ownership booleans                    | Buttons, conditional UI           |
+| `ErrorBanner`                            | Standardized inline error with retry                      | Dialogs, Upload                   |
+| `Skeleton` components                    | Loading placeholders                                      | All data-fetching regions         |
 
 ---
 
 All user stories from the PRD have been mapped: US-001-003 handled in Auth & Password views; US-004-008, US-010-012 fulfilled by Map, Photo, Upload, and Favorites flows; US-009 implemented via blur slider; US-013 by Author Dialog; US-014 via Report button & Moderator Panel; US-015 via Location search in Map; US-016 Onboarding wizard; US-017 by session handling & `usePermissions`. Error and edge states respect API error schema and rate-limit codes.
-

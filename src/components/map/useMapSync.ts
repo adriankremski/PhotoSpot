@@ -36,7 +36,7 @@ export function useMapSync({
   thumbnailContainerRef,
 }: UseMapSyncOptions): UseMapSyncReturn {
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
-  const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
+  const [, setSelectionSource] = useState<SelectionSource>(null);
 
   // Ref to prevent circular updates
   const isUpdatingRef = useRef(false);

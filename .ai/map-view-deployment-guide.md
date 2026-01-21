@@ -3,6 +3,7 @@
 ## Pre-Deployment Checklist
 
 ### ✅ Code Quality
+
 - [x] All linter errors resolved
 - [x] TypeScript strict mode passes
 - [x] Build succeeds without errors
@@ -10,6 +11,7 @@
 - [ ] E2E tests passing (optional)
 
 ### ✅ Configuration
+
 - [ ] Environment variables configured
 - [ ] Mapbox token added
 - [ ] Supabase credentials set
@@ -17,6 +19,7 @@
 - [ ] Database migrations applied
 
 ### ✅ Performance
+
 - [x] Build time acceptable (<20s)
 - [x] Bundle sizes optimized
 - [x] Images lazy loading
@@ -24,6 +27,7 @@
 - [ ] Performance metrics baseline
 
 ### ✅ Security
+
 - [ ] Environment variables not committed
 - [ ] API keys rotated for production
 - [ ] CORS configured correctly
@@ -31,6 +35,7 @@
 - [ ] SQL injection protection verified
 
 ### ✅ Monitoring
+
 - [ ] Error tracking configured (Sentry)
 - [ ] Performance monitoring enabled
 - [ ] Logging configured
@@ -42,6 +47,7 @@
 ## Environment Configuration
 
 ### Development (.env.local)
+
 ```env
 # Supabase
 PUBLIC_SUPABASE_URL=http://localhost:54321
@@ -56,6 +62,7 @@ NODE_ENV=development
 ```
 
 ### Production (.env.production)
+
 ```env
 # Supabase
 PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -73,6 +80,7 @@ NODE_ENV=production
 ```
 
 ### Important Notes
+
 - Never commit `.env` files
 - Use different tokens for dev/staging/prod
 - Rotate keys periodically
@@ -83,6 +91,7 @@ NODE_ENV=production
 ## Build Process
 
 ### Local Build
+
 ```bash
 # Install dependencies
 npm install
@@ -95,6 +104,7 @@ npm run preview
 ```
 
 ### CI/CD Build
+
 ```yaml
 # Example GitHub Actions
 name: Build and Deploy
@@ -108,23 +118,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-      
+          node-version: "18"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build
         env:
           PUBLIC_MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
           PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           PUBLIC_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: npm run build
-      
+
       - name: Run tests
         run: npm run test:run
 ```
@@ -136,6 +146,7 @@ jobs:
 ### Vercel (Recommended)
 
 **Setup:**
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -145,6 +156,7 @@ vercel --prod
 ```
 
 **Configuration:**
+
 1. Connect GitHub repository
 2. Add environment variables in dashboard
 3. Configure build settings:
@@ -153,6 +165,7 @@ vercel --prod
    - Install Command: `npm install`
 
 **Environment Variables:**
+
 - Add all `PUBLIC_*` variables
 - Add `SUPABASE_SERVICE_ROLE_KEY`
 - Enable "Automatically expose System Environment Variables"
@@ -160,6 +173,7 @@ vercel --prod
 ### Netlify
 
 **Setup:**
+
 ```bash
 # Install Netlify CLI
 npm i -g netlify-cli
@@ -169,6 +183,7 @@ netlify deploy --prod
 ```
 
 **Configuration:**
+
 1. Connect repository
 2. Build settings:
    - Build Command: `npm run build`
@@ -177,6 +192,7 @@ netlify deploy --prod
 4. Configure headers and redirects
 
 **netlify.toml:**
+
 ```toml
 [build]
   command = "npm run build"
@@ -193,6 +209,7 @@ netlify deploy --prod
 ### Self-Hosted (Node.js)
 
 **Setup:**
+
 ```bash
 # Build
 npm run build
@@ -202,25 +219,29 @@ node dist/server/entry.mjs
 ```
 
 **PM2 Configuration:**
+
 ```json
 {
-  "apps": [{
-    "name": "photospot",
-    "script": "./dist/server/entry.mjs",
-    "env": {
-      "NODE_ENV": "production",
-      "PORT": 3000
+  "apps": [
+    {
+      "name": "photospot",
+      "script": "./dist/server/entry.mjs",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 3000
+      }
     }
-  }]
+  ]
 }
 ```
 
 **Nginx Configuration:**
+
 ```nginx
 server {
     listen 80;
     server_name photospot.com;
-    
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -256,12 +277,12 @@ supabase db diff
 
 ```sql
 -- Verify public_photos_v view exists
-SELECT * FROM information_schema.views 
+SELECT * FROM information_schema.views
 WHERE table_name = 'public_photos_v';
 
 -- Test query
-SELECT * FROM public_photos_v 
-WHERE status = 'approved' 
+SELECT * FROM public_photos_v
+WHERE status = 'approved'
 LIMIT 10;
 ```
 
@@ -284,10 +305,12 @@ LIMIT 10;
 ### Usage Monitoring
 
 **Free Tier Limits:**
+
 - 50,000 map loads/month
 - 100,000 tile requests/month
 
 **Monitor Usage:**
+
 - Dashboard > Statistics
 - Set up usage alerts
 - Consider upgrading if needed
@@ -299,6 +322,7 @@ LIMIT 10;
 ### CDN Configuration
 
 **Cloudflare:**
+
 ```
 Page Rules:
   *.jpg, *.png, *.webp -> Cache Level: Standard
@@ -306,6 +330,7 @@ Page Rules:
 ```
 
 **Images:**
+
 - Use image optimization service (Cloudinary, Imgix)
 - Serve WebP format with JPG fallback
 - Implement responsive images
@@ -313,17 +338,20 @@ Page Rules:
 ### Caching Strategy
 
 **Static Assets:**
+
 - Cache-Control: `public, max-age=31536000, immutable`
 
 **API Responses:**
+
 - Photos list: `public, max-age=300` (5 minutes)
 - Photo details: `public, max-age=3600` (1 hour)
 
 **Service Worker (Optional):**
+
 ```javascript
 // Cache map tiles
-self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('api.mapbox.com')) {
+self.addEventListener("fetch", (event) => {
+  if (event.request.url.includes("api.mapbox.com")) {
     event.respondWith(
       caches.match(event.request).then((response) => {
         return response || fetch(event.request);
@@ -340,27 +368,27 @@ self.addEventListener('fetch', (event) => {
 ### Sentry Integration
 
 **Install:**
+
 ```bash
 npm install @sentry/browser
 ```
 
 **Initialize:**
+
 ```typescript
 // src/lib/monitoring/sentry.ts
-import * as Sentry from '@sentry/browser';
+import * as Sentry from "@sentry/browser";
 
 Sentry.init({
   dsn: import.meta.env.PUBLIC_SENTRY_DSN,
   environment: import.meta.env.MODE,
   tracesSampleRate: 1.0,
-  integrations: [
-    new Sentry.BrowserTracing(),
-    new Sentry.Replay(),
-  ],
+  integrations: [new Sentry.BrowserTracing(), new Sentry.Replay()],
 });
 ```
 
 **Use in ErrorBoundary:**
+
 ```typescript
 import * as Sentry from '@sentry/browser';
 
@@ -374,6 +402,7 @@ componentDidCatch(error, errorInfo) {
 ### Performance Monitoring
 
 **Metrics to Track:**
+
 - Page load time
 - Map initialization time
 - API response time
@@ -381,17 +410,19 @@ componentDidCatch(error, errorInfo) {
 - User interactions
 
 **Tools:**
+
 - Google Analytics 4
 - Vercel Analytics
 - Custom timing API
 
 **Example:**
+
 ```typescript
 // Track map load time
 const start = performance.now();
 // ... map loads
 const duration = performance.now() - start;
-trackPerformance('map_load', duration);
+trackPerformance("map_load", duration);
 ```
 
 ---
@@ -401,28 +432,34 @@ trackPerformance('map_load', duration);
 ### Endpoint: /api/health
 
 **Create:**
+
 ```typescript
 // src/pages/api/health.ts
 export const GET = () => {
-  return new Response(JSON.stringify({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-  }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      version: "1.0.0",
+    }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 };
 ```
 
 ### Monitoring
 
 **Uptime Monitoring:**
+
 - UptimeRobot (free)
 - Pingdom
 - StatusCake
 
 **Alert on:**
+
 - 5xx errors
 - Response time >3s
 - Failed health checks
@@ -469,18 +506,21 @@ supabase db dump > backup.sql
 ### Smoke Tests
 
 **1. Map Loads:**
+
 ```bash
 curl https://yourdomain.com/map
 # Should return 200 OK
 ```
 
 **2. API Works:**
+
 ```bash
 curl https://yourdomain.com/api/photos?limit=1
 # Should return JSON with photo data
 ```
 
 **3. Mapbox Loads:**
+
 - Open map in browser
 - Check browser console for errors
 - Verify pins appear
@@ -488,6 +528,7 @@ curl https://yourdomain.com/api/photos?limit=1
 ### User Flow Testing
 
 **Manual Tests:**
+
 1. Load map → photos appear
 2. Click pin → popup shows
 3. Click thumbnail → map centers
@@ -496,6 +537,7 @@ curl https://yourdomain.com/api/photos?limit=1
 6. Locate me → geolocation works
 
 **Automated Tests:**
+
 ```bash
 # Run E2E tests
 npm run test:e2e
@@ -511,6 +553,7 @@ npx playwright test
 ### Common Issues
 
 **1. Map tiles not loading**
+
 ```
 Problem: Blank map or missing tiles
 Solution:
@@ -520,6 +563,7 @@ Solution:
 ```
 
 **2. Photos not appearing**
+
 ```
 Problem: Map loads but no pins
 Solution:
@@ -529,6 +573,7 @@ Solution:
 ```
 
 **3. 500 errors**
+
 ```
 Problem: Internal server errors
 Solution:
@@ -539,6 +584,7 @@ Solution:
 ```
 
 **4. Slow performance**
+
 ```
 Problem: Map is laggy
 Solution:
@@ -555,18 +601,21 @@ Solution:
 ### Regular Tasks
 
 **Weekly:**
+
 - Review error logs
 - Check performance metrics
 - Monitor Mapbox usage
 - Verify uptime
 
 **Monthly:**
+
 - Update dependencies
 - Rotate API keys (if policy requires)
 - Review and optimize slow queries
 - Check for security updates
 
 **Quarterly:**
+
 - Performance audit
 - Security audit
 - User feedback review
@@ -580,11 +629,13 @@ Solution:
 
 **Current:** Supabase free tier  
 **Upgrade When:**
-- >500 requests/second
-- >50K photos in database
+
+- > 500 requests/second
+- > 50K photos in database
 - Query performance degrades
 
 **Optimization:**
+
 - Add database indices
 - Implement read replicas
 - Use connection pooling
@@ -593,10 +644,12 @@ Solution:
 
 **Current:** Single Astro server  
 **Upgrade When:**
-- >1000 concurrent users
+
+- > 1000 concurrent users
 - Response time >1s
 
 **Optimization:**
+
 - Add load balancer
 - Implement caching layer (Redis)
 - Use edge functions
@@ -605,10 +658,12 @@ Solution:
 
 **Current:** Client-side rendering  
 **Upgrade When:**
-- >10K users/day
+
+- > 10K users/day
 - Mapbox costs high
 
 **Optimization:**
+
 - Implement tile caching
 - Use custom tile server
 - Reduce zoom levels
@@ -618,16 +673,19 @@ Solution:
 ## Support
 
 **Documentation:**
+
 - [User Guide](./map-view-user-guide.md)
 - [Developer Guide](./map-view-developer-guide.md)
 - [Implementation Plan](./map-view-implementation-plan.md)
 
 **Monitoring Dashboards:**
+
 - Sentry: errors.yourdomain.com
 - Analytics: analytics.yourdomain.com
 - Uptime: status.yourdomain.com
 
 **Contact:**
+
 - DevOps: devops@yourdomain.com
 - On-call: oncall@yourdomain.com
 
@@ -636,4 +694,3 @@ Solution:
 **Version:** 1.0.0  
 **Last Updated:** December 29, 2025  
 **Deployment Status:** ✅ Ready for Production
-

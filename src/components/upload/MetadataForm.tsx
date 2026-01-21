@@ -308,7 +308,7 @@ export function MetadataForm({ value, onChange, errors }: MetadataFormProps) {
             />
           </div>
         </div>
-        <p className="mt-1 text-xs text-gray-500">These fields may be pre-filled from your photo's EXIF data</p>
+        <p className="mt-1 text-xs text-gray-500">These fields may be pre-filled from your photo&apos;s EXIF data</p>
       </div>
     </div>
   );

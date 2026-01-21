@@ -1,9 +1,11 @@
 # API Endpoint Implementation Plan: Delete Photo (`DELETE /api/photos/:photoId`)
 
 ## 1. Endpoint Overview
+
 Soft-delete a photo owned by the authenticated user or, when authorised, by a moderator. The endpoint sets `deleted_at = NOW()` on the `photos` record, relies on database triggers to cascade soft-deletes to related tables, and removes the binary file from Supabase Storage. Returns a confirmation message on success.
 
 ## 2. Request Details
+
 - **HTTP Method**: DELETE
 - **URL Structure**: `/api/photos/:photoId`
 - **Path Parameters**:
@@ -12,6 +14,7 @@ Soft-delete a photo owned by the authenticated user or, when authorised, by a mo
 - **Request Body**: _None_
 
 ## 3. Used Types
+
 - `DeletePhotoResponse` (from `src/types.ts`):
   ```ts
   interface DeletePhotoResponse {
@@ -21,15 +24,17 @@ Soft-delete a photo owned by the authenticated user or, when authorised, by a mo
 - Domain entities: `Photo`, `Favorite`, `PhotoTag`, etc. (read-only for this endpoint)
 
 ## 4. Response Details
-| Status | Condition | Schema |
-|--------|-----------|--------|
-| 200 OK | Deletion succeeded | `DeletePhotoResponse` |
-| 401 Unauthorized | User not logged in | `ApiError` |
-| 403 Forbidden | User not owner nor moderator | `ApiError` |
-| 404 Not Found | Photo doesn’t exist or already deleted | `ApiError` |
-| 500 Internal Server Error | Unexpected failure (DB, Storage) | `ApiError` |
+
+| Status                    | Condition                              | Schema                |
+| ------------------------- | -------------------------------------- | --------------------- |
+| 200 OK                    | Deletion succeeded                     | `DeletePhotoResponse` |
+| 401 Unauthorized          | User not logged in                     | `ApiError`            |
+| 403 Forbidden             | User not owner nor moderator           | `ApiError`            |
+| 404 Not Found             | Photo doesn’t exist or already deleted | `ApiError`            |
+| 500 Internal Server Error | Unexpected failure (DB, Storage)       | `ApiError`            |
 
 Successful example:
+
 ```json
 {
   "message": "Photo deleted successfully"
@@ -37,6 +42,7 @@ Successful example:
 ```
 
 ## 5. Data Flow
+
 1. **Astro Route** (`/src/pages/api/photos/[photoId].ts`)
    1. Extract `photoId` from `Astro.params`.
    2. Validate with Zod (`uuid()` schema).
@@ -57,6 +63,7 @@ Successful example:
 4. Response 200.
 
 ## 6. Security Considerations
+
 - **Authentication**: Require valid Supabase session (via middleware in `src/middleware/index.ts`).
 - **Authorization**: Allow operation only if requester is photo owner or has role `moderator`.
 - **Input Validation**: Zod UUID validation for `photoId`.
@@ -66,22 +73,25 @@ Successful example:
 - **Audit Trail**: (optional) insert row into `photo_deletions` audit table or structured log.
 
 ## 7. Error Handling
-| Scenario | HTTP | Action |
-|----------|------|--------|
-| Missing/invalid `photoId` | 400 | Zod error mapped to `ApiError` with code `INVALID_ID` |
-| Not authenticated | 401 | Early return from auth middleware |
-| Not owner or moderator | 403 | Throw `ForbiddenError` |
-| Photo not found or already deleted | 404 | Throw `NotFoundError` |
-| Storage failure or DB error | 500 | Log error, return `INTERNAL_ERROR` |
+
+| Scenario                           | HTTP | Action                                                |
+| ---------------------------------- | ---- | ----------------------------------------------------- |
+| Missing/invalid `photoId`          | 400  | Zod error mapped to `ApiError` with code `INVALID_ID` |
+| Not authenticated                  | 401  | Early return from auth middleware                     |
+| Not owner or moderator             | 403  | Throw `ForbiddenError`                                |
+| Photo not found or already deleted | 404  | Throw `NotFoundError`                                 |
+| Storage failure or DB error        | 500  | Log error, return `INTERNAL_ERROR`                    |
 
 Errors are transformed by a central error handler (`handleApiError`) that logs via `lib/utils.ts` and returns `ApiError` JSON.
 
 ## 8. Performance Considerations
+
 - **DB**: Single indexed UPDATE by PK – negligible load.
 - **Storage**: Deletion is I/O bound. Perform after DB update; if it fails, optionally enqueue retry job rather than rollback (trade-off: eventual consistency).
 - **Cold starts**: None (edge → Vercel/Netlify functions) – ensure service file only imports lightweight modules.
 
 ## 9. Implementation Steps
+
 1. **Route File**: Create `src/pages/api/photos/[photoId].ts` with DELETE handler skeleton (`export const prerender = false`).
 2. **Validation**: Add `deletePhotoParamsSchema = z.object({ photoId: z.string().uuid() });` in `src/lib/validators/photos.ts`.
 3. **Service**: Create `src/lib/services/photos.ts` with `softDelete()` implementation described above. Re-export public API from index.
@@ -103,4 +113,3 @@ Errors are transformed by a central error handler (`handleApiError`) that logs v
 8. **Integration Test**: API DELETE call via `@supabase/auth-helpers` with session cookie.
 9. **Docs Update**: Reference new endpoint in README or API docs.
 10. **CI**: Add new test paths to coverage.
-

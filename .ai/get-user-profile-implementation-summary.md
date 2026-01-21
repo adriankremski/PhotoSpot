@@ -1,6 +1,7 @@
 # Implementation Summary: Get User Profile (`GET /api/users/:userId/profile`)
 
 ## Overview
+
 Successfully implemented the user profile retrieval endpoint following the implementation plan. The endpoint retrieves public user profiles with appropriate field visibility based on viewer relationship and user role.
 
 ## Implementation Details
@@ -8,6 +9,7 @@ Successfully implemented the user profile retrieval endpoint following the imple
 ### 1. Files Created/Modified
 
 #### Created Files:
+
 1. **`src/lib/validators/params.ts`**
    - Zod validation schema for userId parameter
    - Validates UUID v4 format
@@ -38,16 +40,19 @@ Successfully implemented the user profile retrieval endpoint following the imple
 ### 2. Key Features
 
 #### Field Visibility Rules:
+
 - **Owner (authenticated user viewing own profile)**: All fields returned
 - **Others viewing photographer profile**: All fields returned (including company_name, website_url, social_links)
 - **Others viewing enthusiast profile**: Basic fields only (display_name, avatar_url, bio, role, created_at, photo_count)
 
 #### Error Handling:
+
 - `400 Bad Request`: Invalid userId format (not a valid UUID)
 - `404 Not Found`: User not found or soft-deleted
 - `500 Internal Server Error`: Database failures or unexpected errors
 
 #### Security Considerations:
+
 - Uses Supabase Auth for authentication
 - No authentication required for public profiles
 - Soft-deleted users return 404 (not exposed)
@@ -57,6 +62,7 @@ Successfully implemented the user profile retrieval endpoint following the imple
 ### 3. Database Design
 
 The implementation uses a PostgreSQL RPC function instead of direct table queries because:
+
 - The `users` table is in the `auth` schema (managed by Supabase Auth)
 - The `role` field is stored in `auth.users.raw_user_meta_data`
 - RPC function provides a clean interface to join across schemas
@@ -65,6 +71,7 @@ The implementation uses a PostgreSQL RPC function instead of direct table querie
 ### 4. Testing
 
 All 11 unit tests passing:
+
 - ✅ Owner viewing own profile (full fields)
 - ✅ Others viewing photographer profile (full fields)
 - ✅ Others viewing enthusiast profile (limited fields)
@@ -90,11 +97,13 @@ All 11 unit tests passing:
 ## Usage Example
 
 ### Request:
+
 ```bash
 GET /api/users/123e4567-e89b-12d3-a456-426614174000/profile
 ```
 
 ### Response (200 OK):
+
 ```json
 {
   "user_id": "123e4567-e89b-12d3-a456-426614174000",
@@ -114,6 +123,7 @@ GET /api/users/123e4567-e89b-12d3-a456-426614174000/profile
 ```
 
 ### Error Response (404 Not Found):
+
 ```json
 {
   "error": {
@@ -126,11 +136,13 @@ GET /api/users/123e4567-e89b-12d3-a456-426614174000/profile
 ## Next Steps
 
 1. **Database Migration**: Apply the SQL migration to add the RPC function:
+
    ```bash
    supabase db push
    ```
 
 2. **Type Generation**: Regenerate Supabase types to include the new RPC function:
+
    ```bash
    supabase gen types typescript --local > src/db/database.types.ts
    ```
@@ -145,4 +157,3 @@ GET /api/users/123e4567-e89b-12d3-a456-426614174000/profile
 - The RPC function has `SECURITY DEFINER` to allow reading from the `auth.users` table
 - Photo count includes only non-deleted photos
 - The endpoint works for both authenticated and unauthenticated users
-

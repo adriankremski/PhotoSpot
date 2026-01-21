@@ -8,16 +8,16 @@ The Map View is built with **Astro 5**, **React 19**, **Mapbox GL**, and **TypeS
 
 ## Tech Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Astro | 5.13.7 | SSR framework |
-| React | 19.1.1 | UI components |
-| TypeScript | 5.x | Type safety |
-| Mapbox GL JS | 3.17.0 | Map rendering |
-| react-map-gl | 8.1.0 | React bindings |
-| Tailwind CSS | 4.1.13 | Styling |
-| Shadcn/ui | Latest | UI components |
-| Vitest | 4.0.16 | Testing |
+| Technology   | Version | Purpose        |
+| ------------ | ------- | -------------- |
+| Astro        | 5.13.7  | SSR framework  |
+| React        | 19.1.1  | UI components  |
+| TypeScript   | 5.x     | Type safety    |
+| Mapbox GL JS | 3.17.0  | Map rendering  |
+| react-map-gl | 8.1.0   | React bindings |
+| Tailwind CSS | 4.1.13  | Styling        |
+| Shadcn/ui    | Latest  | UI components  |
+| Vitest       | 4.0.16  | Testing        |
 
 ---
 
@@ -85,6 +85,7 @@ map.astro (Astro SSR)
 **Location:** `src/components/map/useMapPhotos.ts`
 
 **State:**
+
 - `photos: PhotoListItemDto[]`
 - `pagination: PaginationMeta`
 - `isLoading: boolean`
@@ -92,6 +93,7 @@ map.astro (Astro SSR)
 - `filters: PhotoFilters`
 
 **Functions:**
+
 - `setFilters(filters)` - Update filters and refetch
 - `resetFilters()` - Clear all filters
 - `loadMore()` - Load next page
@@ -99,6 +101,7 @@ map.astro (Astro SSR)
 - `clearError()` - Clear error state
 
 **Key Features:**
+
 - Debounces viewport changes (500ms)
 - Uses AbortController for request cancellation
 - Validates bounds and filters
@@ -111,9 +114,11 @@ map.astro (Astro SSR)
 **Location:** `src/components/map/useMapSync.ts`
 
 **State:**
+
 - `selectedPhotoId: string | null`
 
 **Functions:**
+
 - `selectPhotoFromPin(id)` - Pin clicked → scroll thumbnail
 - `selectPhotoFromThumbnail(id)` - Thumbnail clicked → center map
 - `deselectPhoto()` - Clear selection
@@ -121,6 +126,7 @@ map.astro (Astro SSR)
 - `centerMapOnPhoto(id)` - Center map on coordinates
 
 **Key Features:**
+
 - Prevents circular updates with refs
 - Smooth scroll behavior
 - Auto-deselects when photo removed
@@ -134,19 +140,21 @@ map.astro (Astro SSR)
 **URL:** `/api/photos`
 
 **Query Parameters:**
+
 ```typescript
 interface PhotoQueryParams {
-  bbox?: string;              // "minLng,minLat,maxLng,maxLat"
+  bbox?: string; // "minLng,minLat,maxLng,maxLat"
   category?: PhotoCategory;
   season?: Season;
   time_of_day?: TimeOfDay;
   photographer_only?: boolean;
-  limit?: number;             // Max 200, default 200
-  offset?: number;            // Default 0
+  limit?: number; // Max 200, default 200
+  offset?: number; // Default 0
 }
 ```
 
 **Response:**
+
 ```typescript
 interface ListResponse<PhotoListItemDto> {
   data: PhotoListItemDto[];
@@ -155,6 +163,7 @@ interface ListResponse<PhotoListItemDto> {
 ```
 
 **Error Codes:**
+
 - `400` - Invalid input (validation failed)
 - `500` - Internal server error
 
@@ -165,6 +174,7 @@ interface ListResponse<PhotoListItemDto> {
 ## State Flow
 
 ### Initial Load
+
 ```
 1. map.astro renders with SSR
 2. MapSection mounts (client:load)
@@ -175,6 +185,7 @@ interface ListResponse<PhotoListItemDto> {
 ```
 
 ### Viewport Change
+
 ```
 1. User pans/zooms map
 2. MapGL.onMove fires
@@ -188,6 +199,7 @@ interface ListResponse<PhotoListItemDto> {
 ```
 
 ### Pin Selection
+
 ```
 1. User clicks pin
 2. PinClusterLayer.onPinClick
@@ -199,6 +211,7 @@ interface ListResponse<PhotoListItemDto> {
 ```
 
 ### Thumbnail Selection
+
 ```
 1. User clicks thumbnail
 2. ThumbnailStrip.onThumbnailClick
@@ -210,6 +223,7 @@ interface ListResponse<PhotoListItemDto> {
 ```
 
 ### Filter Application
+
 ```
 1. User selects filters
 2. FilterPanel local state updates
@@ -293,6 +307,7 @@ interface PhotoPin {
 All components use Tailwind CSS v4 with custom configuration.
 
 **Key Classes:**
+
 - `thumbnail-strip-scrollbar` - Custom scrollbar
 - `smooth-scroll` - Smooth scroll behavior
 - `focus-ring` - Keyboard focus indicator
@@ -303,6 +318,7 @@ All components use Tailwind CSS v4 with custom configuration.
 **File:** `src/components/map/map.css`
 
 **Features:**
+
 - Custom scrollbar styling
 - Pin animations
 - Loading states
@@ -352,6 +368,7 @@ npm run test -- useMapPhotos.test.ts
 ```
 
 **Coverage:**
+
 - Hook initialization
 - Photo fetching
 - Filter updates
@@ -367,6 +384,7 @@ npm run test -- FilterPanel.test.tsx
 ```
 
 **Coverage:**
+
 - Render controls
 - Filter application
 - Reset functionality
@@ -397,19 +415,21 @@ npm run test:ui
 **File:** `src/lib/monitoring/errorTracking.ts`
 
 **Functions:**
+
 - `trackError()` - Track errors
 - `trackWarning()` - Track warnings
 - `trackAPIError()` - Track API errors
 - `trackMapError()` - Track map-specific errors
 
 **Integration:**
+
 ```typescript
-import { trackMapError } from '@/lib/monitoring/errorTracking';
+import { trackMapError } from "@/lib/monitoring/errorTracking";
 
 try {
   // ... code
 } catch (error) {
-  trackMapError('action_name', error);
+  trackMapError("action_name", error);
 }
 ```
 
@@ -418,6 +438,7 @@ try {
 **File:** `src/components/ErrorBoundary.tsx`
 
 **Usage:**
+
 ```tsx
 <ErrorBoundary fallback={<CustomError />}>
   <MapSection />
@@ -431,17 +452,20 @@ try {
 ### ARIA Implementation
 
 **Labels:**
+
 - Map: `role="application" aria-label="Interactive photo map"`
 - Thumbnails: `role="list"` with `role="listitem"`
 - Buttons: Descriptive `aria-label` attributes
 - Forms: Proper `label` associations
 
 **Live Regions:**
+
 - Photo count announcements
 - Filter change announcements
 - Error messages
 
 **Keyboard Support:**
+
 - Tab navigation through controls
 - Arrow keys for thumbnail navigation
 - Enter/Space for activation
@@ -482,7 +506,7 @@ PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 export default defineConfig({
   vite: {
     ssr: {
-      noExternal: ['react-map-gl', 'mapbox-gl'],
+      noExternal: ["react-map-gl", "mapbox-gl"],
     },
   },
 });
@@ -527,30 +551,39 @@ echo $PUBLIC_SUPABASE_URL
 ### Common Issues
 
 **1. react-map-gl import error**
+
 ```
 Error: Failed to resolve entry for package "react-map-gl"
 ```
+
 **Solution:** Use `/mapbox` import path
+
 ```typescript
-import { Map } from 'react-map-gl/mapbox';
+import { Map } from "react-map-gl/mapbox";
 ```
 
 **2. Mapbox token missing**
+
 ```
 Error: Map configuration error
 ```
+
 **Solution:** Add `PUBLIC_MAPBOX_TOKEN` to `.env`
 
 **3. Photos not loading**
+
 ```
 Error: API returned 500
 ```
+
 **Solution:** Check database connection and `/api/photos` endpoint
 
 **4. TypeScript errors**
+
 ```
 Error: Property 'coordinates' does not exist
 ```
+
 **Solution:** Ensure types are imported from correct paths
 
 ---
@@ -585,11 +618,13 @@ Error: Property 'coordinates' does not exist
 ## Resources
 
 **Documentation:**
+
 - [Mapbox GL JS Docs](https://docs.mapbox.com/mapbox-gl-js/api/)
 - [react-map-gl Docs](https://visgl.github.io/react-map-gl/)
 - [Astro Docs](https://docs.astro.build/)
 
 **Internal Docs:**
+
 - [API Plan](.ai/api-plan.md)
 - [Implementation Plan](.ai/map-view-implementation-plan.md)
 - [User Guide](.ai/map-view-user-guide.md)
@@ -599,4 +634,3 @@ Error: Property 'coordinates' does not exist
 **Version:** 1.0.0  
 **Last Updated:** December 29, 2025  
 **Maintainer:** Development Team
-

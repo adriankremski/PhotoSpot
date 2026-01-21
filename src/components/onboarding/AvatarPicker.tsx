@@ -6,8 +6,6 @@ import { useState, useRef } from "react";
 import { supabaseClient } from "@/db/supabase.client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { AvatarPickerProps } from "./types";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB

@@ -1,9 +1,11 @@
 # API Endpoint Implementation Plan: Remove from Favorites
 
 ## 1. Endpoint Overview
+
 Deletes a photo from the authenticated user’s favorites list. Only the owner of the favorites collection can perform this action.
 
 ## 2. Request Details
+
 - **HTTP Method**: DELETE
 - **URL Structure**: `/api/users/:userId/favorites/:photoId`
 - **Parameters**:
@@ -14,20 +16,23 @@ Deletes a photo from the authenticated user’s favorites list. Only the owner o
 - **Authentication**: Supabase session (JWT) – required
 
 ## 3. Used Types
+
 - `RemoveFavoriteResponse` (defined in `src/types.ts`)
 - `ApiError` (error DTO)
 - Database table: `favorites` (`user_id`, `photo_id`, `created_at`)
 
 ## 4. Response Details
-| Status | Condition | Payload |
-|--------|-----------|---------|
-| 200 OK | Favorite removed successfully | `{ "message": "Photo removed from favorites" }` |
-| 401 Unauthorized | Missing or invalid auth token | `ApiError` |
-| 403 Forbidden | Auth user ≠ `userId` | `ApiError` |
-| 404 Not Found | Favorite record does not exist | `ApiError` |
-| 500 Internal Server Error | Unhandled exceptions | `ApiError` |
+
+| Status                    | Condition                      | Payload                                         |
+| ------------------------- | ------------------------------ | ----------------------------------------------- |
+| 200 OK                    | Favorite removed successfully  | `{ "message": "Photo removed from favorites" }` |
+| 401 Unauthorized          | Missing or invalid auth token  | `ApiError`                                      |
+| 403 Forbidden             | Auth user ≠ `userId`           | `ApiError`                                      |
+| 404 Not Found             | Favorite record does not exist | `ApiError`                                      |
+| 500 Internal Server Error | Unhandled exceptions           | `ApiError`                                      |
 
 ## 5. Data Flow
+
 1. **Middleware** authenticates request and injects `supabase` & `authUser` into `Astro.locals`.
 2. **API route handler** validates path params with Zod.
 3. Verify `authUser.id === userId`; else respond 403.
@@ -38,6 +43,7 @@ Deletes a photo from the authenticated user’s favorites list. Only the owner o
 7. Errors caught, logged via `ErrorLogger.log()` and re-thrown as `ApiError`.
 
 ## 6. Security Considerations
+
 - Require valid Supabase JWT.
 - Authorize by matching `authUser.id` with `userId` path param.
 - Use parameterized queries (Supabase SDK) to prevent SQL injection.
@@ -45,36 +51,39 @@ Deletes a photo from the authenticated user’s favorites list. Only the owner o
 - Ensure proper CORS headers via Astro default config.
 
 ## 7. Error Handling
-| Scenario | HTTP | Code | Message |
-|----------|------|------|---------|
-| Not authenticated | 401 | `auth/unauthorized` | "Not authenticated" |
-| Different user | 403 | `auth/forbidden` | "Removing from another user’s favorites" |
-| Favorite missing | 404 | `favorites/not_found` | "Favorite not found" |
-| DB failure | 500 | `server/error` | "Unexpected server error" |
+
+| Scenario          | HTTP | Code                  | Message                                  |
+| ----------------- | ---- | --------------------- | ---------------------------------------- |
+| Not authenticated | 401  | `auth/unauthorized`   | "Not authenticated"                      |
+| Different user    | 403  | `auth/forbidden`      | "Removing from another user’s favorites" |
+| Favorite missing  | 404  | `favorites/not_found` | "Favorite not found"                     |
+| DB failure        | 500  | `server/error`        | "Unexpected server error"                |
 
 Errors are logged to `error_logs` table with context (`endpoint`, `user_id`, stack). Use centralized `ErrorLogger` utility.
 
 ## 8. Performance Considerations
+
 - Ensure composite index on `(user_id, photo_id)` in `favorites` for fast delete & existence checks.
 - Single row delete → minimal DB load.
 - Endpoint is idempotent; subsequent deletes after first will 404 quickly via index.
 
 ## 9. Implementation Steps
+
 1. **Create Service** `src/lib/services/favorites.service.ts` (if not exists)
    ```ts
    export async function removeFavorite(supabase: SupabaseClient, userId: string, photoId: string) {
      const { error, count } = await supabase
-       .from('favorites')
-       .delete({ count: 'exact' })
-       .eq('user_id', userId)
-       .eq('photo_id', photoId);
+       .from("favorites")
+       .delete({ count: "exact" })
+       .eq("user_id", userId)
+       .eq("photo_id", photoId);
      if (error) throw error;
      return count; // 0 or 1
    }
    ```
 2. **Add Zod schema** in `src/lib/validation/favorites.schema.ts`:
    ```ts
-   import { z } from 'zod';
+   import { z } from "zod";
    export const removeFavoriteParams = z.object({
      userId: z.string().uuid(),
      photoId: z.string().uuid(),
@@ -95,4 +104,3 @@ Errors are logged to `error_logs` table with context (`endpoint`, `user_id`, sta
 6. **Write unit tests** (Vitest) for service & handler covering success and error cases.
 7. **Update API documentation** (OpenAPI / Markdown) with new responses.
 8. **Run linter & type check** to ensure compliance with coding practices.
-

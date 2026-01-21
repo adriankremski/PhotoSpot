@@ -1,6 +1,7 @@
 # Create Photo Endpoint Implementation Summary
 
 ## Overview
+
 Successfully implemented the `POST /api/photos` endpoint for uploading photos with metadata, file validation, EXIF extraction, and location privacy features.
 
 ## Implementation Status: ✅ Complete
@@ -8,12 +9,15 @@ Successfully implemented the `POST /api/photos` endpoint for uploading photos wi
 ## What Was Implemented
 
 ### 1. Dependencies Installed
+
 - `exifr` - For extracting EXIF metadata from photos
 - `file-type` - For validating file types using magic bytes
 - `@hattip/multipart` - For parsing multipart/form-data
 
 ### 2. Validation Layer (`src/lib/validators/photos.ts`)
+
 Created comprehensive Zod schemas for:
+
 - **createPhotoCommandSchema** - Validates all photo metadata fields
   - Title (1-200 chars, required)
   - Description (max 1000 chars, optional)
@@ -35,6 +39,7 @@ Created comprehensive Zod schemas for:
 ### 3. Utility Functions
 
 #### Geographic Utilities (`src/lib/utils/geo.ts`)
+
 - `randomOffsetPoint()` - Generates random point within specified radius using Haversine formula
   - Uniform distribution for even point spread
   - Proper handling of Earth's curvature
@@ -42,6 +47,7 @@ Created comprehensive Zod schemas for:
 - `calculateDistance()` - Calculates distance between two points using Haversine
 
 #### Multipart Form Parser (`src/lib/utils/multipart.ts`)
+
 - `parseMultipartFormData()` - Parses multipart/form-data requests
   - Extracts file binary data
   - Validates content type
@@ -53,6 +59,7 @@ Created comprehensive Zod schemas for:
 ### 4. Service Layer (`src/lib/services/photos.ts`)
 
 #### createPhoto() Function
+
 Implements the complete photo upload workflow:
 
 1. **Rate Limiting** - Defensive check for 5 photos per 24 hours
@@ -71,6 +78,7 @@ Implements the complete photo upload workflow:
 8. **Response** - Returns lightweight photo data (id, title, status, file_url, created_at)
 
 Error Handling:
+
 - Rate limit exceeded → 429
 - Storage errors → 500 with cleanup
 - Database errors → 500 with cleanup
@@ -79,9 +87,11 @@ Error Handling:
 ### 5. API Route (`src/pages/api/photos/index.ts`)
 
 #### POST Handler
+
 Complete request/response handling:
 
 **Steps:**
+
 1. Authentication check (401 if not authenticated)
 2. Parse multipart form data (400/413 on errors)
 3. Validate file (413 for size, 400 for type)
@@ -90,6 +100,7 @@ Complete request/response handling:
 6. Return 201 Created with photo data
 
 **Error Codes:**
+
 - 400 - Invalid input (validation failed)
 - 401 - Unauthorized (not authenticated)
 - 413 - Payload too large (file > 10 MB)
@@ -98,6 +109,7 @@ Complete request/response handling:
 - 500 - Internal server error
 
 **Success Response (201):**
+
 ```json
 {
   "message": "Photo uploaded successfully",
@@ -114,6 +126,7 @@ Complete request/response handling:
 ### 6. Storage Configuration (`supabase/migrations/20251222000000_create_photos_storage_bucket.sql`)
 
 Created storage bucket migration:
+
 - **Bucket**: `photos` (public bucket)
 - **Settings**: 10 MB limit, JPG/PNG only
 - **RLS Policies**:
@@ -125,6 +138,7 @@ Created storage bucket migration:
 ### 7. Test Scaffolding (`src/pages/api/photos/create.test.ts`)
 
 Created comprehensive test structure covering:
+
 - Authentication
 - File validation (size, type, format)
 - Field validation (required/optional fields)
@@ -169,6 +183,7 @@ Tests are scaffolded and ready for implementation when testing infrastructure is
 ## Files Created/Modified
 
 ### Created:
+
 1. `src/lib/utils/geo.ts` - Geographic utility functions
 2. `src/lib/utils/multipart.ts` - Multipart form parser
 3. `supabase/migrations/20251222000000_create_photos_storage_bucket.sql` - Storage setup
@@ -176,6 +191,7 @@ Tests are scaffolded and ready for implementation when testing infrastructure is
 5. `.ai/create-photo-implementation-summary.md` - This file
 
 ### Modified:
+
 1. `src/lib/validators/photos.ts` - Added createPhoto schemas
 2. `src/lib/services/photos.ts` - Added createPhoto function
 3. `src/pages/api/photos/index.ts` - Added POST handler
@@ -206,28 +222,31 @@ curl -X POST https://your-domain.com/api/photos \
 
 ```javascript
 const formData = new FormData();
-formData.append('file', fileInput.files[0]);
-formData.append('title', 'Mountain Sunrise');
-formData.append('description', 'Beautiful sunrise over the mountains');
-formData.append('category', 'landscape');
-formData.append('season', 'spring');
-formData.append('time_of_day', 'golden_hour_morning');
-formData.append('latitude', '40.7128');
-formData.append('longitude', '-74.0060');
-formData.append('blur_location', 'true');
-formData.append('blur_radius', '200');
-formData.append('tags', JSON.stringify(['mountains', 'sunrise', 'landscape']));
-formData.append('gear', JSON.stringify({
-  camera: 'Canon EOS R5',
-  lens: 'RF 24-70mm f/2.8'
-}));
+formData.append("file", fileInput.files[0]);
+formData.append("title", "Mountain Sunrise");
+formData.append("description", "Beautiful sunrise over the mountains");
+formData.append("category", "landscape");
+formData.append("season", "spring");
+formData.append("time_of_day", "golden_hour_morning");
+formData.append("latitude", "40.7128");
+formData.append("longitude", "-74.0060");
+formData.append("blur_location", "true");
+formData.append("blur_radius", "200");
+formData.append("tags", JSON.stringify(["mountains", "sunrise", "landscape"]));
+formData.append(
+  "gear",
+  JSON.stringify({
+    camera: "Canon EOS R5",
+    lens: "RF 24-70mm f/2.8",
+  })
+);
 
-const response = await fetch('/api/photos', {
-  method: 'POST',
+const response = await fetch("/api/photos", {
+  method: "POST",
   headers: {
-    'Authorization': `Bearer ${accessToken}`
+    Authorization: `Bearer ${accessToken}`,
   },
-  body: formData
+  body: formData,
 });
 
 const result = await response.json();
@@ -237,6 +256,7 @@ console.log(result.photo);
 ## Next Steps
 
 1. **Apply Migration** - Run the storage bucket migration:
+
    ```bash
    supabase db push
    ```
@@ -258,6 +278,7 @@ console.log(result.photo);
 ## Testing Instructions
 
 ### Running Tests
+
 ```bash
 # Run all tests (excluding login.test.ts)
 npm test -- --run
@@ -270,6 +291,7 @@ npm test
 ```
 
 ### Manual Testing
+
 1. Start Supabase locally: `supabase start`
 2. Apply migrations: `supabase db push`
 3. Start dev server: `npm run dev`
@@ -279,6 +301,7 @@ npm test
 ## Database Schema Notes
 
 The implementation assumes:
+
 - `photos` table exists with PostGIS geometry columns
 - `tags` and `photo_tags` tables exist
 - Supabase Storage is enabled
@@ -311,4 +334,3 @@ All schema requirements are met by the existing migrations.
 5. **Progress Tracking** - No upload progress feedback
 
 These can be addressed in future iterations as needed.
-

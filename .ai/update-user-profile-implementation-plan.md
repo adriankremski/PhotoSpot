@@ -1,68 +1,82 @@
 # API Endpoint Implementation Plan: Update User Profile (`PATCH /api/users/:userId/profile`)
 
 ## 1. Endpoint Overview
+
 Allows an authenticated user to partially update **their own** profile information (display name, avatar, bio, company data, website, social links).
 
 ---
 
 ## 2. Request Details
+
 - **HTTP Method**: `PATCH`
 - **URL**: `/api/users/:userId/profile`
 - **Path Param**
   - `userId` `string` (required) – UUID of the user whose profile is being updated
 - **Request Body (JSON)**
+
   ```json
   {
-    "display_name": "John Doe",                    // required, ≤100 chars
-    "avatar_url": "https://…",                     // optional, full URL
-    "bio": "Landscape photographer",               // optional, ≤500 chars
-    "company_name": "John Doe Photography",        // optional — photographer only, ≤100 chars
-    "website_url": "https://johndoe.com",          // optional — photographer only, valid URL
-    "social_links": {                                // optional, object of URLs
+    "display_name": "John Doe", // required, ≤100 chars
+    "avatar_url": "https://…", // optional, full URL
+    "bio": "Landscape photographer", // optional, ≤500 chars
+    "company_name": "John Doe Photography", // optional — photographer only, ≤100 chars
+    "website_url": "https://johndoe.com", // optional — photographer only, valid URL
+    "social_links": {
+      // optional, object of URLs
       "instagram": "https://instagram.com/johndoe"
     }
   }
   ```
+
   • All unspecified fields remain unchanged.  
   • `company_name`, `website_url`, and social links are allowed only for users with role `photographer`.
 
-- **Authentication**: Required – JWT cookie/session provided by Supabase.  
+- **Authentication**: Required – JWT cookie/session provided by Supabase.
 - **Authorization**: Caller’s `userId` **must match** `:userId` path param; otherwise `403 Forbidden`.
 
 ---
 
 ## 3. Used Types
+
 Already present in `src/types.ts`:
+
 - `UpdateProfileCommand`
 - `UpdateProfileResponse`
 - `UserProfileDto`
 
 New (to add):
+
 - Zod schema `updateProfileSchema` (validator, see Implementation Steps)
 
 ---
 
 ## 4. Response Details
+
 ### Success `200 OK`
+
 ```json
 {
   "message": "Profile updated successfully",
-  "profile": { /* UserProfileDto */ }
+  "profile": {
+    /* UserProfileDto */
+  }
 }
 ```
 
 ### Error Codes
-| Status | When                                                                    |
-|--------|-------------------------------------------------------------------------|
-| 400    | Invalid request body (schema errors, missing display_name)              |
-| 401    | Not authenticated                                                       |
-| 403    | Authenticated but attempting to modify another user’s profile           |
-| 404    | Profile row not found (first‐time users should have been seeded)        |
-| 500    | Unhandled server / DB error                                             |
+
+| Status | When                                                             |
+| ------ | ---------------------------------------------------------------- |
+| 400    | Invalid request body (schema errors, missing display_name)       |
+| 401    | Not authenticated                                                |
+| 403    | Authenticated but attempting to modify another user’s profile    |
+| 404    | Profile row not found (first‐time users should have been seeded) |
+| 500    | Unhandled server / DB error                                      |
 
 ---
 
 ## 5. Data Flow
+
 1. **Astro API Route** (`src/pages/api/users/[userId]/profile.ts`)
    1. Parse `userId` from URL.
    2. Retrieve `supabase` & `session` from `context.locals` (populated by middleware).
@@ -94,6 +108,7 @@ New (to add):
 ---
 
 ## 6. Security Considerations
+
 1. **AuthN**: Require valid Supabase session cookie/JWT.
 2. **AuthZ**: Compare `session.user.id` with `:userId`.
 3. **Input Validation**: Zod schema prevents XSS (string length limits) and SSRF (URL validation).
@@ -104,16 +119,18 @@ New (to add):
 ---
 
 ## 7. Error Handling
--  Zod validation errors → aggregate and return `400` with details.
--  Supabase row count 0 → `404`.
--  Supabase `error.code` mapping:
-   - `23505` duplicate key (shouldn’t happen) → `400`.
-   - Others → `500`.
--  Unexpected exceptions logged via existing logger (or `console.error` until logger exists) and respond `500`.
+
+- Zod validation errors → aggregate and return `400` with details.
+- Supabase row count 0 → `404`.
+- Supabase `error.code` mapping:
+  - `23505` duplicate key (shouldn’t happen) → `400`.
+  - Others → `500`.
+- Unexpected exceptions logged via existing logger (or `console.error` until logger exists) and respond `500`.
 
 ---
 
 ## 8. Performance Considerations
+
 - Single DB round-trip (`update … returning *`).
 - Use `select` only necessary columns when returning DTO.
 - Avatar URL unchanged → no storage action needed.
@@ -122,6 +139,7 @@ New (to add):
 ---
 
 ## 9. Implementation Steps
+
 1. **Create Zod Validator**
    - File: `src/lib/validators/profile.ts`
    - Export `updateProfileSchema` & `UpdateProfileInput`.
@@ -129,12 +147,15 @@ New (to add):
    - File: `src/lib/services/profile.ts`
    - Implement `updateUserProfile` with Supabase interaction and custom error class `ProfileServiceError`.
 3. **Add API Route**
+
    ```
    src/pages/api/users/[userId]/profile.ts
    ```
+
    - `export const prerender = false;`
    - Handle `PATCH` only (return `405` otherwise).
    - Apply validation, auth checks, service call.
+
 4. **Update Middleware (if required)**
    - Ensure `context.locals.role` is available for role checks.
 5. **Add Tests**
@@ -146,8 +167,8 @@ New (to add):
 ---
 
 ## 10. File Checklist
+
 - `src/lib/validators/profile.ts` (new)
 - `src/lib/services/profile.ts` (new)
 - `src/pages/api/users/[userId]/profile.ts` (new)
 - Update re-exports in any `index.ts` barrels if present.
-

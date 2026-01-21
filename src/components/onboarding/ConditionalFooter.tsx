@@ -34,7 +34,7 @@ export function ConditionalFooter({ step, isProfileMissing, onFinish, userId, ro
   return (
     <div className="mt-8 flex w-full max-w-md justify-center px-6">
       <Button onClick={onFinish} size="lg" className="min-w-[200px]">
-        Let's Go!
+        Let&apos;s Go!
       </Button>
     </div>
   );

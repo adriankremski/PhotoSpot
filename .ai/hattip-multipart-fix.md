@@ -3,6 +3,7 @@
 ## Problem
 
 When visiting `/map`, the application threw an error:
+
 ```
 [vite] The requested module '@hattip/multipart' does not provide an export named 'parse'
 ```
@@ -10,11 +11,13 @@ When visiting `/map`, the application threw an error:
 ## Root Cause
 
 The code in `src/lib/utils/multipart.ts` was trying to import a non-existent export:
+
 ```typescript
-import { parse as parseMultipart } from '@hattip/multipart';  // ❌ Wrong
+import { parse as parseMultipart } from "@hattip/multipart"; // ❌ Wrong
 ```
 
 The `@hattip/multipart` package (v0.0.49) doesn't export `parse`. Instead, it exports:
+
 - `parseMultipart` - Low-level multipart parser
 - `parseMultipartFormData` - Form data parser (what we need)
 
@@ -23,13 +26,15 @@ The `@hattip/multipart` package (v0.0.49) doesn't export `parse`. Instead, it ex
 ### 1. Fixed Import Statement
 
 **Before:**
+
 ```typescript
-import { parse as parseMultipart } from '@hattip/multipart';
+import { parse as parseMultipart } from "@hattip/multipart";
 ```
 
 **After:**
+
 ```typescript
-import { parseMultipartFormData } from '@hattip/multipart';
+import { parseMultipartFormData } from "@hattip/multipart";
 ```
 
 ### 2. Updated API Usage
@@ -37,18 +42,20 @@ import { parseMultipartFormData } from '@hattip/multipart';
 The `parseMultipartFormData` function requires a `handleFile` callback:
 
 **Before:**
+
 ```typescript
 const formData = await parseMultipart(request);
 ```
 
 **After:**
+
 ```typescript
 const formData = await parseMultipartFormData(request, {
   handleFile: async (fileInfo) => {
     // Collect file stream into buffer
     const chunks: Uint8Array[] = [];
     const reader = fileInfo.body.getReader();
-    
+
     try {
       while (true) {
         const { done, value } = await reader.read();
@@ -58,7 +65,7 @@ const formData = await parseMultipartFormData(request, {
     } finally {
       reader.releaseLock();
     }
-    
+
     // Combine chunks into single buffer
     const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
     const buffer = new Uint8Array(totalLength);
@@ -67,7 +74,7 @@ const formData = await parseMultipartFormData(request, {
       buffer.set(chunk, offset);
       offset += chunk.length;
     }
-    
+
     // Return a File-like object
     return new File([buffer], fileInfo.filename, { type: fileInfo.contentType });
   },
@@ -79,13 +86,15 @@ const formData = await parseMultipartFormData(request, {
 To avoid naming conflicts, renamed our wrapper function:
 
 **Before:**
+
 ```typescript
-export async function parseMultipartFormData(request: Request)
+export async function parseMultipartFormData(request: Request);
 ```
 
 **After:**
+
 ```typescript
-export async function parseMultipartRequest(request: Request)
+export async function parseMultipartRequest(request: Request);
 ```
 
 ### 4. Updated Imports in API
@@ -93,14 +102,16 @@ export async function parseMultipartRequest(request: Request)
 **File:** `src/pages/api/photos/index.ts`
 
 **Before:**
+
 ```typescript
-import { parseMultipartFormData } from '../../../lib/utils/multipart';
+import { parseMultipartFormData } from "../../../lib/utils/multipart";
 const data = await parseMultipartFormData(request);
 ```
 
 **After:**
+
 ```typescript
-import { parseMultipartRequest } from '../../../lib/utils/multipart';
+import { parseMultipartRequest } from "../../../lib/utils/multipart";
 const data = await parseMultipartRequest(request);
 ```
 
@@ -114,7 +125,7 @@ const data = await parseMultipartRequest(request);
 ✅ **Build Status:** Success  
 ✅ **Linter Status:** 0 errors  
 ✅ **Dev Server:** Starts without errors  
-✅ **Map Route:** Loads successfully  
+✅ **Map Route:** Loads successfully
 
 ## Testing
 
@@ -137,9 +148,9 @@ From `@hattip/multipart@0.0.49`:
 
 ```typescript
 export {
-  parseMultipart,              // Low-level parser
-  parseMultipartFormData,      // Form data parser (used)
-  MultipartFormData,           // FormData-like class
+  parseMultipart, // Low-level parser
+  parseMultipartFormData, // Form data parser (used)
+  MultipartFormData, // FormData-like class
   type FileHandler,
   type FileInfo,
   type FormDataParserOptions,
@@ -152,14 +163,13 @@ export {
 
 ```typescript
 // src/lib/utils/multipart.ts
-export async function parseMultipartRequest(
-  request: Request
-): Promise<ParsedFormData>
+export async function parseMultipartRequest(request: Request): Promise<ParsedFormData>;
 ```
 
 **Usage:**
+
 ```typescript
-import { parseMultipartRequest } from '@/lib/utils/multipart';
+import { parseMultipartRequest } from "@/lib/utils/multipart";
 
 const formData = await parseMultipartRequest(request);
 // Returns: { file, title, description, category, ... }
@@ -177,6 +187,7 @@ const formData = await parseMultipartRequest(request);
 To prevent similar issues in the future:
 
 1. **Check Package Exports:**
+
    ```bash
    cat node_modules/@package/package.json | grep exports
    cat node_modules/@package/dist/*.d.ts | head -50
@@ -198,4 +209,3 @@ To prevent similar issues in the future:
 **Date:** December 29, 2025  
 **Impact:** Critical (blocked map view)  
 **Resolution Time:** ~5 minutes
-

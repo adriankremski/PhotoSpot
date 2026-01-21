@@ -107,7 +107,7 @@ export function MapPicker({ value, onChange, errors }: MapPickerProps) {
     setViewport(newViewport);
   }, []);
 
-  const handleBoundsChange = useCallback((_bounds: BoundingBox) => {
+  const handleBoundsChange = useCallback(() => {
     // Not needed for this component
   }, []);
 
@@ -136,7 +136,7 @@ export function MapPicker({ value, onChange, errors }: MapPickerProps) {
           </Button>
         </div>
         <p className="mt-1 text-xs text-gray-600">
-          Search for a place or click on the map to set your photo's location
+          Search for a place or click on the map to set your photo&apos;s location
         </p>
       </div>
 

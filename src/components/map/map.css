@@ -48,7 +48,9 @@
   padding: 0 !important;
   border-radius: 0.5rem;
   overflow: hidden;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 .photo-popup .mapboxgl-popup-tip {
@@ -57,7 +59,8 @@
 
 /* Pin animations */
 @keyframes pin-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -110,7 +113,9 @@
 
 /* Filter panel shadow on dark mode */
 .dark .filter-panel-shadow {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.5),
+    0 4px 6px -4px rgb(0 0 0 / 0.3);
 }
 
 /* Thumbnail card hover effect */
@@ -175,4 +180,3 @@
     display: none !important;
   }
 }
-

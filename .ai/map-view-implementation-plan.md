@@ -36,12 +36,14 @@ The Map View is the primary interface for discovering photo locations through an
 **Description**: Root container component that orchestrates the entire map view. It manages the state for photos, filters, selected photo, viewport, and loading/error states. It provides context to child components and handles the coordination between map and thumbnail interactions.
 
 **Main Elements**:
+
 - `<div>` with full-screen layout (flex column)
 - Conditional rendering of desktop vs mobile layouts
 - Loading overlay during data fetch
 - Error banner at the top when API errors occur
 
 **Handled Interactions**:
+
 - Initial data load on mount
 - Viewport change (debounced) triggering photo refetch
 - Filter changes triggering photo refetch
@@ -49,6 +51,7 @@ The Map View is the primary interface for discovering photo locations through an
 - Thumbnail selection propagating to map centering
 
 **Validation Conditions**:
+
 - Validate bbox bounds before API call: `minLng < maxLng` and `minLat < maxLat`
 - Ensure latitude is between -90 and 90
 - Ensure longitude is between -180 and 180
@@ -56,6 +59,7 @@ The Map View is the primary interface for discovering photo locations through an
 - Enforce limit ≤ 200
 
 **Types**:
+
 - `MapViewState` (ViewModel)
 - `PhotoListItemDto` (DTO)
 - `ListResponse<PhotoListItemDto>` (DTO)
@@ -70,27 +74,32 @@ The Map View is the primary interface for discovering photo locations through an
 **Description**: Mapbox GL wrapper component that renders the interactive map. It manages the map instance, viewport state (center, zoom, bounds), and provides map event handlers. It uses react-map-gl library for React integration.
 
 **Main Elements**:
+
 - `<Map>` component from react-map-gl
 - Map style configuration (Mapbox streets or custom)
 - Navigation controls (zoom, compass)
 - Geolocate control (optional)
 
 **Handled Interactions**:
+
 - `onMove`: Updates viewport state and propagates bounds to parent
 - `onClick`: Deselects current photo when clicking empty map area
 - `onLoad`: Sets initial map state, centers on user location or default
 - `onError`: Handles map initialization errors
 
 **Validation Conditions**:
+
 - Validate initial viewport coordinates are valid
 - Check if Mapbox token is present
 - Verify map style URL is valid
 
 **Types**:
+
 - `MapViewport` (ViewModel)
 - `MapboxEvent` (from react-map-gl)
 
 **Props**:
+
 ```typescript
 interface MapGLProps {
   viewport: MapViewport;
@@ -105,29 +114,34 @@ interface MapGLProps {
 **Description**: Renders photo pins as markers on the map with clustering support. Distinguishes between photographer pins (gold) and regular user pins (blue). Handles pin click events to select photos and show popups.
 
 **Main Elements**:
+
 - `<Source>` component with GeoJSON data
 - `<Layer>` components for clusters and individual pins
 - Cluster circle with count
 - Individual pin markers with custom icons
 
 **Handled Interactions**:
+
 - `onClick` on pin: Select photo, show popup, propagate to parent
 - `onMouseEnter` on pin: Change cursor to pointer
 - `onMouseLeave` on pin: Reset cursor
 - Cluster expansion on click
 
 **Validation Conditions**:
+
 - Validate GeoJSON features have valid coordinates
 - Check if cluster_id is present when count > 50
 - Ensure photo data contains required fields for pin rendering
 
 **Types**:
+
 - `PhotoListItemDto` (DTO)
 - `GeoPoint` (DTO)
 - `PhotoPin` (ViewModel)
 - `ClusterFeature` (from mapbox-gl)
 
 **Props**:
+
 ```typescript
 interface PinClusterLayerProps {
   photos: PhotoListItemDto[];
@@ -141,6 +155,7 @@ interface PinClusterLayerProps {
 **Description**: Small popup overlay that appears when a pin is clicked, showing photo preview, title, author, and a "View Details" link. Positioned above the selected pin on the map.
 
 **Main Elements**:
+
 - `<Popup>` component from react-map-gl
 - Thumbnail image
 - Photo title (truncated if long)
@@ -149,20 +164,24 @@ interface PinClusterLayerProps {
 - Close button
 
 **Handled Interactions**:
+
 - `onClick` on close button: Deselect photo, hide popup
 - `onClick` on "View Details": Navigate to photo detail page
 - `onClick` on thumbnail: Navigate to photo detail page
 
 **Validation Conditions**:
+
 - Ensure selected photo data is not null
 - Validate thumbnail URL exists
 - Check coordinates are valid for popup positioning
 
 **Types**:
+
 - `PhotoListItemDto` (DTO)
 - `GeoPoint` (DTO)
 
 **Props**:
+
 ```typescript
 interface PhotoPopupProps {
   photo: PhotoListItemDto;
@@ -175,6 +194,7 @@ interface PhotoPopupProps {
 **Description**: Collapsible panel with filter controls for category, season, time of day, and photographer-only toggle. Appears as a floating panel on desktop (top-left or top-right) and as a slide-up drawer on mobile.
 
 **Main Elements**:
+
 - Container `<div>` with card styling
 - Category `<select>` dropdown (with "All" option)
 - Season `<select>` dropdown (with "All" option)
@@ -185,6 +205,7 @@ interface PhotoPopupProps {
 - Collapse/expand toggle button
 
 **Handled Interactions**:
+
 - `onChange` on selects: Update local filter state
 - `onChange` on checkbox: Update photographer_only state
 - `onClick` on "Apply": Validate and propagate filters to parent
@@ -192,18 +213,21 @@ interface PhotoPopupProps {
 - `onClick` on collapse toggle: Toggle panel visibility
 
 **Validation Conditions**:
+
 - Validate selected category is valid `PhotoCategory` or null
 - Validate selected season is valid `Season` or null
 - Validate selected time_of_day is valid `TimeOfDay` or null
 - Ensure photographer_only is boolean
 
 **Types**:
+
 - `PhotoFilters` (ViewModel)
 - `PhotoCategory` (Enum)
 - `Season` (Enum)
 - `TimeOfDay` (Enum)
 
 **Props**:
+
 ```typescript
 interface FilterPanelProps {
   filters: PhotoFilters;
@@ -218,6 +242,7 @@ interface FilterPanelProps {
 **Description**: Horizontal scrollable strip at the bottom of the screen displaying photo thumbnails. Synchronized with map: scrolls to selected photo when pin is clicked, and centers map when thumbnail is clicked.
 
 **Main Elements**:
+
 - Container `<div>` with horizontal scroll (`overflow-x: auto`)
 - Scrollable inner `<div>` with flex layout
 - Photo cards: thumbnail image, title, author name
@@ -225,21 +250,25 @@ interface FilterPanelProps {
 - Empty state message when no photos
 
 **Handled Interactions**:
+
 - `onClick` on thumbnail card: Select photo, center map, propagate to parent
 - `onClick` on "Load More": Fetch next page with offset
 - Automatic scroll when `selectedPhotoId` changes (from pin click)
 - Keyboard navigation: arrow keys to navigate between thumbnails
 
 **Validation Conditions**:
+
 - Check if photos array is not empty before rendering
 - Validate thumbnail URLs exist
 - Ensure pagination meta is present for "Load More" logic
 
 **Types**:
+
 - `PhotoListItemDto` (DTO)
 - `PaginationMeta` (DTO)
 
 **Props**:
+
 ```typescript
 interface ThumbnailStripProps {
   photos: PhotoListItemDto[];
@@ -256,6 +285,7 @@ interface ThumbnailStripProps {
 **Description**: Mobile-optimized bottom sheet with swipeable carousel of photo cards. Draggable to expand/collapse. Synchronized with map like ThumbnailStrip.
 
 **Main Elements**:
+
 - Bottom sheet container with drag handle
 - Swipeable carousel (using Swiper or similar library)
 - Photo cards: larger thumbnail, title, author, category badge
@@ -263,21 +293,25 @@ interface ThumbnailStripProps {
 - Empty state when no photos
 
 **Handled Interactions**:
+
 - `onSwipe`: Navigate between photos, update selected photo
 - `onDrag`: Expand or collapse bottom sheet
 - `onClick` on card: Navigate to photo detail page
 - Automatic slide to selected photo when pin is clicked
 
 **Validation Conditions**:
+
 - Same as ThumbnailStrip
 - Validate swipe gestures within bounds
 - Ensure at least one photo is present for carousel
 
 **Types**:
+
 - `PhotoListItemDto` (DTO)
 - `PaginationMeta` (DTO)
 
 **Props**:
+
 ```typescript
 interface BottomSheetCarouselProps {
   photos: PhotoListItemDto[];
@@ -294,23 +328,28 @@ interface BottomSheetCarouselProps {
 **Description**: Floating action button (FAB) that navigates to the photo upload page. Only visible to authenticated users with photographer role.
 
 **Main Elements**:
+
 - Floating `<button>` with icon (camera or plus)
 - Tooltip on hover: "Upload Photo"
 - Conditional rendering based on user role
 
 **Handled Interactions**:
+
 - `onClick`: Navigate to `/upload` page (or show modal)
 - `onMouseEnter`: Show tooltip
 
 **Validation Conditions**:
+
 - Check if user is authenticated
 - Check if user role is "photographer"
 - Hide button if conditions not met
 
 **Types**:
+
 - `UserRole` (Enum)
 
 **Props**:
+
 ```typescript
 interface UploadPhotoButtonProps {
   userRole: UserRole | null;
@@ -323,24 +362,29 @@ interface UploadPhotoButtonProps {
 **Description**: Additional map control buttons like "Locate Me" (geolocation), "Reset View", and optional style switcher.
 
 **Main Elements**:
+
 - Control buttons container (absolute positioned)
 - Locate button with icon
 - Reset view button
 - Optional style switcher
 
 **Handled Interactions**:
+
 - `onClick` on Locate: Request geolocation, center map on user location
 - `onClick` on Reset: Reset viewport to default location
 - `onClick` on style switcher: Change map style
 
 **Validation Conditions**:
+
 - Check if geolocation API is available
 - Validate coordinates returned by geolocation
 
 **Types**:
+
 - `MapViewport` (ViewModel)
 
 **Props**:
+
 ```typescript
 interface MapControlsProps {
   onLocateMe: () => void;
@@ -354,6 +398,7 @@ interface MapControlsProps {
 ### 5.1. Existing DTOs (from `src/types.ts`)
 
 **PhotoListItemDto**: Primary data structure for each photo in the list.
+
 ```typescript
 interface PhotoListItemDto {
   id: string;
@@ -375,6 +420,7 @@ interface PhotoListItemDto {
 ```
 
 **PhotoQueryParams**: Query parameters for the GET /api/photos endpoint.
+
 ```typescript
 interface PhotoQueryParams {
   bbox?: string; // "minLng,minLat,maxLng,maxLat"
@@ -388,6 +434,7 @@ interface PhotoQueryParams {
 ```
 
 **ListResponse<T>**: Generic envelope for list endpoints.
+
 ```typescript
 interface ListResponse<T> {
   data: T[];
@@ -396,6 +443,7 @@ interface ListResponse<T> {
 ```
 
 **PaginationMeta**: Pagination metadata.
+
 ```typescript
 interface PaginationMeta {
   total: number;
@@ -406,19 +454,22 @@ interface PaginationMeta {
 ```
 
 **GeoPoint**: GeoJSON Point for coordinates.
+
 ```typescript
 interface GeoPoint {
-  type: 'Point';
+  type: "Point";
   coordinates: [number, number]; // [longitude, latitude]
 }
 ```
 
 **BoundingBox**: Tuple for map bounds.
+
 ```typescript
 type BoundingBox = [number, number, number, number]; // [minLng, minLat, maxLng, maxLat]
 ```
 
 **UserBasicInfo**: Embedded user information.
+
 ```typescript
 interface UserBasicInfo {
   id: string;
@@ -431,6 +482,7 @@ interface UserBasicInfo {
 ### 5.2. New ViewModel Types (to be added)
 
 **MapViewport**: Represents the current map viewport state.
+
 ```typescript
 interface MapViewport {
   latitude: number; // Center latitude
@@ -442,6 +494,7 @@ interface MapViewport {
 ```
 
 **MapBounds**: Map bounds derived from viewport.
+
 ```typescript
 interface MapBounds {
   north: number;
@@ -452,6 +505,7 @@ interface MapBounds {
 ```
 
 **PhotoFilters**: Current filter state.
+
 ```typescript
 interface PhotoFilters {
   category: PhotoCategory | null;
@@ -462,6 +516,7 @@ interface PhotoFilters {
 ```
 
 **MapViewState**: Complete state for MapSection component.
+
 ```typescript
 interface MapViewState {
   photos: PhotoListItemDto[];
@@ -475,6 +530,7 @@ interface MapViewState {
 ```
 
 **PhotoPin**: Simplified pin data for map rendering.
+
 ```typescript
 interface PhotoPin {
   id: string;
@@ -495,6 +551,7 @@ State is managed at the **MapSection** component level using React hooks, with a
 **Location**: `src/components/map/useMapPhotos.ts`
 
 **Interface**:
+
 ```typescript
 interface UseMapPhotosReturn {
   photos: PhotoListItemDto[];
@@ -512,6 +569,7 @@ function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn;
 ```
 
 **Internal State**:
+
 - `photos`: Array of PhotoListItemDto
 - `pagination`: PaginationMeta from API response
 - `isLoading`: Boolean for loading state
@@ -520,6 +578,7 @@ function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn;
 - `offset`: Current pagination offset
 
 **Key Functions**:
+
 - `fetchPhotos(bounds: BoundingBox, filters: PhotoFilters, offset: number)`: Calls API with query params
 - `setFilters(filters)`: Updates filters and triggers refetch with offset 0
 - `resetFilters()`: Clears filters and refetches
@@ -527,6 +586,7 @@ function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn;
 - `refetchWithBounds(bounds)`: Debounced refetch when viewport changes
 
 **Dependencies**:
+
 - Uses `useEffect` to trigger initial fetch
 - Uses `useCallback` for memoized functions
 - Uses `useMemo` for derived state
@@ -539,6 +599,7 @@ function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn;
 **Location**: `src/components/map/useMapSync.ts`
 
 **Interface**:
+
 ```typescript
 interface UseMapSyncReturn {
   selectedPhotoId: string | null;
@@ -557,10 +618,12 @@ function useMapSync(
 ```
 
 **Internal State**:
+
 - `selectedPhotoId`: Currently selected photo ID or null
 - `selectionSource`: 'map' | 'thumbnail' | null (to prevent circular updates)
 
 **Key Functions**:
+
 - `selectPhotoFromPin(photoId)`: Sets selected photo, scrolls thumbnail into view
 - `selectPhotoFromThumbnail(photoId)`: Sets selected photo, centers map on pin
 - `deselectPhoto()`: Clears selection
@@ -570,15 +633,18 @@ function useMapSync(
 ### 6.3. Component State
 
 **MapSection**:
+
 - Uses `useMapPhotos` for photo data and filters
 - Uses `useMapSync` for selection and synchronization
 - Manages viewport state locally with `useState<MapViewport>`
 
 **MapGL**:
+
 - Controlled viewport via props
 - Internal map instance ref
 
 **FilterPanel**:
+
 - Local form state (controlled inputs)
 - Syncs with parent on "Apply" click
 
@@ -600,7 +666,7 @@ function buildPhotoQueryParams(
   limit: number = 200
 ): PhotoQueryParams {
   const [minLng, minLat, maxLng, maxLat] = bounds;
-  
+
   return {
     bbox: `${minLng},${minLat},${maxLng},${maxLat}`,
     category: filters.category || undefined,
@@ -614,6 +680,7 @@ function buildPhotoQueryParams(
 ```
 
 **Query String Serialization**:
+
 - Use `URLSearchParams` to build query string
 - Filter out undefined values
 - Format boolean as string ("true" / "false")
@@ -623,22 +690,20 @@ function buildPhotoQueryParams(
 **Function**: `fetchPhotos`
 
 ```typescript
-async function fetchPhotos(
-  params: PhotoQueryParams
-): Promise<ListResponse<PhotoListItemDto>> {
+async function fetchPhotos(params: PhotoQueryParams): Promise<ListResponse<PhotoListItemDto>> {
   const queryString = new URLSearchParams(
     Object.entries(params)
       .filter(([_, v]) => v !== undefined)
       .map(([k, v]) => [k, String(v)])
   ).toString();
-  
+
   const response = await fetch(`/api/photos?${queryString}`);
-  
+
   if (!response.ok) {
     const error: ApiError = await response.json();
     throw new Error(error.error.message);
   }
-  
+
   return response.json();
 }
 ```
@@ -646,23 +711,27 @@ async function fetchPhotos(
 ### 7.4. Response Handling
 
 **Success (200 OK)**:
+
 - Extract `data` array and `meta` object
 - Update photos state
 - Update pagination meta
 - Set loading to false
 
 **Error (400 Bad Request)**:
+
 - Parse `ApiError` response
 - Set error state with message
 - Show error banner
 - Keep previous photos (don't clear)
 
 **Error (500 Internal Server Error)**:
+
 - Set generic error message
 - Log to console/Sentry
 - Show error banner
 
 **Network Error**:
+
 - Catch fetch exception
 - Set error: "Network error, please check your connection"
 - Show error banner
@@ -697,6 +766,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.1. Initial Page Load
 
 **Flow**:
+
 1. User navigates to `/map`
 2. MapSection mounts and initializes viewport (default or user's last location)
 3. `useMapPhotos` triggers initial fetch with viewport bounds
@@ -707,6 +777,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.2. Map Pan/Zoom (Viewport Change)
 
 **Flow**:
+
 1. User drags map or zooms
 2. MapGL fires `onMove` event
 3. Viewport state updates
@@ -719,6 +790,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.3. Pin Click
 
 **Flow**:
+
 1. User clicks a pin on the map
 2. `PinClusterLayer` fires `onPinClick(photoId)`
 3. `useMapSync.selectPhotoFromPin(photoId)` called
@@ -730,6 +802,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.4. Thumbnail Click
 
 **Flow**:
+
 1. User clicks a thumbnail card
 2. `ThumbnailStrip` fires `onThumbnailClick(photoId)`
 3. `useMapSync.selectPhotoFromThumbnail(photoId)` called
@@ -741,6 +814,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.5. Filter Change
 
 **Flow**:
+
 1. User opens FilterPanel
 2. User selects category, season, time_of_day, or toggles photographer_only
 3. User clicks "Apply Filters"
@@ -754,6 +828,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.6. Filter Reset
 
 **Flow**:
+
 1. User clicks "Reset" button in FilterPanel
 2. FilterPanel fires `onReset()`
 3. `useMapPhotos.resetFilters()` called
@@ -764,6 +839,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.7. Load More (Pagination)
 
 **Flow**:
+
 1. User scrolls thumbnail strip to the end
 2. "Load More" button appears
 3. User clicks "Load More"
@@ -777,6 +853,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.8. Upload Button Click
 
 **Flow**:
+
 1. User (photographer role) clicks floating upload button
 2. Navigate to `/upload` page
 3. (Alternatively, open upload modal if implemented)
@@ -784,6 +861,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.9. Popup Close
 
 **Flow**:
+
 1. User clicks "X" button in PhotoPopup or clicks elsewhere on map
 2. PhotoPopup fires `onClose()`
 3. `useMapSync.deselectPhoto()` called
@@ -794,6 +872,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 8.10. Locate Me
 
 **Flow**:
+
 1. User clicks "Locate Me" button
 2. Request geolocation permission
 3. If granted: Get current coordinates, center map on user location
@@ -805,17 +884,20 @@ type ListResponse<PhotoListItemDto> = {
 ### 9.1. Filter Validation (FilterPanel)
 
 **Conditions**:
+
 - Category must be a valid `PhotoCategory` enum value or null
 - Season must be a valid `Season` enum value or null
 - Time of day must be a valid `TimeOfDay` enum value or null
 - Photographer-only must be a boolean
 
 **Validation**:
+
 - Use type guards `isPhotoCategory()`, `isSeason()`, `isTimeOfDay()` before applying filters
 - If invalid, log warning and ignore invalid filter
 - Display validation error in FilterPanel if user manually edits (edge case)
 
 **Effect on UI**:
+
 - Invalid filters are ignored
 - Only valid filters sent to API
 - Error banner shows if API rejects filters
@@ -823,6 +905,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 9.2. Bounding Box Validation (useMapPhotos)
 
 **Conditions**:
+
 - bbox must have 4 comma-separated floats
 - minLng < maxLng
 - minLat < maxLat
@@ -830,82 +913,99 @@ type ListResponse<PhotoListItemDto> = {
 - Longitude between -180 and 180
 
 **Validation**:
+
 - Before calling API, validate bounds with `validateBoundingBox(bounds)` function
 - If invalid, log error and use fallback bounds (world bounds)
 - Prevent API call if bounds are clearly invalid
 
 **Effect on UI**:
+
 - Invalid bounds prevent unnecessary API calls
 - Error logged to console for debugging
 
 ### 9.3. Pagination Limit (useMapPhotos)
 
 **Conditions**:
+
 - Limit must be ≤ 200
 - Limit must be > 0
 - Offset must be ≥ 0
 
 **Validation**:
+
 - Clamp limit to 200 max
 - Ensure offset is non-negative
 - If API returns error, show error banner
 
 **Effect on UI**:
+
 - Prevents exceeding API limits
 - Ensures valid pagination state
 
 ### 9.4. Photo Data Validation (Component Rendering)
 
 **Conditions**:
+
 - Each photo must have valid `id`, `thumbnail_url`, `location_public`
 - Coordinates must be valid numbers
 
 **Validation**:
+
 - Before rendering pins, filter out photos with invalid coordinates
 - Log warning for malformed photo data
 - Skip rendering invalid photos
 
 **Effect on UI**:
+
 - Only valid photos render as pins
 - No crashes from malformed data
 
 ### 9.5. Clustering Condition (PinClusterLayer)
 
 **Conditions**:
+
 - If `photos.length > 50` and `cluster_id` is present, enable clustering
 - Otherwise, render individual pins
 
 **Validation**:
+
 - Check `meta.total` and presence of `cluster_id` in photo data
 - Enable clustering mode if conditions met
 
 **Effect on UI**:
+
 - Smooth clustering when many pins
 - Individual pins when few photos
 
 ### 9.6. Empty State Conditions
 
 **Conditions**:
+
 - If `photos.length === 0` and not loading and no error, show empty state
 
 **Validation**:
+
 - Check all three conditions before showing empty state
 
 **Effect on UI**:
+
 - "No photos found" message appears
 - Suggest adjusting filters or moving map
 
 ### 9.7. Authentication Checks (UploadPhotoButton)
 
 **Conditions**:
+
 - User must be authenticated
 - User role must be "photographer"
 
 **Validation**:
+
 - Check `isAuthenticated` and `userRole === 'photographer'`
 - Hide button if conditions not met
 
 **Effect on UI**:
+
 - Upload button only visible to photographers
 - Non-photographers don't see button
 
@@ -914,8 +1014,9 @@ type ListResponse<PhotoListItemDto> = {
 ### 10.1. API Errors
 
 **400 Bad Request**:
+
 - **Scenario**: Invalid bbox format, unknown enum value, limit > 200
-- **Handling**: 
+- **Handling**:
   - Parse `ApiError` response
   - Show error banner: "Invalid filters. Please check your selections."
   - Keep current photos visible (don't clear)
@@ -923,6 +1024,7 @@ type ListResponse<PhotoListItemDto> = {
 - **User Action**: Adjust filters and try again
 
 **500 Internal Server Error**:
+
 - **Scenario**: Unexpected server error, database issue
 - **Handling**:
   - Show error banner: "Server error. Please try again later."
@@ -933,6 +1035,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 10.2. Network Errors
 
 **Network Timeout / Offline**:
+
 - **Scenario**: No internet connection, request timeout
 - **Handling**:
   - Catch fetch exception
@@ -944,6 +1047,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 10.3. Map Loading Errors
 
 **Mapbox Initialization Failure**:
+
 - **Scenario**: Invalid Mapbox token, service unavailable
 - **Handling**:
   - Catch map error in `onError` handler
@@ -954,6 +1058,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 10.4. Geolocation Errors
 
 **Permission Denied**:
+
 - **Scenario**: User denies geolocation permission
 - **Handling**:
   - Show toast notification: "Location access denied. Using default location."
@@ -961,6 +1066,7 @@ type ListResponse<PhotoListItemDto> = {
 - **User Action**: Grant permission in browser settings if desired
 
 **Position Unavailable**:
+
 - **Scenario**: GPS signal not available
 - **Handling**:
   - Show toast: "Unable to determine your location."
@@ -970,6 +1076,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 10.5. Empty State (No Photos)
 
 **No Photos in Viewport**:
+
 - **Scenario**: Query returns 0 photos
 - **Handling**:
   - Show empty state message in thumbnail strip: "No photos found in this area."
@@ -978,6 +1085,7 @@ type ListResponse<PhotoListItemDto> = {
 - **User Action**: Pan map or change filters
 
 **No Photos Matching Filters**:
+
 - **Scenario**: Filters are too restrictive
 - **Handling**:
   - Show empty state: "No photos match your filters."
@@ -988,6 +1096,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 10.6. Invalid Data Handling
 
 **Malformed Photo Data**:
+
 - **Scenario**: API returns photo with missing required fields
 - **Handling**:
   - Filter out invalid photos before rendering
@@ -996,6 +1105,7 @@ type ListResponse<PhotoListItemDto> = {
 - **User Action**: No action needed (handled gracefully)
 
 **Invalid Coordinates**:
+
 - **Scenario**: Photo has coordinates outside valid range
 - **Handling**:
   - Skip rendering pin for that photo
@@ -1006,6 +1116,7 @@ type ListResponse<PhotoListItemDto> = {
 ### 10.7. Clustering Errors
 
 **Cluster Expansion Failure**:
+
 - **Scenario**: Click on cluster but expansion fails
 - **Handling**:
   - Log error
@@ -1210,4 +1321,3 @@ type ListResponse<PhotoListItemDto> = {
 - **Performance**: With 200 photos, rendering can be slow on low-end devices. Use memoization and lazy loading aggressively.
 - **Error Recovery**: Always keep previous photos visible when errors occur. Users should never see a blank map unless it's the initial load.
 - **Testing Strategy**: Focus on custom hooks first, then components. Integration tests are valuable for catching sync issues between map and thumbnails.
-

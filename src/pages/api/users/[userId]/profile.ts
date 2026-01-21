@@ -207,10 +207,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
     // Get current authenticated user (if any)
     const {
       data: { user: currentUser },
-      error: authError,
     } = await locals.supabase.auth.getUser();
 
-    // Note: authError is expected when not authenticated, so we don't throw here
+    // Note: auth errors are expected when not authenticated, so we don't throw here
     const currentUserId = currentUser?.id ?? null;
 
     // Call service layer to fetch user profile
@@ -369,7 +368,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
     let requestBody: unknown;
     try {
       requestBody = await request.json();
-    } catch (parseError) {
+    } catch {
       const errorResponse: ApiError = {
         error: {
           code: "invalid_json",

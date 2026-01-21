@@ -51,6 +51,7 @@ ErrorBanner (shared component for upload errors)
 **Purpose**: Main container component orchestrating the multi-step photo upload workflow. Manages overall state, navigation between steps, form validation, and API submission.
 
 **Main Elements**:
+
 - Header with current step indicator (1/3, 2/3, 3/3)
 - Dynamic step content container
 - Navigation buttons (Back, Next/Continue, Submit)
@@ -60,6 +61,7 @@ ErrorBanner (shared component for upload errors)
 **Child Components**: `UploadProgress`, `FileUploadStep`, `MetadataStep`, `LocationStep`, `ErrorBanner`
 
 **Handled Events**:
+
 - `onStepChange`: Navigate between wizard steps
 - `onFileSelect`: Handle file selection from child components
 - `onFormChange`: Update form data from metadata inputs
@@ -68,16 +70,19 @@ ErrorBanner (shared component for upload errors)
 - `onCancel`: Close wizard/navigate away with confirmation if data entered
 
 **Validation Conditions**:
+
 - **Step 1 → Step 2**: File must be selected, valid type (JPG/PNG), size ≤ 10MB
 - **Step 2 → Step 3**: Title required (1-200 chars), category required and valid enum, description ≤ 1000 chars if provided, tags ≤ 10 items and each ≤ 30 chars, gear JSON valid if provided
 - **Step 3 → Submit**: Latitude -90 to 90, longitude -180 to 180, if blur_location is true then blur_radius must be 100-500
 
 **Types**:
+
 - Props: `UploadWizardProps`
 - State: `UploadFormState`
 - Enums: `UploadStep`
 
 **Props**:
+
 ```typescript
 interface UploadWizardProps {
   isModal?: boolean; // If true, renders as modal overlay
@@ -93,6 +98,7 @@ interface UploadWizardProps {
 **Purpose**: Visual indicator showing current step in the upload wizard with step labels.
 
 **Main Elements**:
+
 - Horizontal step indicator with three circles (Step 1, 2, 3)
 - Progress bar connecting steps
 - Step labels: "Upload File", "Add Details", "Set Location"
@@ -105,9 +111,11 @@ interface UploadWizardProps {
 **Validation Conditions**: N/A
 
 **Types**:
+
 - Props: `UploadProgressProps`
 
 **Props**:
+
 ```typescript
 interface UploadProgressProps {
   currentStep: UploadStep;
@@ -122,6 +130,7 @@ interface UploadProgressProps {
 **Purpose**: First step of wizard - handles file selection, preview, and EXIF extraction.
 
 **Main Elements**:
+
 - File selection area (Dropzone)
 - File preview (thumbnail)
 - EXIF data preview panel
@@ -131,20 +140,24 @@ interface UploadProgressProps {
 **Child Components**: `Dropzone`, `FilePreview`, `ExifPreview`
 
 **Handled Events**:
+
 - `onFileSelect`: Triggered when user selects/drops a file
 - `onFileRemove`: Remove selected file and reset state
 - `onExifExtracted`: Callback when EXIF data is successfully parsed
 
 **Validation Conditions**:
+
 - File type must be `image/jpeg` or `image/png` (validate MIME type and file extension)
 - File size must be ≤ 10,485,760 bytes (10 MB)
 - File must be readable (not corrupted)
 
 **Types**:
+
 - Props: `FileUploadStepProps`
 - Local State: `FileState`
 
 **Props**:
+
 ```typescript
 interface FileUploadStepProps {
   selectedFile: File | null;
@@ -164,6 +177,7 @@ interface FileUploadStepProps {
 **Purpose**: Interactive drag-and-drop zone for file selection with click-to-browse fallback.
 
 **Main Elements**:
+
 - Dashed border drop area
 - Upload icon
 - Primary text: "Drag and drop your photo here"
@@ -174,21 +188,25 @@ interface FileUploadStepProps {
 **Child Components**: None (uses shadcn/ui primitives)
 
 **Handled Events**:
+
 - `onDrop`: Handle file drop
 - `onChange`: Handle file input change (click-to-browse)
 - `onDragOver`: Visual feedback during drag
 - `onDragLeave`: Remove visual feedback
 
 **Validation Conditions**:
+
 - Accept only `.jpg`, `.jpeg`, `.png` file extensions
 - Validate file size before accepting
 - Reject multiple files (only single upload supported)
 - Validate MIME type matches extension
 
 **Types**:
+
 - Props: `DropzoneProps`
 
 **Props**:
+
 ```typescript
 interface DropzoneProps {
   onFileSelect: (file: File) => void;
@@ -206,6 +224,7 @@ interface DropzoneProps {
 **Purpose**: Display thumbnail preview of selected image file.
 
 **Main Elements**:
+
 - Image thumbnail (max 300x300px, maintain aspect ratio)
 - File name
 - File size (formatted: "2.5 MB")
@@ -214,14 +233,17 @@ interface DropzoneProps {
 **Child Components**: None
 
 **Handled Events**:
+
 - `onRemove`: Remove selected file
 
 **Validation Conditions**: N/A
 
 **Types**:
+
 - Props: `FilePreviewProps`
 
 **Props**:
+
 ```typescript
 interface FilePreviewProps {
   file: File;
@@ -237,6 +259,7 @@ interface FilePreviewProps {
 **Purpose**: Display extracted EXIF metadata from uploaded photo in a readable format.
 
 **Main Elements**:
+
 - Collapsible section header: "Photo Information (EXIF)"
 - Grid layout displaying key-value pairs:
   - Camera make/model
@@ -252,15 +275,18 @@ interface FilePreviewProps {
 **Child Components**: None
 
 **Handled Events**:
+
 - `onUseGpsLocation`: When user clicks "Use for location" button, populate coordinates for Step 3
 
 **Validation Conditions**: N/A (display only)
 
 **Types**:
+
 - Props: `ExifPreviewProps`
 - Data: `ExifPreviewData` (extends `ExifData` from types.ts)
 
 **Props**:
+
 ```typescript
 interface ExifPreviewProps {
   exifData: ExifPreviewData | null;
@@ -275,6 +301,7 @@ interface ExifPreviewProps {
 **Purpose**: Second step of wizard - collects photo metadata including title, description, category, tags, and gear information.
 
 **Main Elements**:
+
 - Form container with responsive layout
 - Required field indicators (asterisk)
 - Real-time character counters for text fields
@@ -284,10 +311,12 @@ interface ExifPreviewProps {
 **Child Components**: `MetadataForm`, `ValidationErrors`
 
 **Handled Events**:
+
 - `onFormChange`: Update form data on input changes
 - `onValidate`: Validate all fields before proceeding to next step
 
 **Validation Conditions**:
+
 - Title: required, 1-200 characters, non-empty after trim
 - Description: optional, max 1000 characters
 - Category: required, must be valid `PhotoCategory` enum value
@@ -297,10 +326,12 @@ interface ExifPreviewProps {
 - Gear: optional, valid JSON structure matching `GearInfo` type
 
 **Types**:
+
 - Props: `MetadataStepProps`
 - Local State: `MetadataFormData`
 
 **Props**:
+
 ```typescript
 interface MetadataStepProps {
   formData: MetadataFormData;
@@ -317,6 +348,7 @@ interface MetadataStepProps {
 **Purpose**: Form component containing all metadata input fields.
 
 **Main Elements**:
+
 - **Title Input**: Text input with character counter (200 max), required indicator
 - **Description Textarea**: Multi-line textarea with character counter (1000 max)
 - **Category Select**: Dropdown with photo categories (landscape, portrait, street, etc.)
@@ -328,6 +360,7 @@ interface MetadataStepProps {
 **Child Components**: shadcn/ui form components (`Input`, `Textarea`, `Select`, `Label`)
 
 **Handled Events**:
+
 - `onChange`: Individual field change handlers
 - `onTagAdd`: Add new tag to array
 - `onTagRemove`: Remove tag from array
@@ -336,9 +369,11 @@ interface MetadataStepProps {
 **Validation Conditions**: (Same as MetadataStep - enforced at form level)
 
 **Types**:
+
 - Props: `MetadataFormProps`
 
 **Props**:
+
 ```typescript
 interface MetadataFormProps {
   title: string;
@@ -360,6 +395,7 @@ interface MetadataFormProps {
 **Purpose**: Third and final step - allows users to set/verify photo location and optionally blur it.
 
 **Main Elements**:
+
 - Interactive map (MapPicker)
 - Coordinate display (latitude/longitude)
 - Location source indicator (EXIF, Manual, Current Location)
@@ -372,6 +408,7 @@ interface MetadataFormProps {
 **Child Components**: `MapPicker`, `LocationCoordinatesDisplay`, `BlurLocationToggle`, `BlurSlider`
 
 **Handled Events**:
+
 - `onLocationChange`: Update coordinates when user clicks on map
 - `onBlurToggle`: Enable/disable location blurring
 - `onBlurRadiusChange`: Adjust blur radius via slider
@@ -379,16 +416,19 @@ interface MetadataFormProps {
 - `onSubmit`: Final form submission
 
 **Validation Conditions**:
+
 - Latitude: required, must be -90 to 90
 - Longitude: required, must be -180 to 180
 - Blur radius: if blur_location is true, must be 100-500 (defaults to 200)
 - At least one coordinate source must be set (EXIF, manual, or current location)
 
 **Types**:
+
 - Props: `LocationStepProps`
 - Local State: `LocationState`
 
 **Props**:
+
 ```typescript
 interface LocationStepProps {
   latitude: number | null;
@@ -412,6 +452,7 @@ interface LocationStepProps {
 **Purpose**: Interactive Mapbox map for selecting or verifying photo location with blur radius visualization.
 
 **Main Elements**:
+
 - Mapbox GL map instance
 - Draggable marker for location pin
 - Optional blur radius circle (semi-transparent overlay)
@@ -422,6 +463,7 @@ interface LocationStepProps {
 **Child Components**: Uses `mapbox-gl` library
 
 **Handled Events**:
+
 - `onClick`: Set location by clicking on map
 - `onMarkerDrag`: Update location by dragging marker
 - `onZoomChange`: Maintain zoom level state
@@ -429,9 +471,11 @@ interface LocationStepProps {
 **Validation Conditions**: N/A (parent validates coordinates)
 
 **Types**:
+
 - Props: `MapPickerProps`
 
 **Props**:
+
 ```typescript
 interface MapPickerProps {
   latitude: number | null;
@@ -449,6 +493,7 @@ interface MapPickerProps {
 **Purpose**: Slider control for adjusting location blur radius (100-500 meters).
 
 **Main Elements**:
+
 - Range slider input (100-500)
 - Current value display with unit (e.g., "250 m")
 - Min/max labels
@@ -458,17 +503,21 @@ interface MapPickerProps {
 **Child Components**: shadcn/ui `Slider` component
 
 **Handled Events**:
+
 - `onChange`: Update blur radius value
 - `onChangeCommitted`: Final value when user releases slider
 
 **Validation Conditions**:
+
 - Value must be between 100 and 500 (inclusive)
 - Value is always an integer
 
 **Types**:
+
 - Props: `BlurSliderProps`
 
 **Props**:
+
 ```typescript
 interface BlurSliderProps {
   value: number;
@@ -487,6 +536,7 @@ interface BlurSliderProps {
 **Purpose**: Multi-value input component for adding and managing photo tags.
 
 **Main Elements**:
+
 - Text input field for new tag entry
 - Tag pills displaying added tags with remove buttons
 - Tag counter (e.g., "3/10 tags")
@@ -496,12 +546,14 @@ interface BlurSliderProps {
 **Child Components**: Tag pill badges (shadcn/ui `Badge`)
 
 **Handled Events**:
+
 - `onTagAdd`: Add new tag (Enter key or button click)
 - `onTagRemove`: Remove tag by clicking X on pill
 - `onChange`: Update input value
 - `onBlur`: Validate input on blur
 
 **Validation Conditions**:
+
 - Maximum 10 tags per photo
 - Each tag max 30 characters
 - Tags are automatically lowercased and trimmed
@@ -509,9 +561,11 @@ interface BlurSliderProps {
 - No empty tags
 
 **Types**:
+
 - Props: `TagsInputProps`
 
 **Props**:
+
 ```typescript
 interface TagsInputProps {
   tags: string[];
@@ -529,6 +583,7 @@ interface TagsInputProps {
 **Purpose**: Display component for showing field-level validation errors in a consistent format.
 
 **Main Elements**:
+
 - Alert/banner component
 - Error icon
 - List of error messages
@@ -541,9 +596,11 @@ interface TagsInputProps {
 **Validation Conditions**: N/A
 
 **Types**:
+
 - Props: `ValidationErrorsProps`
 
 **Props**:
+
 ```typescript
 interface ValidationErrorsProps {
   errors: Record<string, string>; // field name -> error message
@@ -573,6 +630,7 @@ The following types are already defined and should be imported:
 ### 5.2 New View Model Types
 
 **UploadStep Enum**:
+
 ```typescript
 enum UploadStep {
   FILE_UPLOAD = 1,
@@ -590,7 +648,7 @@ interface UploadFormState {
   file: File | null;
   filePreviewUrl: string | null;
   exifData: ExifPreviewData | null;
-  
+
   // Step 2: Metadata
   title: string;
   description: string;
@@ -599,21 +657,21 @@ interface UploadFormState {
   time_of_day: TimeOfDay | null;
   tags: string[];
   gear: GearInfo | null;
-  
+
   // Step 3: Location
   latitude: number | null;
   longitude: number | null;
-  locationSource: 'exif' | 'manual' | 'current' | null;
+  locationSource: "exif" | "manual" | "current" | null;
   blur_location: boolean;
   blur_radius: number; // 100-500, default 200
-  
+
   // Wizard state
   currentStep: UploadStep;
   completedSteps: UploadStep[];
-  
+
   // Validation & errors
   errors: Record<string, string>;
-  
+
   // Submission state
   isSubmitting: boolean;
   submitError: string | null;
@@ -656,7 +714,7 @@ Subset of form data for location step.
 interface LocationState {
   latitude: number | null;
   longitude: number | null;
-  locationSource: 'exif' | 'manual' | 'current' | null;
+  locationSource: "exif" | "manual" | "current" | null;
   blur_location: boolean;
   blur_radius: number;
 }
@@ -681,7 +739,7 @@ Tracks upload progress for user feedback.
 ```typescript
 interface UploadProgressState {
   percentage: number; // 0-100
-  status: 'idle' | 'uploading' | 'processing' | 'success' | 'error';
+  status: "idle" | "uploading" | "processing" | "success" | "error";
   message?: string;
 }
 ```
@@ -689,6 +747,7 @@ interface UploadProgressState {
 ### 5.3 Validation Types
 
 **ValidationResult**:
+
 ```typescript
 interface ValidationResult {
   isValid: boolean;
@@ -697,6 +756,7 @@ interface ValidationResult {
 ```
 
 **StepValidation**:
+
 ```typescript
 type StepValidation = {
   [UploadStep.FILE_UPLOAD]: (state: UploadFormState) => ValidationResult;
@@ -716,43 +776,45 @@ A custom hook that encapsulates all upload logic, state management, and side eff
 **Purpose**: Centralize upload workflow logic, reduce component complexity, enable easier testing and reusability.
 
 **State Variables**:
+
 ```typescript
 const [formState, setFormState] = useState<UploadFormState>(initialState);
 const [uploadProgress, setUploadProgress] = useState<UploadProgressState>({ ... });
 ```
 
 **Hook Interface**:
+
 ```typescript
 interface UsePhotoUploadReturn {
   // State
   formState: UploadFormState;
   uploadProgress: UploadProgressState;
-  
+
   // File operations
   selectFile: (file: File) => Promise<void>;
   removeFile: () => void;
-  
+
   // Metadata operations
   updateMetadata: (field: keyof MetadataFormData, value: any) => void;
   addTag: (tag: string) => void;
   removeTag: (tag: string) => void;
-  
+
   // Location operations
-  setLocation: (lat: number, lng: number, source: 'exif' | 'manual' | 'current') => void;
+  setLocation: (lat: number, lng: number, source: "exif" | "manual" | "current") => void;
   toggleBlur: (enabled: boolean) => void;
   setBlurRadius: (radius: number) => void;
   getCurrentLocation: () => Promise<void>;
-  
+
   // Navigation
   goToStep: (step: UploadStep) => void;
   nextStep: () => void;
   previousStep: () => void;
   canProceed: (step: UploadStep) => boolean;
-  
+
   // Validation
   validateStep: (step: UploadStep) => ValidationResult;
   clearErrors: () => void;
-  
+
   // Submission
   submitUpload: () => Promise<void>;
   resetForm: () => void;
@@ -776,17 +838,18 @@ interface UsePhotoUploadReturn {
    - Disable "Next" button if current step invalid
 
 3. **EXIF Extraction**:
+
    ```typescript
    async function extractExif(file: File): Promise<ExifPreviewData | null> {
      try {
        const exif = await exifr.parse(file, {
          gps: true,
-         pick: ['Make', 'Model', 'LensModel', 'FNumber', 'ExposureTime', 'ISO', 'FocalLength', 'DateTimeOriginal'],
+         pick: ["Make", "Model", "LensModel", "FNumber", "ExposureTime", "ISO", "FocalLength", "DateTimeOriginal"],
        });
-       
+
        return formatExifForDisplay(exif);
      } catch (error) {
-       console.warn('EXIF extraction failed:', error);
+       console.warn("EXIF extraction failed:", error);
        return null;
      }
    }
@@ -799,6 +862,7 @@ interface UsePhotoUploadReturn {
    - Track location source for analytics
 
 5. **Form Submission Flow**:
+
    ```typescript
    async function submitUpload() {
      // 1. Final validation
@@ -807,54 +871,53 @@ interface UsePhotoUploadReturn {
        setErrors(validation.errors);
        return;
      }
-     
+
      // 2. Prepare multipart form data
      const formData = new FormData();
-     formData.append('file', formState.file);
-     formData.append('title', formState.title);
-     formData.append('category', formState.category);
-     formData.append('latitude', formState.latitude.toString());
-     formData.append('longitude', formState.longitude.toString());
+     formData.append("file", formState.file);
+     formData.append("title", formState.title);
+     formData.append("category", formState.category);
+     formData.append("latitude", formState.latitude.toString());
+     formData.append("longitude", formState.longitude.toString());
      // ... append all fields
-     
+
      if (formState.blur_location) {
-       formData.append('blur_location', 'true');
-       formData.append('blur_radius', formState.blur_radius.toString());
+       formData.append("blur_location", "true");
+       formData.append("blur_radius", formState.blur_radius.toString());
      }
-     
+
      if (formState.tags.length > 0) {
-       formData.append('tags', JSON.stringify(formState.tags));
+       formData.append("tags", JSON.stringify(formState.tags));
      }
-     
+
      if (formState.gear) {
-       formData.append('gear', JSON.stringify(formState.gear));
+       formData.append("gear", JSON.stringify(formState.gear));
      }
-     
+
      // 3. Submit with progress tracking
      setIsSubmitting(true);
-     setUploadProgress({ percentage: 0, status: 'uploading' });
-     
+     setUploadProgress({ percentage: 0, status: "uploading" });
+
      try {
-       const response = await fetch('/api/photos', {
-         method: 'POST',
+       const response = await fetch("/api/photos", {
+         method: "POST",
          body: formData,
          // Note: Don't set Content-Type header, browser will set it with boundary
        });
-       
+
        if (!response.ok) {
          const error: ApiError = await response.json();
          throw new Error(error.error.message);
        }
-       
+
        const result: CreatePhotoResponse = await response.json();
-       
-       setUploadProgress({ percentage: 100, status: 'success' });
-       
+
+       setUploadProgress({ percentage: 100, status: "success" });
+
        // 4. Navigate to photo detail page or back to map
        window.location.href = `/photo/${result.photo.id}`;
-       
      } catch (error) {
-       setUploadProgress({ percentage: 0, status: 'error', message: error.message });
+       setUploadProgress({ percentage: 0, status: "error", message: error.message });
        setSubmitError(handleApiError(error));
      } finally {
        setIsSubmitting(false);
@@ -885,37 +948,39 @@ The request payload is built using the `FormData` API to support file uploads:
 const formData = new FormData();
 
 // Required fields
-formData.append('file', file); // File object
-formData.append('title', title);
-formData.append('category', category);
-formData.append('latitude', latitude.toString());
-formData.append('longitude', longitude.toString());
+formData.append("file", file); // File object
+formData.append("title", title);
+formData.append("category", category);
+formData.append("latitude", latitude.toString());
+formData.append("longitude", longitude.toString());
 
 // Optional fields (only append if present)
-if (description) formData.append('description', description);
-if (season) formData.append('season', season);
-if (time_of_day) formData.append('time_of_day', time_of_day);
+if (description) formData.append("description", description);
+if (season) formData.append("season", season);
+if (time_of_day) formData.append("time_of_day", time_of_day);
 if (blur_location) {
-  formData.append('blur_location', 'true');
-  formData.append('blur_radius', blur_radius.toString());
+  formData.append("blur_location", "true");
+  formData.append("blur_radius", blur_radius.toString());
 }
 
 // Array/Object fields (JSON serialized)
 if (tags.length > 0) {
-  formData.append('tags', JSON.stringify(tags));
+  formData.append("tags", JSON.stringify(tags));
 }
 if (gear) {
-  formData.append('gear', JSON.stringify(gear));
+  formData.append("gear", JSON.stringify(gear));
 }
 ```
 
 **Important Notes**:
+
 - Do NOT manually set `Content-Type` header - browser will automatically set it with proper multipart boundary
 - Authentication is handled by Astro middleware (cookie-based session)
 
 ### 7.3 Response Handling
 
 **Success Response (201 Created)**:
+
 ```typescript
 interface CreatePhotoResponse {
   message: "Photo uploaded successfully";
@@ -930,6 +995,7 @@ interface CreatePhotoResponse {
 ```
 
 **Action on Success**:
+
 1. Show success message
 2. Navigate to photo detail page (`/photo/${photo.id}`)
 3. Or close modal and refresh map view if modal context
@@ -937,6 +1003,7 @@ interface CreatePhotoResponse {
 **Error Response Examples**:
 
 **401 Unauthorized**:
+
 ```typescript
 {
   error: {
@@ -945,9 +1012,11 @@ interface CreatePhotoResponse {
   }
 }
 ```
+
 Action: Redirect to `/login?returnUrl=/upload`
 
 **400 Bad Request**:
+
 ```typescript
 {
   error: {
@@ -960,9 +1029,11 @@ Action: Redirect to `/login?returnUrl=/upload`
   }
 }
 ```
+
 Action: Display field-specific errors in form
 
 **413 Payload Too Large**:
+
 ```typescript
 {
   error: {
@@ -971,9 +1042,11 @@ Action: Display field-specific errors in form
   }
 }
 ```
+
 Action: Show error banner, keep user on Step 1 to select different file
 
 **429 Too Many Requests**:
+
 ```typescript
 {
   error: {
@@ -982,9 +1055,11 @@ Action: Show error banner, keep user on Step 1 to select different file
   }
 }
 ```
+
 Action: Show error banner with countdown timer to next available upload slot
 
 **422 Unprocessable Entity**:
+
 ```typescript
 {
   error: {
@@ -993,9 +1068,11 @@ Action: Show error banner with countdown timer to next available upload slot
   }
 }
 ```
+
 Action: Show error banner, navigate back to Step 3 to fix location
 
 **500 Internal Server Error**:
+
 ```typescript
 {
   error: {
@@ -1004,6 +1081,7 @@ Action: Show error banner, navigate back to Step 3 to fix location
   }
 }
 ```
+
 Action: Show error banner with retry button
 
 ### 7.4 Error Mapping Function
@@ -1011,27 +1089,27 @@ Action: Show error banner with retry button
 ```typescript
 function handleApiError(error: any): string {
   if (error.response?.status === 401) {
-    window.location.href = '/login?returnUrl=/upload';
-    return '';
+    window.location.href = "/login?returnUrl=/upload";
+    return "";
   }
-  
+
   if (error.response?.status === 413) {
-    return 'File size exceeds 10MB limit. Please select a smaller file.';
+    return "File size exceeds 10MB limit. Please select a smaller file.";
   }
-  
+
   if (error.response?.status === 429) {
-    return 'Upload limit reached (5 photos per 24 hours). Please try again later.';
+    return "Upload limit reached (5 photos per 24 hours). Please try again later.";
   }
-  
+
   if (error.response?.status === 422) {
-    return 'Invalid location data. Please check coordinates and try again.';
+    return "Invalid location data. Please check coordinates and try again.";
   }
-  
+
   if (error.response?.data?.error) {
     return error.response.data.error.message;
   }
-  
-  return 'An unexpected error occurred. Please try again.';
+
+  return "An unexpected error occurred. Please try again.";
 }
 ```
 
@@ -1044,6 +1122,7 @@ function handleApiError(error: any): string {
 **User Action**: Drag and drop photo onto dropzone OR click to open file browser
 
 **System Response**:
+
 1. Validate file type (JPG/PNG only)
 2. Validate file size (≤ 10MB)
 3. If invalid, show error message inline in dropzone
@@ -1056,6 +1135,7 @@ function handleApiError(error: any): string {
 **User Action**: Click "Next" button
 
 **System Response**:
+
 1. Validate that file is selected
 2. Transition to Step 2 (Metadata)
 3. Mark Step 1 as completed
@@ -1063,6 +1143,7 @@ function handleApiError(error: any): string {
 **User Action**: Remove selected file (click X on preview)
 
 **System Response**:
+
 1. Clear file preview
 2. Reset EXIF data
 3. Disable "Next" button
@@ -1075,6 +1156,7 @@ function handleApiError(error: any): string {
 **User Action**: Type in title field
 
 **System Response**:
+
 1. Update character counter in real-time
 2. Show error if exceeds 200 characters
 3. Validate on blur: required, non-empty after trim
@@ -1082,6 +1164,7 @@ function handleApiError(error: any): string {
 **User Action**: Type in description field
 
 **System Response**:
+
 1. Update character counter in real-time (0/1000)
 2. Show error if exceeds 1000 characters
 3. No validation error if empty (optional field)
@@ -1089,6 +1172,7 @@ function handleApiError(error: any): string {
 **User Action**: Select category from dropdown
 
 **System Response**:
+
 1. Update selected value
 2. Clear any previous category error
 3. Enable "Next" button if all required fields valid
@@ -1096,6 +1180,7 @@ function handleApiError(error: any): string {
 **User Action**: Add tag
 
 **System Response**:
+
 1. Validate tag: max 30 chars, no duplicates
 2. Convert to lowercase and trim
 3. Add tag pill to display
@@ -1105,6 +1190,7 @@ function handleApiError(error: any): string {
 **User Action**: Remove tag (click X on tag pill)
 
 **System Response**:
+
 1. Remove tag from array
 2. Update counter
 3. Clear max tags error if was showing
@@ -1112,6 +1198,7 @@ function handleApiError(error: any): string {
 **User Action**: Toggle gear section open and enter camera/lens
 
 **System Response**:
+
 1. Update gear object
 2. Validate JSON structure
 3. No error if left empty (optional)
@@ -1119,6 +1206,7 @@ function handleApiError(error: any): string {
 **User Action**: Click "Next" button
 
 **System Response**:
+
 1. Validate all required fields:
    - Title: required, 1-200 chars
    - Category: required, valid enum
@@ -1134,6 +1222,7 @@ function handleApiError(error: any): string {
 **User Action**: Click "Back" button
 
 **System Response**:
+
 1. Save current metadata (don't lose data)
 2. Return to Step 1
 3. Show previously selected file
@@ -1145,6 +1234,7 @@ function handleApiError(error: any): string {
 **User Action**: View map with pre-populated location (from EXIF or previous manual selection)
 
 **System Response**:
+
 1. Display map centered on coordinates
 2. Show draggable marker at location
 3. Display coordinates below map
@@ -1153,6 +1243,7 @@ function handleApiError(error: any): string {
 **User Action**: Click on map to change location
 
 **System Response**:
+
 1. Move marker to clicked point
 2. Update latitude/longitude display
 3. Change location source to "Manual"
@@ -1161,6 +1252,7 @@ function handleApiError(error: any): string {
 **User Action**: Drag marker to new position
 
 **System Response**:
+
 1. Update marker position in real-time
 2. Update coordinates display
 3. Change location source to "Manual"
@@ -1168,6 +1260,7 @@ function handleApiError(error: any): string {
 **User Action**: Click "Use Current Location" button
 
 **System Response**:
+
 1. Request browser geolocation permission (if not granted)
 2. Show loading indicator
 3. If permission granted:
@@ -1182,6 +1275,7 @@ function handleApiError(error: any): string {
 **User Action**: Toggle "Blur location" checkbox
 
 **System Response**:
+
 1. Enable/disable blur slider
 2. If enabling blur:
    - Set default radius to 200m
@@ -1195,6 +1289,7 @@ function handleApiError(error: any): string {
 **User Action**: Adjust blur radius slider
 
 **System Response**:
+
 1. Update radius value display (e.g., "250 m")
 2. Resize blur circle on map in real-time
 3. Validate range (100-500)
@@ -1203,6 +1298,7 @@ function handleApiError(error: any): string {
 **User Action**: Click "Submit" button
 
 **System Response**:
+
 1. Validate location:
    - Latitude -90 to 90
    - Longitude -180 to 180
@@ -1219,6 +1315,7 @@ function handleApiError(error: any): string {
 **User Action**: Click "Back" button
 
 **System Response**:
+
 1. Save current location data
 2. Return to Step 2
 3. Keep location ready for when user returns to Step 3
@@ -1226,6 +1323,7 @@ function handleApiError(error: any): string {
 **User Action**: Click "Cancel" button (any step)
 
 **System Response**:
+
 1. Show confirmation dialog: "Discard unsaved photo?"
 2. If confirmed:
    - Clean up file preview URL
@@ -1243,24 +1341,28 @@ function handleApiError(error: any): string {
 **Component**: `FileUploadStep`, `Dropzone`
 
 **Condition**: File type validation
+
 - **Rule**: File must have MIME type `image/jpeg` or `image/png`
 - **When**: On file selection (before accepting)
 - **Effect**: If invalid, show error "Only JPG and PNG files are supported" and reject file
 - **UI State**: Error text appears in dropzone, file is not loaded
 
 **Condition**: File size validation
+
 - **Rule**: File size must be ≤ 10,485,760 bytes (10 MB)
 - **When**: On file selection (before accepting)
 - **Effect**: If invalid, show error "File size must not exceed 10 MB" and reject file
 - **UI State**: Error text appears in dropzone, file is not loaded
 
 **Condition**: File selection required for progression
+
 - **Rule**: At least one valid file must be selected
 - **When**: When user clicks "Next" button
 - **Effect**: If no file, show error "Please select a photo to upload"
 - **UI State**: "Next" button remains disabled until file selected
 
 **Condition**: File preview generation
+
 - **Rule**: Create object URL for selected file
 - **When**: After successful file validation
 - **Effect**: Display thumbnail preview
@@ -1271,60 +1373,70 @@ function handleApiError(error: any): string {
 **Component**: `MetadataStep`, `MetadataForm`
 
 **Condition**: Title required
+
 - **Rule**: Title field must not be empty after trimming
 - **When**: On blur and before step navigation
 - **Effect**: Show error "Title is required"
 - **UI State**: Red border on input, error text below field, "Next" button disabled
 
 **Condition**: Title length
+
 - **Rule**: Title must be between 1 and 200 characters
 - **When**: On input change (real-time counter), on blur (validation)
 - **Effect**: Show error "Title must not exceed 200 characters"
 - **UI State**: Character counter turns red when limit exceeded, error text appears
 
 **Condition**: Description length
+
 - **Rule**: Description must not exceed 1000 characters (optional field)
 - **When**: On input change (real-time counter)
 - **Effect**: Show error "Description must not exceed 1000 characters"
 - **UI State**: Character counter turns red when limit exceeded, cannot type more characters
 
 **Condition**: Category required
+
 - **Rule**: Category must be selected and be a valid `PhotoCategory` enum value
 - **When**: On blur and before step navigation
 - **Effect**: Show error "Please select a category"
 - **UI State**: Red border on select, error text below field
 
 **Condition**: Season validation (optional)
+
 - **Rule**: If provided, must be a valid `Season` enum value
 - **When**: On selection
 - **Effect**: None (dropdown only shows valid options)
 - **UI State**: No error possible (controlled by dropdown)
 
 **Condition**: Time of day validation (optional)
+
 - **Rule**: If provided, must be a valid `TimeOfDay` enum value
 - **When**: On selection
 - **Effect**: None (dropdown only shows valid options)
 - **UI State**: No error possible (controlled by dropdown)
 
 **Condition**: Tags maximum count
+
 - **Rule**: Maximum 10 tags allowed
 - **When**: When attempting to add 11th tag
 - **Effect**: Show error "Maximum 10 tags allowed" and prevent addition
 - **UI State**: Add button disabled, error text appears, tag counter shows "10/10"
 
 **Condition**: Individual tag length
+
 - **Rule**: Each tag must not exceed 30 characters
 - **When**: When attempting to add tag
 - **Effect**: Show error "Tag must not exceed 30 characters"
 - **UI State**: Error text below input, tag not added
 
 **Condition**: Duplicate tags
+
 - **Rule**: No duplicate tags allowed (case-insensitive comparison)
 - **When**: When attempting to add tag
 - **Effect**: Show error "This tag already exists"
 - **UI State**: Error text below input, tag not added
 
 **Condition**: Gear JSON validation (optional)
+
 - **Rule**: If provided, must match `GearInfo` type structure
 - **When**: On blur
 - **Effect**: Show error "Invalid gear information format"
@@ -1335,30 +1447,35 @@ function handleApiError(error: any): string {
 **Component**: `LocationStep`, `MapPicker`, `BlurSlider`
 
 **Condition**: Latitude range
+
 - **Rule**: Latitude must be between -90 and 90 (inclusive)
 - **When**: On location change (map click, marker drag, current location)
 - **Effect**: Show error "Invalid latitude value"
 - **UI State**: Error banner appears, submit button disabled
 
 **Condition**: Longitude range
+
 - **Rule**: Longitude must be between -180 and 180 (inclusive)
 - **When**: On location change (map click, marker drag, current location)
 - **Effect**: Show error "Invalid longitude value"
 - **UI State**: Error banner appears, submit button disabled
 
 **Condition**: Location required
+
 - **Rule**: Both latitude and longitude must be set (not null)
 - **When**: On submit attempt
 - **Effect**: Show error "Please select a location on the map"
 - **UI State**: Error banner appears, submit button disabled
 
 **Condition**: Blur radius range (conditional)
+
 - **Rule**: If `blur_location` is true, `blur_radius` must be between 100 and 500 meters
 - **When**: When blur is enabled and slider is moved
 - **Effect**: Slider automatically constrains to valid range
 - **UI State**: Slider cannot move outside 100-500 range
 
 **Condition**: Blur radius required when blur enabled
+
 - **Rule**: If `blur_location` is true, `blur_radius` must be provided
 - **When**: On submit attempt
 - **Effect**: Automatically uses default value (200) if not explicitly set
@@ -1367,12 +1484,14 @@ function handleApiError(error: any): string {
 ### 9.4 Global Validation
 
 **Condition**: Authentication required
+
 - **Rule**: User must be authenticated (valid Supabase session)
 - **When**: On page load, on submit
 - **Effect**: Redirect to `/login?returnUrl=/upload`
 - **UI State**: Upload view not accessible, redirect immediately
 
 **Condition**: Rate limit check
+
 - **Rule**: User can upload maximum 5 photos per 24 hours
 - **When**: On form submission
 - **Effect**: API returns 429 error
@@ -1381,12 +1500,14 @@ function handleApiError(error: any): string {
 ### 9.5 Validation Summary
 
 **Progressive Validation Strategy**:
+
 1. **Immediate**: File type/size on selection
 2. **On Blur**: Individual field validation (title, description, etc.)
 3. **On Navigation**: Step-level validation before proceeding to next step
 4. **On Submit**: Complete form validation + server-side validation
 
 **Error Display Hierarchy**:
+
 1. **Field-level errors**: Show inline below each field (red border, error text)
 2. **Step-level errors**: Show in ValidationErrors component at top of step
 3. **Global errors**: Show in ErrorBanner at top of wizard (rate limits, server errors)
@@ -1400,17 +1521,20 @@ function handleApiError(error: any): string {
 **Error Type**: File validation errors
 
 **Scenarios**:
+
 - Wrong file type (not JPG/PNG)
 - File too large (>10 MB)
 - Corrupted/unreadable file
 
 **Handling**:
+
 - Display error message in dropzone
 - Prevent file from being loaded
 - Keep user on Step 1
 - Allow user to select different file
 
 **UI Feedback**:
+
 ```
 ⚠️ Only JPG and PNG files are supported
 ⚠️ File size must not exceed 10 MB
@@ -1422,17 +1546,20 @@ function handleApiError(error: any): string {
 **Error Type**: Required field errors
 
 **Scenarios**:
+
 - Missing title
 - Missing category
 - Missing location coordinates
 
 **Handling**:
+
 - Show inline error below field
 - Add red border to invalid field
 - Disable "Next" or "Submit" button
 - Scroll to first error on submit attempt
 
 **UI Feedback**:
+
 ```
 Title (Red border)
 [_____________________]
@@ -1444,18 +1571,21 @@ Title (Red border)
 **Error Type**: Field length/format errors
 
 **Scenarios**:
+
 - Title exceeds 200 characters
 - Description exceeds 1000 characters
 - Tag exceeds 30 characters
 - Too many tags (>10)
 
 **Handling**:
+
 - Show character counter turning red
 - Show error message below field
 - Prevent further input (for hard limits)
 - Disable progression until fixed
 
 **UI Feedback**:
+
 ```
 Description (Characters: 1050/1000)
 [________________________]
@@ -1467,17 +1597,20 @@ Description (Characters: 1050/1000)
 **Error Type**: Coordinate validation errors
 
 **Scenarios**:
+
 - Latitude outside -90 to 90 range
 - Longitude outside -180 to 180 range
 - Invalid GeoJSON structure
 
 **Handling**:
+
 - Show error banner at top of location step
 - Highlight coordinate display in red
 - Disable submit button
 - Suggest using map picker instead of manual entry
 
 **UI Feedback**:
+
 ```
 ⚠️ Invalid coordinates. Please use the map to select a valid location.
 ```
@@ -1491,12 +1624,14 @@ Description (Characters: 1050/1000)
 **Scenario**: User session expired or not authenticated
 
 **Handling**:
+
 - Automatically redirect to login page
 - Preserve form data in sessionStorage (if possible)
 - Include return URL: `/login?returnUrl=/upload`
 - After login, restore form data and return to upload view
 
 **UI Feedback**:
+
 ```
 Redirecting to login...
 ```
@@ -1508,6 +1643,7 @@ Redirecting to login...
 **Scenario**: Server-side validation fails (e.g., invalid enum value, malformed data)
 
 **Response Example**:
+
 ```json
 {
   "error": {
@@ -1522,6 +1658,7 @@ Redirecting to login...
 ```
 
 **Handling**:
+
 - Parse error details object
 - Map field names to corresponding form fields
 - Display inline errors for each field
@@ -1529,6 +1666,7 @@ Redirecting to login...
 - Scroll to first error
 
 **UI Feedback**:
+
 ```
 ⚠️ Please fix the following errors:
 - Category: Invalid category value
@@ -1542,6 +1680,7 @@ Redirecting to login...
 **Scenario**: File size exceeds 10 MB (server rejects)
 
 **Handling**:
+
 - Show error banner at top of wizard
 - Navigate back to Step 1
 - Highlight file preview with error
@@ -1549,6 +1688,7 @@ Redirecting to login...
 - Provide link to image compression tool
 
 **UI Feedback**:
+
 ```
 ❌ File size exceeds the 10 MB limit
 
@@ -1564,6 +1704,7 @@ Your file is too large to upload. Please compress your image or select a smaller
 **Scenario**: User has uploaded 5 photos in last 24 hours
 
 **Response Example**:
+
 ```json
 {
   "error": {
@@ -1574,6 +1715,7 @@ Your file is too large to upload. Please compress your image or select a smaller
 ```
 
 **Handling**:
+
 - Show error banner with rate limit message
 - Display countdown timer showing time until next upload slot available
 - Disable submit button
@@ -1581,6 +1723,7 @@ Your file is too large to upload. Please compress your image or select a smaller
 - Allow user to save draft (future enhancement)
 
 **UI Feedback**:
+
 ```
 ⏱️ Upload Limit Reached
 
@@ -1604,6 +1747,7 @@ Your recent uploads:
 **Scenario**: Invalid EXIF data or coordinates processing failed
 
 **Response Example**:
+
 ```json
 {
   "error": {
@@ -1614,6 +1758,7 @@ Your recent uploads:
 ```
 
 **Handling**:
+
 - Show error banner
 - Navigate to Step 3 (Location)
 - Suggest manually selecting location on map
@@ -1621,6 +1766,7 @@ Your recent uploads:
 - Allow user to proceed with manual location
 
 **UI Feedback**:
+
 ```
 ⚠️ Location Processing Failed
 
@@ -1636,6 +1782,7 @@ We couldn't process the location data from your photo. Please select the locatio
 **Scenario**: Unexpected server error, storage failure, database error
 
 **Response Example**:
+
 ```json
 {
   "error": {
@@ -1646,6 +1793,7 @@ We couldn't process the location data from your photo. Please select the locatio
 ```
 
 **Handling**:
+
 - Show error banner with generic message
 - Log error details to console for debugging
 - Provide retry button
@@ -1653,6 +1801,7 @@ We couldn't process the location data from your photo. Please select the locatio
 - Track error in Sentry/monitoring tool
 
 **UI Feedback**:
+
 ```
 ❌ Upload Failed
 
@@ -1670,6 +1819,7 @@ An unexpected error occurred while uploading your photo. Please try again.
 **Scenario**: User has poor internet connection, request times out
 
 **Handling**:
+
 - Detect timeout (e.g., no response after 30 seconds)
 - Show error banner
 - Preserve form data
@@ -1677,6 +1827,7 @@ An unexpected error occurred while uploading your photo. Please try again.
 - Suggest checking internet connection
 
 **UI Feedback**:
+
 ```
 🔌 Connection Error
 
@@ -1694,12 +1845,14 @@ Unable to reach the server. Please check your internet connection and try again.
 **Scenario**: Browser doesn't support File API, file unreadable
 
 **Handling**:
+
 - Detect browser capability on page load
 - Show warning if unsupported browser
 - Fallback to standard file input if drag-and-drop unavailable
 - Graceful degradation for EXIF extraction
 
 **UI Feedback**:
+
 ```
 ⚠️ Limited Browser Support
 
@@ -1715,12 +1868,14 @@ Your browser doesn't support some advanced features. File upload will still work
 **Scenario**: User clicks "Use Current Location" but denies permission
 
 **Handling**:
+
 - Catch permission error
 - Show informative message
 - Provide alternative: select location on map or use EXIF
 - Don't block workflow
 
 **UI Feedback**:
+
 ```
 📍 Location Access Denied
 
@@ -1740,12 +1895,14 @@ Alternatively, you can:
 **Scenario**: Cannot save draft or form data to localStorage
 
 **Handling**:
+
 - Catch quota exceeded error
 - Continue without saving draft
 - Warn user that data won't persist if they leave
 - Suggest clearing browser data
 
 **UI Feedback**:
+
 ```
 ⚠️ Unable to Save Draft
 
@@ -1759,22 +1916,26 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### 10.5 Error Recovery Strategies
 
 **Strategy 1: Retry with exponential backoff**
+
 - For transient network errors
 - Retry 1st attempt after 1s, 2nd after 2s, 3rd after 4s
 - Max 3 retry attempts
 - Show retry counter to user
 
 **Strategy 2: Graceful degradation**
+
 - If EXIF extraction fails, continue without EXIF data
 - If current location unavailable, fallback to manual selection
 - If blur visualization fails, still allow blur setting
 
 **Strategy 3: State preservation**
+
 - Save form data to sessionStorage on each step completion
 - Restore data if user returns to page or session recovered
 - Clear saved data after successful upload
 
 **Strategy 4: User communication**
+
 - Always explain what went wrong (avoid generic errors)
 - Provide actionable next steps
 - Show contact support option for persistent errors
@@ -1787,7 +1948,9 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 1: Project Setup and Dependencies
 
 **Tasks**:
+
 1. Install required npm packages:
+
    ```bash
    npm install exifr mapbox-gl
    npm install --save-dev @types/mapbox-gl
@@ -1811,6 +1974,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 2: Type Definitions
 
 **Tasks**:
+
 1. Create `/src/types/upload.types.ts` file
 2. Define all new types from Section 5.2:
    - `UploadStep` enum
@@ -1825,7 +1989,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 
 3. Import and export from `/src/types.ts`:
    ```typescript
-   export * from './types/upload.types';
+   export * from "./types/upload.types";
    ```
 
 **Deliverable**: Complete type definitions for upload flow
@@ -1835,6 +1999,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 3: Validation Utilities
 
 **Tasks**:
+
 1. Create `/src/lib/validators/photoUpload.ts`
 2. Implement validation functions:
    - `validateFileUploadStep()`
@@ -1860,10 +2025,12 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 4: EXIF Extraction Utility
 
 **Tasks**:
+
 1. Create `/src/lib/utils/exif.ts`
 2. Implement EXIF extraction function:
+
    ```typescript
-   export async function extractExif(file: File): Promise<ExifPreviewData | null>
+   export async function extractExif(file: File): Promise<ExifPreviewData | null>;
    ```
 
 3. Parse relevant EXIF fields:
@@ -1888,6 +2055,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 5: Custom Hook - usePhotoUpload
 
 **Tasks**:
+
 1. Create `/src/components/upload/usePhotoUpload.ts`
 2. Implement hook with all functionality from Section 6.1:
    - State management (useState)
@@ -1909,6 +2077,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 6: Shared UI Components
 
 **Tasks**:
+
 1. Verify required shadcn/ui components are installed:
    - Button
    - Input
@@ -1932,6 +2101,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 7: Basic Upload Components
 
 **Tasks**:
+
 1. Create `/src/components/upload/` directory
 
 2. Implement `UploadProgress.tsx` (Section 4.2):
@@ -1955,6 +2125,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 8: File Upload Components
 
 **Tasks**:
+
 1. Implement `Dropzone.tsx` (Section 4.4):
    - Drag and drop area
    - File input
@@ -1980,6 +2151,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 9: Metadata Form Components
 
 **Tasks**:
+
 1. Implement `TagsInput.tsx` (Section 4.12):
    - Input field for new tags
    - Tag pills with remove buttons
@@ -2008,6 +2180,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 10: Location Components
 
 **Tasks**:
+
 1. Implement `MapPicker.tsx` (Section 4.10):
    - Initialize Mapbox GL map
    - Display draggable marker
@@ -2039,6 +2212,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 11: Main Wizard Component
 
 **Tasks**:
+
 1. Implement `UploadWizard.tsx` (Section 4.1):
    - Initialize usePhotoUpload hook
    - Render UploadProgress
@@ -2069,21 +2243,23 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 12: Upload Page
 
 **Tasks**:
+
 1. Create `/src/pages/upload.astro`
 
 2. Implement page structure:
+
    ```astro
    ---
-   import Layout from '@/layouts/Layout.astro';
-   import UploadWizard from '@/components/upload/UploadWizard';
-   
+   import Layout from "@/layouts/Layout.astro";
+   import UploadWizard from "@/components/upload/UploadWizard";
+
    // Server-side auth check
    const { user } = Astro.locals;
    if (!user) {
-     return Astro.redirect('/login?returnUrl=/upload');
+     return Astro.redirect("/login?returnUrl=/upload");
    }
    ---
-   
+
    <Layout title="Upload Photo - PhotoSpot">
      <main class="container mx-auto py-8">
        <h1 class="text-3xl font-bold mb-6">Upload Photo</h1>
@@ -2101,10 +2277,12 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 13: Modal Integration (Optional)
 
 **Tasks**:
+
 1. Update `UploadPhotoButton.tsx` to support modal trigger:
+
    ```typescript
    const [isModalOpen, setIsModalOpen] = useState(false);
-   
+
    // In render:
    {isModalOpen && (
      <UploadWizard
@@ -2129,6 +2307,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 14: Error Handling and Recovery
 
 **Tasks**:
+
 1. Implement error handling utilities in usePhotoUpload:
    - API error mapping (Section 10.2)
    - Network error detection (Section 10.3)
@@ -2152,6 +2331,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 15: Styling and Responsive Design
 
 **Tasks**:
+
 1. Apply Tailwind CSS classes to all components
 2. Ensure responsive design:
    - Mobile: Single column, stacked layout
@@ -2179,6 +2359,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 16: Testing
 
 **Tasks**:
+
 1. **Unit Tests** (Vitest):
    - Validation utilities (`photoUpload.ts`)
    - EXIF extraction (`exif.ts`)
@@ -2204,6 +2385,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 17: Documentation and Code Cleanup
 
 **Tasks**:
+
 1. Add JSDoc comments to all exported functions and components
 2. Create component usage examples in comments
 3. Update project README with upload flow documentation
@@ -2219,6 +2401,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 18: Performance Optimization
 
 **Tasks**:
+
 1. Optimize file preview generation:
    - Use canvas to resize large images before preview
    - Lazy load EXIF extraction (only when panel expanded)
@@ -2243,6 +2426,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 19: Accessibility (a11y) Review
 
 **Tasks**:
+
 1. Ensure keyboard navigation works throughout wizard:
    - Tab order logical
    - Enter key submits forms
@@ -2266,6 +2450,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 ### Step 20: Final Integration and Deployment
 
 **Tasks**:
+
 1. Test complete flow end-to-end with real Supabase backend
 2. Verify uploaded photos appear on map immediately (or after moderation)
 3. Test rate limiting (upload 5 photos, verify 6th is blocked)
@@ -2286,6 +2471,7 @@ Your browser storage is full. Your upload data will be lost if you navigate away
 This implementation plan provides a comprehensive roadmap for building the Photo Upload view in PhotoSpot. The multi-step wizard interface guides users through file selection, metadata entry, and location configuration, with robust validation and error handling at every stage.
 
 **Key Features**:
+
 - ✅ Multi-step wizard (File → Metadata → Location)
 - ✅ Drag-and-drop file upload with preview
 - ✅ Automatic EXIF extraction and display
@@ -2300,14 +2486,15 @@ This implementation plan provides a comprehensive roadmap for building the Photo
 **Estimated Timeline**: 5-7 days for a single developer following this plan systematically.
 
 **Dependencies**:
+
 - POST `/api/photos` endpoint must be implemented and tested first
 - Supabase Storage bucket configured
 - Mapbox access token available
 - Authentication middleware in place
 
 **Next Steps After Implementation**:
+
 1. User acceptance testing
 2. Performance monitoring (upload success rates)
 3. Analytics integration (track upload funnel drop-off)
 4. Iterative improvements based on user feedback
-

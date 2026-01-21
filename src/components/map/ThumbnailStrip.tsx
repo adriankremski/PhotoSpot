@@ -6,7 +6,7 @@
  */
 
 import React, { useRef, useEffect } from "react";
-import type { PhotoListItemDto, PaginationMeta } from "@/types";
+import type { PhotoListItemDto } from "@/types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Loader2, Camera } from "lucide-react";
@@ -49,7 +49,6 @@ const PhotoCard = React.memo(function PhotoCard({
       style={{ width: "200px" }}
       role="listitem"
       aria-label={`Photo: ${photo.title} by ${photo.user.display_name}`}
-      aria-pressed={isSelected}
     >
       {/* Thumbnail Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">

@@ -5,6 +5,7 @@ This directory contains test utilities, mocks, and documentation for the PhotoSp
 ## Overview
 
 The project uses **Vitest** as the testing framework, chosen for its:
+
 - Native ESM support
 - Fast execution with smart watch mode
 - TypeScript support out of the box
@@ -30,6 +31,7 @@ npm run test:coverage
 ## Test Structure
 
 ### Test Files Location
+
 All test files follow the pattern `*.test.ts` or `*.spec.ts` and are located next to the files they test:
 
 ```
@@ -56,21 +58,24 @@ src/
 ## Test Categories
 
 ### 1. Validator Tests (`src/lib/validators/*.test.ts`)
+
 Tests for Zod validation schemas that ensure input data integrity.
 
 **Coverage:**
+
 - Valid input scenarios
 - Invalid input scenarios (email, password, role)
 - Edge cases (missing fields, empty strings, special characters)
 - Error message accuracy
 
 **Example:**
+
 ```typescript
-it('should validate correct registration data', () => {
+it("should validate correct registration data", () => {
   const input = {
-    email: 'test@example.com',
-    password: 'password123',
-    role: 'photographer',
+    email: "test@example.com",
+    password: "password123",
+    role: "photographer",
   };
   const result = registerUserSchema.safeParse(input);
   expect(result.success).toBe(true);
@@ -78,29 +83,34 @@ it('should validate correct registration data', () => {
 ```
 
 ### 2. Service Layer Tests (`src/lib/services/*.test.ts`)
+
 Tests for business logic and Supabase integration with mocked dependencies.
 
 **Coverage:**
+
 - Successful operations
 - Error handling for all Supabase error types
 - Data transformation and mapping
 - Edge cases and unexpected errors
 
 **Example:**
+
 ```typescript
-it('should register a photographer successfully', async () => {
+it("should register a photographer successfully", async () => {
   const mockClient = createMockSupabaseClient();
   const result = await registerUser(validPayload, mockClient);
-  
-  expect(result.user.email).toBe('test@example.com');
+
+  expect(result.user.email).toBe("test@example.com");
   expect(result.session.access_token).toBeDefined();
 });
 ```
 
 ### 3. API Endpoint Tests (`src/pages/api/**/*.test.ts`)
+
 Integration tests for API routes that test the complete request-response cycle.
 
 **Coverage:**
+
 - Successful requests with various input formats
 - Validation error responses (400)
 - Authentication error responses (401, 409, 429)
@@ -108,14 +118,18 @@ Integration tests for API routes that test the complete request-response cycle.
 - Edge cases (malformed JSON, special characters)
 
 **Example:**
+
 ```typescript
-it('should register a user and return 200', async () => {
-  const context = createMockContext({
-    email: 'test@example.com',
-    password: 'password123',
-    role: 'photographer',
-  }, mockClient);
-  
+it("should register a user and return 200", async () => {
+  const context = createMockContext(
+    {
+      email: "test@example.com",
+      password: "password123",
+      role: "photographer",
+    },
+    mockClient
+  );
+
   const response = await POST(context);
   expect(response.status).toBe(200);
 });
@@ -134,8 +148,8 @@ const mockClient = createMockSupabaseClient();
 // Create a mock client with custom error response
 const mockClient = createMockSupabaseClient({
   signUpResponse: createMockErrorResponse({
-    message: 'Email already registered',
-    code: 'user_already_exists',
+    message: "Email already registered",
+    code: "user_already_exists",
     status: 409,
   }),
 });
@@ -147,6 +161,7 @@ const mockClient = createMockSupabaseClient({
 ```
 
 ### Available Mock Errors
+
 - `userAlreadyExists` - 409 error for duplicate email
 - `invalidEmail` - 400 error for invalid email format
 - `weakPassword` - 400 error for weak password
@@ -157,6 +172,7 @@ const mockClient = createMockSupabaseClient({
 ## Test Coverage Goals
 
 We aim for the following coverage targets:
+
 - **Validators:** 100% (pure functions, easy to test)
 - **Services:** 90%+ (business logic with mocked dependencies)
 - **API Endpoints:** 85%+ (integration tests with realistic scenarios)
@@ -167,14 +183,15 @@ We aim for the following coverage targets:
 ### Best Practices
 
 1. **Follow the AAA Pattern:**
+
    ```typescript
    it('should do something', () => {
      // Arrange: Set up test data
      const input = { ... };
-     
+
      // Act: Execute the code under test
      const result = functionUnderTest(input);
-     
+
      // Assert: Verify the results
      expect(result).toBe(expected);
    });
@@ -189,13 +206,14 @@ We aim for the following coverage targets:
    - Makes failures easier to diagnose
 
 4. **Use `describe` Blocks for Organization:**
+
    ```typescript
    describe('registerUser', () => {
      describe('successful registration', () => {
        it('should register a photographer', ...);
        it('should register an enthusiast', ...);
      });
-     
+
      describe('error handling', () => {
        it('should throw 409 for duplicate email', ...);
      });
@@ -203,6 +221,7 @@ We aim for the following coverage targets:
    ```
 
 5. **Clean Up After Tests:**
+
    ```typescript
    beforeEach(() => {
      vi.clearAllMocks(); // Reset mocks before each test
@@ -229,6 +248,7 @@ We aim for the following coverage targets:
 ## Continuous Integration
 
 Tests run automatically on:
+
 - Pre-commit (via husky + lint-staged)
 - Pull requests
 - Before deployment
@@ -252,4 +272,3 @@ Tests run automatically on:
 - [Testing Library](https://testing-library.com/)
 - [Zod Documentation](https://zod.dev/)
 - [Supabase Testing Guide](https://supabase.com/docs/guides/testing)
-

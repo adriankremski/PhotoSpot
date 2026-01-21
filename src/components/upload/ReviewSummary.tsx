@@ -6,9 +6,7 @@
  */
 
 import { MapPin, Camera, Tag, Calendar, Clock, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { ReviewSummaryProps } from "./types";
-import { STEP_LABELS } from "./types";
 
 const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 

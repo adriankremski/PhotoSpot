@@ -22,8 +22,6 @@ import type {
   ExifData,
   GearInfo,
   CreatePhotoResponse,
-  PHOTO_UPLOAD_LIMIT,
-  FILE_UPLOAD_CONSTRAINTS,
 } from "../../types";
 import { PHOTO_UPLOAD_LIMIT as UPLOAD_LIMIT } from "../../types";
 import type { PhotoQueryParamsOutput, CreatePhotoCommandOutput } from "../validators/photos";
@@ -129,7 +127,7 @@ export async function getPublicPhotos(
       const [minLng, minLat, maxLng, maxLat] = params.bbox;
 
       // Use RPC to call PostGIS function for efficient spatial queries
-      // @ts-ignore - Custom database function not in generated types
+      // @ts-expect-error - Custom database function not in generated types
       const result = await supabase.rpc("get_photos_within_bbox", {
         p_min_lng: minLng,
         p_min_lat: minLat,

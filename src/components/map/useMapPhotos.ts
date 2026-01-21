@@ -5,7 +5,7 @@
  * pagination, and viewport-based queries for the map view.
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type {
   PhotoListItemDto,
   PaginationMeta,
@@ -42,7 +42,7 @@ async function fetchPhotos(params: PhotoQueryParams): Promise<ListResponse<Photo
   // Build query string, filtering out undefined values
   const queryString = new URLSearchParams(
     Object.entries(params)
-      .filter(([_, v]) => v !== undefined)
+      .filter(([, v]) => v !== undefined)
       .map(([k, v]) => [k, String(v)])
   ).toString();
 

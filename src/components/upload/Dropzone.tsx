@@ -9,9 +9,9 @@ import { Upload, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FILE_UPLOAD_CONSTRAINTS } from "@/types";
 import { validateFile } from "./validation";
-import type { DropzoneProps, FileWithPreview, ValidationError, ExifData } from "./types";
+import type { DropzoneProps, FileWithPreview, ExifData } from "./types";
 
-export function Dropzone({ initialFile, onFileAccepted, onValidationError }: DropzoneProps) {
+export function Dropzone({ onFileAccepted, onValidationError }: DropzoneProps) {
   const [filePreview, setFilePreview] = useState<FileWithPreview | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -104,7 +104,7 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
 
         setFilePreview(fileWithPreview);
         onFileAccepted(fileWithPreview);
-      } catch (err) {
+      } catch {
         setError("Failed to process file");
         onValidationError({ field: "file", message: "Failed to process file" });
       } finally {
@@ -269,11 +269,19 @@ export function Dropzone({ initialFile, onFileAccepted, onValidationError }: Dro
               ? "border-red-300 bg-red-50"
               : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
         }`}
+        role="button"
+        tabIndex={0}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onClick={handleBrowseClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleBrowseClick();
+          }
+        }}
       >
         {isProcessing ? (
           <div className="text-center">
