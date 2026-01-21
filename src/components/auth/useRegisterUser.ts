@@ -3,7 +3,7 @@
  * Handles form state, validation, API calls, and session management
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { z } from "zod";
 import type { RegisterUserCommand, AuthResponse, UserRole } from "@/types";
 import { supabaseClient } from "@/db/supabase.client";
@@ -65,6 +65,13 @@ export function useRegisterUser(): RegisterViewModel {
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
 
+  // Handle redirect after successful registration
+  useEffect(() => {
+    if (registered) {
+      window.location.href = "/onboarding";
+    }
+  }, [registered]);
+
   /**
    * Handle field value changes
    */
@@ -72,9 +79,12 @@ export function useRegisterUser(): RegisterViewModel {
     setValues((prev) => ({ ...prev, [field]: value }));
     // Clear field error on change
     setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[field];
-      return newErrors;
+      if (field in prev) {
+        const newErrors = { ...prev };
+        // Use Object.entries to filter out the field without using delete
+        return Object.fromEntries(Object.entries(newErrors).filter(([key]) => key !== field)) as RegisterFormErrors;
+      }
+      return prev;
     });
   }, []);
 
@@ -166,9 +176,6 @@ export function useRegisterUser(): RegisterViewModel {
 
         setRegistered(true);
         setLoading(false);
-
-        // Redirect to onboarding
-        window.location.href = "/onboarding";
       } catch (error) {
         // Network or unexpected error
         console.error("Registration error:", error);

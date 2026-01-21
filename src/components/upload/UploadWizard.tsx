@@ -5,7 +5,7 @@
  * Can be rendered as a full page or in a modal.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useUploadWizard } from "./useUploadWizard";
 import { useCreatePhoto } from "./useCreatePhoto";
 import { StepIndicator } from "./StepIndicator";
@@ -38,6 +38,7 @@ export function UploadWizard({ mode, onSuccess, onCancel }: UploadWizardProps) {
 
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   // Photo creation hook
   const {
@@ -54,9 +55,9 @@ export function UploadWizard({ mode, onSuccess, onCancel }: UploadWizardProps) {
         reset();
         onSuccess?.(response.photo.id);
 
-        // Redirect to map if in page mode
+        // Trigger redirect to map if in page mode
         if (mode === "page") {
-          window.location.href = "/map";
+          setShouldRedirect(true);
         }
       }, 1500);
     },
@@ -65,6 +66,13 @@ export function UploadWizard({ mode, onSuccess, onCancel }: UploadWizardProps) {
       setSubmitting(false);
     },
   });
+
+  // Handle redirect after successful upload
+  useEffect(() => {
+    if (shouldRedirect) {
+      window.location.href = "/map";
+    }
+  }, [shouldRedirect]);
 
   // ============================================================================
   // Handlers
@@ -119,8 +127,10 @@ export function UploadWizard({ mode, onSuccess, onCancel }: UploadWizardProps) {
       formData.append("time_of_day", state.metadata.time_of_day);
     }
 
-    formData.append("latitude", state.location.latitude!.toString());
-    formData.append("longitude", state.location.longitude!.toString());
+    if (state.location.latitude !== null && state.location.longitude !== null) {
+      formData.append("latitude", state.location.latitude.toString());
+      formData.append("longitude", state.location.longitude.toString());
+    }
 
     if (state.location.blur_location) {
       formData.append("blur_location", "true");

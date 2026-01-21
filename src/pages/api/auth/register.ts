@@ -27,10 +27,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Normalize input to RegisterUserCommand format
     // Handle both flat and nested role formats
+    const role = validatedData.role || validatedData.options?.data?.role;
+    if (!role) {
+      throw new Error("Role is required");
+    }
     const command: RegisterUserCommand = {
       email: validatedData.email,
       password: validatedData.password,
-      role: validatedData.role || validatedData.options?.data?.role!,
+      role: role,
     };
 
     // Call service layer to register user

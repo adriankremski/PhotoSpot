@@ -49,7 +49,6 @@ const MobilePhotoCard = React.memo(function MobilePhotoCard({
         isActive ? "ring-2 ring-primary" : ""
       }`}
       style={{ width: "85vw", maxWidth: "400px" }}
-      role="listitem"
       aria-label={`Photo: ${photo.title} by ${photo.user.display_name}`}
       aria-current={isActive ? "true" : "false"}
     >

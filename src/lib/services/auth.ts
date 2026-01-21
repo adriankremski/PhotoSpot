@@ -62,7 +62,7 @@ export async function registerUser(payload: RegisterUserCommand, supabase: Supab
     return {
       user: {
         id: data.user.id,
-        email: data.user.email!,
+        email: data.user.email || "",
         user_metadata: {
           role: (data.user.user_metadata?.role as UserRole) || payload.role,
         },
@@ -155,7 +155,7 @@ export async function loginUser(email: string, password: string, supabase: Supab
     return {
       user: {
         id: data.user.id,
-        email: data.user.email!,
+        email: data.user.email || "",
         user_metadata: data.user.user_metadata,
       },
       session: {

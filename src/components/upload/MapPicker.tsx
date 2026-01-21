@@ -12,7 +12,7 @@ import { MapGL } from "@/components/map/MapGL";
 import { BlurSlider } from "./BlurSlider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { MapViewport, BoundingBox } from "@/types";
+import type { MapViewport } from "@/types";
 import type { MapPickerProps } from "./types";
 
 const DEFAULT_VIEWPORT: MapViewport = {

@@ -255,14 +255,22 @@ export const fileValidationSchema = z.object({
       `File size must not exceed ${FILE_UPLOAD_CONSTRAINTS.MAX_SIZE_BYTES / 1024 / 1024} MB`
     ),
 
-  type: z.string().refine((type) => FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.includes(type as any), {
-    message: `File type must be one of: ${FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.join(", ")}`,
-  }),
+  type: z
+    .string()
+    .refine(
+      (type): type is (typeof FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES)[number] =>
+        FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.includes(type as (typeof FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES)[number]),
+      {
+        message: `File type must be one of: ${FILE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES.join(", ")}`,
+      }
+    ),
 
   name: z.string().refine(
     (name) => {
       const ext = name.toLowerCase().substring(name.lastIndexOf("."));
-      return FILE_UPLOAD_CONSTRAINTS.ALLOWED_EXTENSIONS.includes(ext as any);
+      return FILE_UPLOAD_CONSTRAINTS.ALLOWED_EXTENSIONS.includes(
+        ext as (typeof FILE_UPLOAD_CONSTRAINTS.ALLOWED_EXTENSIONS)[number]
+      );
     },
     {
       message: `File extension must be one of: ${FILE_UPLOAD_CONSTRAINTS.ALLOWED_EXTENSIONS.join(", ")}`,

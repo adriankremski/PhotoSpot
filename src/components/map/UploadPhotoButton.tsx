@@ -45,7 +45,7 @@ export function UploadPhotoButton({ userRole, isAuthenticated, mode = "modal" }:
   }
 
   // Modal mode: Open wizard in dialog
-  const handleSuccess = (_photoId: string) => {
+  const handleSuccess = () => {
     setIsModalOpen(false);
 
     // Show success toast (simple alert for now)

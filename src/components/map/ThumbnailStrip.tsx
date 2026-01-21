@@ -47,7 +47,6 @@ const PhotoCard = React.memo(function PhotoCard({
         isSelected ? "ring-2 ring-primary ring-offset-2" : ""
       }`}
       style={{ width: "200px" }}
-      role="listitem"
       aria-label={`Photo: ${photo.title} by ${photo.user.display_name}`}
     >
       {/* Thumbnail Image */}

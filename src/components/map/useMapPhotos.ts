@@ -251,8 +251,7 @@ export function useMapPhotos(initialViewport: MapViewport): UseMapPhotosReturn {
         abortControllerRef.current.abort();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+  }, [initialViewport.longitude, initialViewport.latitude, filters, fetchPhotosData]);
 
   return {
     photos,

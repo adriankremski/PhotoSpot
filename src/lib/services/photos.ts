@@ -342,7 +342,9 @@ export async function getPhotoById(
 
     // Extract tags from nested structure
     const tags: string[] = Array.isArray(photo.photo_tags)
-      ? photo.photo_tags.map((pt: any) => pt.tags?.name).filter(Boolean)
+      ? photo.photo_tags
+          .map((pt: { tags?: { name?: string } | null }) => pt.tags?.name)
+          .filter((name): name is string => Boolean(name))
       : [];
 
     // Build user basic info
@@ -549,10 +551,10 @@ export async function createPhoto(
         time_of_day: (input.time_of_day as TimeOfDay | undefined) || null,
         file_url: publicUrl,
         file_size: input.file.size,
-        location_exact: JSON.stringify(location_exact) as any,
-        location_public: JSON.stringify(location_public) as any,
-        gear: (input.gear || null) as any,
-        exif: exifData as any,
+        location_exact: JSON.stringify(location_exact) as unknown as string,
+        location_public: JSON.stringify(location_public) as unknown as string,
+        gear: (input.gear || null) as unknown as string | null,
+        exif: exifData as unknown as string | null,
         status: "pending",
       })
       .select("id, title, status, file_url, created_at")

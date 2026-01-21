@@ -53,12 +53,15 @@ export function ProfileSetupForm({ userId, role, onSuccess }: ProfileSetupFormPr
     // Convert social links array to object
     let socialLinksObject: Record<string, string> | undefined = undefined;
     if (role === "photographer" && socialLinks.length > 0) {
-      socialLinksObject = {};
+      const tempSocialLinks: Record<string, string> = {};
       socialLinks.forEach((link) => {
         if (link.label && link.url) {
-          socialLinksObject![link.label.toLowerCase().replace(/\s+/g, "_")] = link.url;
+          tempSocialLinks[link.label.toLowerCase().replace(/\s+/g, "_")] = link.url;
         }
       });
+      if (Object.keys(tempSocialLinks).length > 0) {
+        socialLinksObject = tempSocialLinks;
+      }
     }
 
     // Prepare payload - only include fields with actual values

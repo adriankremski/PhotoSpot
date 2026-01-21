@@ -63,9 +63,14 @@ export async function getUserProfile(
     // Call RPC function to get user profile with role and photo count
     // This function joins user_profiles with auth.users to get role
     // Type assertion needed because the RPC function is not yet in generated types
-    const { data, error } = (await (supabase.rpc as any)("get_user_profile_with_role", {
+    const { data, error } = await (
+      supabase.rpc as (
+        functionName: string,
+        params: Record<string, unknown>
+      ) => { single: () => Promise<{ data: UserProfileRpcResponse | null; error: Error | null }> }
+    )("get_user_profile_with_role", {
       target_user_id: userId,
-    }).single()) as { data: UserProfileRpcResponse | null; error: any };
+    }).single();
 
     if (error) {
       // Handle not found gracefully (PGRST116 = no rows returned)
