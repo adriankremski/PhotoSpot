@@ -92,15 +92,15 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div className="mx-auto w-full max-w-md">
-      <div className="rounded-lg border bg-card p-8 shadow-sm">
+      <div className="rounded-lg border bg-card p-8 shadow-sm" data-test-id="login-form-card">
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-bold text-card-foreground">Welcome Back</h2>
           <p className="mt-2 text-sm text-muted-foreground">Sign in to your account to continue</p>
         </div>
 
-        <ErrorBanner error={apiError} />
+        <ErrorBanner error={apiError} data-test-id="login-error-banner" />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-test-id="login-form">
           {/* Email Field */}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -110,12 +110,13 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               autoComplete="email"
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "email-error" : undefined}
+              data-test-id="login-email-input"
               {...register("email", {
                 onChange: handleFieldChange,
               })}
             />
             {errors.email && (
-              <p id="email-error" className="text-sm text-destructive" role="alert">
+              <p id="email-error" className="text-sm text-destructive" role="alert" data-test-id="email-error-message">
                 {errors.email.message}
               </p>
             )}
@@ -132,6 +133,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 aria-invalid={!!errors.password}
                 aria-describedby={errors.password ? "password-error" : undefined}
                 className="pr-10"
+                data-test-id="login-password-input"
                 {...register("password", {
                   onChange: handleFieldChange,
                 })}
@@ -141,6 +143,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                data-test-id="login-password-toggle"
               >
                 {showPassword ? (
                   <EyeOff className="size-4" aria-hidden="true" />
@@ -150,7 +153,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               </button>
             </div>
             {errors.password && (
-              <p id="password-error" className="text-sm text-destructive" role="alert">
+              <p id="password-error" className="text-sm text-destructive" role="alert" data-test-id="password-error-message">
                 {errors.password.message}
               </p>
             )}
@@ -161,6 +164,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             type="submit"
             className="w-full"
             disabled={!isValid || isSubmitting || apiError?.code === "RATE_LIMIT_EXCEEDED"}
+            data-test-id="login-submit-button"
           >
             {isSubmitting ? (
               <>
@@ -179,6 +183,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             <a
               href="/register"
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              data-test-id="login-register-link"
             >
               Register here
             </a>

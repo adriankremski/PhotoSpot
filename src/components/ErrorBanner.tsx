@@ -15,9 +15,10 @@ export type LoginViewError =
 interface ErrorBannerProps {
   error: LoginViewError | null;
   onClose?: () => void;
+  "data-test-id"?: string;
 }
 
-export function ErrorBanner({ error, onClose }: ErrorBannerProps) {
+export function ErrorBanner({ error, onClose, "data-test-id": dataTestId }: ErrorBannerProps) {
   if (!error) return null;
 
   const getErrorTitle = (code: string): string => {
@@ -36,10 +37,12 @@ export function ErrorBanner({ error, onClose }: ErrorBannerProps) {
   };
 
   return (
-    <Alert variant="destructive" role="alert" className="mb-4">
+    <Alert variant="destructive" role="alert" className="mb-4" data-test-id={dataTestId}>
       <AlertCircle className="size-4" aria-hidden="true" />
-      <AlertTitle>{getErrorTitle(error.code)}</AlertTitle>
-      <AlertDescription>
+      <AlertTitle data-test-id={dataTestId ? `${dataTestId}-title` : undefined}>
+        {getErrorTitle(error.code)}
+      </AlertTitle>
+      <AlertDescription data-test-id={dataTestId ? `${dataTestId}-message` : undefined}>
         {error.message}
         {onClose && (
           <button onClick={onClose} className="ml-2 underline hover:no-underline" aria-label="Dismiss error">
