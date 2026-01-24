@@ -3,8 +3,8 @@
  * Encapsulates all interactions with the login form
  */
 
-import { type Page, type Locator, expect } from '@playwright/test';
-import { ErrorBannerComponent } from './components/ErrorBannerComponent';
+import { type Page, type Locator, expect } from "@playwright/test";
+import { ErrorBannerComponent } from "./components/ErrorBannerComponent";
 
 export class LoginPage {
   readonly page: Page;
@@ -50,7 +50,7 @@ export class LoginPage {
    * Navigate to the login page
    */
   async goto() {
-    await this.page.goto('/');
+    await this.page.goto("/");
     await this.waitForPageLoad();
   }
 
@@ -58,7 +58,7 @@ export class LoginPage {
    * Wait for the login form to be visible
    */
   async waitForPageLoad() {
-    await this.formCard.waitFor({ state: 'visible' });
+    await this.formCard.waitFor({ state: "visible" });
   }
 
   /**
@@ -147,14 +147,14 @@ export class LoginPage {
    * Get email validation error text
    */
   async getEmailErrorText(): Promise<string> {
-    return await this.emailErrorMessage.textContent() || '';
+    return (await this.emailErrorMessage.textContent()) || "";
   }
 
   /**
    * Get password validation error text
    */
   async getPasswordErrorText(): Promise<string> {
-    return await this.passwordErrorMessage.textContent() || '';
+    return (await this.passwordErrorMessage.textContent()) || "";
   }
 
   /**
@@ -210,7 +210,7 @@ export class LoginPage {
    */
   async isSubmitting(): Promise<boolean> {
     const text = await this.submitButton.textContent();
-    return text?.includes('Signing in...') || false;
+    return text?.includes("Signing in...") || false;
   }
 
   // === Password Field State Assertions ===
@@ -219,16 +219,16 @@ export class LoginPage {
    * Check if password is visible (not masked)
    */
   async isPasswordVisible(): Promise<boolean> {
-    const type = await this.passwordInput.getAttribute('type');
-    return type === 'text';
+    const type = await this.passwordInput.getAttribute("type");
+    return type === "text";
   }
 
   /**
    * Assert password field type
    * @param expectedType - Expected input type ('text' or 'password')
    */
-  async expectPasswordFieldType(expectedType: 'text' | 'password') {
-    await expect(this.passwordInput).toHaveAttribute('type', expectedType);
+  async expectPasswordFieldType(expectedType: "text" | "password") {
+    await expect(this.passwordInput).toHaveAttribute("type", expectedType);
   }
 
   // === Form State Assertions ===

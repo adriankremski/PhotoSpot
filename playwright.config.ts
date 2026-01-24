@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Playwright E2E Testing Configuration
@@ -6,10 +6,10 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   // Test directory
-  testDir: './e2e',
+  testDir: "./e2e",
 
   // Pattern for test files
-  testMatch: '**/*.spec.ts',
+  testMatch: "**/*.spec.ts",
 
   // Maximum time one test can run
   timeout: 30 * 1000,
@@ -22,24 +22,24 @@ export default defineConfig({
 
   // Reporter configuration
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'playwright-report/results.json' }],
-    ['list'],
+    ["html", { outputFolder: "playwright-report" }],
+    ["json", { outputFile: "playwright-report/results.json" }],
+    ["list"],
   ],
 
   // Shared settings for all projects
   use: {
     // Base URL for navigation
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
 
     // Collect trace when retrying failed tests
-    trace: 'on-first-retry',
+    trace: "on-first-retry",
 
     // Screenshot on failure
-    screenshot: 'only-on-failure',
+    screenshot: "only-on-failure",
 
     // Video on failure
-    video: 'retain-on-failure',
+    video: "retain-on-failure",
 
     // Viewport size
     viewport: { width: 1280, height: 720 },
@@ -54,12 +54,12 @@ export default defineConfig({
   // Configure projects - Only Chromium as per guidelines
   projects: [
     {
-      name: 'chromium',
-      use: { 
-        ...devices['Desktop Chrome'],
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
         // Additional browser context options
-        locale: 'en-US',
-        timezoneId: 'America/New_York',
+        locale: "en-US",
+        timezoneId: "America/New_York",
       },
     },
   ],
@@ -69,11 +69,11 @@ export default defineConfig({
   // If you already have a server running (npm run dev or npm run dev:e2e),
   // Playwright will reuse it instead of starting a new one
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: "npm run dev",
+    url: "http://localhost:3000",
     reuseExistingServer: true, // Always reuse existing server (not just in CI)
     timeout: 120 * 1000,
-    stdout: 'ignore',
-    stderr: 'pipe',
+    stdout: "ignore",
+    stderr: "pipe",
   },
 });

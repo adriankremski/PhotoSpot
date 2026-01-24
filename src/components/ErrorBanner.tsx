@@ -39,9 +39,7 @@ export function ErrorBanner({ error, onClose, "data-test-id": dataTestId }: Erro
   return (
     <Alert variant="destructive" role="alert" className="mb-4" data-test-id={dataTestId}>
       <AlertCircle className="size-4" aria-hidden="true" />
-      <AlertTitle data-test-id={dataTestId ? `${dataTestId}-title` : undefined}>
-        {getErrorTitle(error.code)}
-      </AlertTitle>
+      <AlertTitle data-test-id={dataTestId ? `${dataTestId}-title` : undefined}>{getErrorTitle(error.code)}</AlertTitle>
       <AlertDescription data-test-id={dataTestId ? `${dataTestId}-message` : undefined}>
         {error.message}
         {onClose && (

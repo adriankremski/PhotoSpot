@@ -3,7 +3,7 @@
  * Encapsulates interactions with error banners displayed on forms
  */
 
-import { type Page, type Locator, expect } from '@playwright/test';
+import { type Page, type Locator, expect } from "@playwright/test";
 
 export class ErrorBannerComponent {
   readonly page: Page;
@@ -13,7 +13,7 @@ export class ErrorBannerComponent {
   private readonly title: Locator;
   private readonly message: Locator;
 
-  constructor(page: Page, testId: string = 'login-error-banner') {
+  constructor(page: Page, testId = "login-error-banner") {
     this.page = page;
     this.banner = page.locator(`[data-test-id="${testId}"]`);
     this.title = page.locator(`[data-test-id="${testId}-title"]`);
@@ -38,14 +38,14 @@ export class ErrorBannerComponent {
    * Get error banner title text
    */
   async getTitleText(): Promise<string> {
-    return await this.title.textContent() || '';
+    return (await this.title.textContent()) || "";
   }
 
   /**
    * Get error banner message text
    */
   async getMessageText(): Promise<string> {
-    return await this.message.textContent() || '';
+    return (await this.message.textContent()) || "";
   }
 
   /**
@@ -96,7 +96,7 @@ export class ErrorBannerComponent {
    * @param timeout - Optional timeout in milliseconds
    */
   async waitForVisible(timeout?: number) {
-    await this.banner.waitFor({ state: 'visible', timeout });
+    await this.banner.waitFor({ state: "visible", timeout });
   }
 
   /**
@@ -104,6 +104,6 @@ export class ErrorBannerComponent {
    * @param timeout - Optional timeout in milliseconds
    */
   async waitForHidden(timeout?: number) {
-    await this.banner.waitFor({ state: 'hidden', timeout });
+    await this.banner.waitFor({ state: "hidden", timeout });
   }
 }

@@ -153,7 +153,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               </button>
             </div>
             {errors.password && (
-              <p id="password-error" className="text-sm text-destructive" role="alert" data-test-id="password-error-message">
+              <p
+                id="password-error"
+                className="text-sm text-destructive"
+                role="alert"
+                data-test-id="password-error-message"
+              >
                 {errors.password.message}
               </p>
             )}
