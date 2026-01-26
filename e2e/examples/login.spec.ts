@@ -3,10 +3,10 @@
  * This file demonstrates how to use the LoginPage POM
  */
 
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../page-objects';
+import { test, expect } from "@playwright/test";
+import { LoginPage } from "../page-objects";
 
-test.describe('Login Form', () => {
+test.describe("Login Form", () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('Login Form', () => {
     await loginPage.goto();
   });
 
-  test.describe('Validation', () => {
+  test.describe("Validation", () => {
     // test('should show error when email is provided but password is empty', async () => {
     //   // Arrange & Act
     //   await loginPage.attemptLoginWithEmailOnly('user@example.com');
@@ -43,10 +43,10 @@ test.describe('Login Form', () => {
     //   await loginPage.expectEmailError('Invalid email address');
     // });
 
-    test('should enable submit button when both fields are valid', async () => {
+    test("should enable submit button when both fields are valid", async () => {
       // Arrange & Act
-      await loginPage.fillEmail('user@example.com');
-      await loginPage.fillPassword('validPassword123!');
+      await loginPage.fillEmail("user@example.com");
+      await loginPage.fillPassword("validPassword123!");
 
       // Assert
       await loginPage.expectSubmitButtonEnabled();
@@ -72,41 +72,41 @@ test.describe('Login Form', () => {
   //   });
   // });
 
-  test.describe('API Error Handling', () => {
-    test('should display error banner on invalid credentials', async () => {
+  test.describe("API Error Handling", () => {
+    test("should display error banner on invalid credentials", async () => {
       // Arrange & Act
-      await loginPage.login('wrong@example.com', 'wrongPassword123!');
+      await loginPage.login("wrong@example.com", "wrongPassword123!");
 
       // Assert
       await loginPage.errorBanner.expectVisible();
-      await loginPage.errorBanner.expectTitle('Authentication Failed');
-      await loginPage.errorBanner.expectMessage('Invalid email or password');
+      await loginPage.errorBanner.expectTitle("Authentication Failed");
+      await loginPage.errorBanner.expectMessage("Invalid email or password");
     });
 
-    test('should clear error banner when user starts typing', async () => {
+    test("should clear error banner when user starts typing", async () => {
       // Arrange - Trigger an error first
-      await loginPage.login('wrong@example.com', 'wrongPassword123!');
+      await loginPage.login("wrong@example.com", "wrongPassword123!");
       await loginPage.errorBanner.expectVisible();
 
       // Act - Start typing in email field
-      await loginPage.fillEmail('newuser@example.com');
+      await loginPage.fillEmail("newuser@example.com");
 
       // Assert - Error banner should disappear
       await loginPage.errorBanner.expectHidden();
     });
   });
 
-  test.describe('Navigation', () => {
-    test('should navigate to register page when clicking register link', async ({ page }) => {
+  test.describe("Navigation", () => {
+    test("should navigate to register page when clicking register link", async ({ page }) => {
       // Act
       await loginPage.clickRegisterLink();
 
       // Assert
-      await expect(page).toHaveURL('/register');
+      await expect(page).toHaveURL("/register");
     });
   });
 
-  test.describe('Form State', () => {
+  test.describe("Form State", () => {
     // test('should preserve form values when validation fails', async () => {
     //   // Arrange & Act
     //   await loginPage.fillEmail('user@example.com');
@@ -117,10 +117,10 @@ test.describe('Login Form', () => {
     //   expect(emailValue).toBe('user@example.com');
     // });
 
-    test('should clear form when clearForm is called', async () => {
+    test("should clear form when clearForm is called", async () => {
       // Arrange
-      await loginPage.fillEmail('user@example.com');
-      await loginPage.fillPassword('password123');
+      await loginPage.fillEmail("user@example.com");
+      await loginPage.fillPassword("password123");
 
       // Act
       await loginPage.clearForm();
@@ -128,8 +128,8 @@ test.describe('Login Form', () => {
       // Assert
       const emailValue = await loginPage.getEmailValue();
       const passwordValue = await loginPage.getPasswordValue();
-      expect(emailValue).toBe('');
-      expect(passwordValue).toBe('');
+      expect(emailValue).toBe("");
+      expect(passwordValue).toBe("");
     });
   });
 
