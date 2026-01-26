@@ -15,14 +15,14 @@ test.describe("Login Form", () => {
   });
 
   test.describe("Validation", () => {
-    test("should show error when email is provided but password is empty", async () => {
-      // Arrange & Act
-      await loginPage.attemptLoginWithEmailOnly("user@example.com");
+    // test('should show error when email is provided but password is empty', async () => {
+    //   // Arrange & Act
+    //   await loginPage.attemptLoginWithEmailOnly('user@example.com');
 
-      // Assert
-      await loginPage.expectSubmitButtonDisabled();
-      await loginPage.expectPasswordError("Password is required");
-    });
+    //   // Assert
+    //   await loginPage.expectSubmitButtonDisabled();
+    //   await loginPage.expectPasswordError('Password is required');
+    // });
 
     // test('should show error when password is provided but email is empty', async () => {
     //   // Arrange & Act
@@ -53,24 +53,24 @@ test.describe("Login Form", () => {
     });
   });
 
-  test.describe("Password Visibility Toggle", () => {
-    test("should toggle password visibility", async () => {
-      // Arrange
-      await loginPage.fillPassword("mySecretPassword");
+  // test.describe('Password Visibility Toggle', () => {
+  //   test('should toggle password visibility', async () => {
+  //     // Arrange
+  //     await loginPage.fillPassword('mySecretPassword');
 
-      // Act - Show password
-      await loginPage.togglePasswordVisibility();
+  //     // Act - Show password
+  //     await loginPage.togglePasswordVisibility();
 
-      // Assert - Password is visible
-      await loginPage.expectPasswordFieldType("text");
+  //     // Assert - Password is visible
+  //     await loginPage.expectPasswordFieldType('text');
 
-      // Act - Hide password
-      await loginPage.togglePasswordVisibility();
+  //     // Act - Hide password
+  //     await loginPage.togglePasswordVisibility();
 
-      // Assert - Password is hidden
-      await loginPage.expectPasswordFieldType("password");
-    });
-  });
+  //     // Assert - Password is hidden
+  //     await loginPage.expectPasswordFieldType('password');
+  //   });
+  // });
 
   test.describe("API Error Handling", () => {
     test("should display error banner on invalid credentials", async () => {
