@@ -23,9 +23,9 @@
     "test:e2e:codegen": "playwright codegen http://localhost:3000"
   },
   "dependencies": {
-    "@astrojs/node": "^9.4.3",
     "@astrojs/react": "^4.3.1",
     "@astrojs/sitemap": "^3.5.1",
+    "@astrojs/vercel": "^9.0.4",
     "@hattip/multipart": "^0.0.49",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.11",
