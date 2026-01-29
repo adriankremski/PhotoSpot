@@ -1,7 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 
-import { supabaseClient } from "../db/supabase.client.ts";
-import { supabaseAdmin } from "../db/supabase.client.ts";
+import { supabaseClient, createSupabaseAdmin } from "../db/supabase.client.ts";
 
 /**
  * Public routes that don't require authentication or onboarding
@@ -36,7 +35,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Inject Supabase clients into context
   context.locals.supabase = supabaseClient;
-  context.locals.supabaseAdmin = supabaseAdmin;
+  
+  // Create admin client with runtime environment variable
+  // This ensures the service role key is never bundled into the client code
+  const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+  context.locals.supabaseAdmin = serviceRoleKey 
+    ? createSupabaseAdmin(serviceRoleKey)
+    : supabaseClient; // Fallback to regular client if service role key not available
 
   // Get current user session
   const {

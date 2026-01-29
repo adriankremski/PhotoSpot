@@ -16,6 +16,13 @@ export default defineConfig({
     ssr: {
       noExternal: ["react-map-gl", "mapbox-gl"],
     },
+    build: {
+      rollupOptions: {
+        external: ["@supabase/supabase-js"],
+      },
+    },
   },
-  adapter: vercel(),
+  adapter: vercel({
+    edgeMiddleware: false,
+  }),
 });
